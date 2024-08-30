@@ -5,15 +5,20 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { PlusIcon, Pencil, Trash2 } from 'lucide-react'
+import { useSupabaseAuth } from '../integrations/supabase/auth'
 
 const AirtableInterface = () => {
   const [newRecord, setNewRecord] = useState({ name: '', email: '' })
   const queryClient = useQueryClient()
+  const { session } = useSupabaseAuth()
 
   const { data: records, isLoading, error } = useQuery({
     queryKey: ['records'],
     queryFn: async () => {
-      const { data, error } = await supabase.from('records').select('*')
+      const { data, error } = await supabase
+        .from('records')
+        .select('*')
+        .eq('user_id', session.user.id)
       if (error) throw error
       return data
     },
@@ -21,7 +26,9 @@ const AirtableInterface = () => {
 
   const addRecordMutation = useMutation({
     mutationFn: async (newRecord) => {
-      const { data, error } = await supabase.from('records').insert([newRecord])
+      const { data, error } = await supabase
+        .from('records')
+        .insert([{ ...newRecord, user_id: session.user.id }])
       if (error) throw error
       return data
     },
@@ -33,7 +40,11 @@ const AirtableInterface = () => {
 
   const updateRecordMutation = useMutation({
     mutationFn: async ({ id, ...updateData }) => {
-      const { data, error } = await supabase.from('records').update(updateData).eq('id', id)
+      const { data, error } = await supabase
+        .from('records')
+        .update(updateData)
+        .eq('id', id)
+        .eq('user_id', session.user.id)
       if (error) throw error
       return data
     },
@@ -44,7 +55,11 @@ const AirtableInterface = () => {
 
   const deleteRecordMutation = useMutation({
     mutationFn: async (id) => {
-      const { data, error } = await supabase.from('records').delete().eq('id', id)
+      const { data, error } = await supabase
+        .from('records')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', session.user.id)
       if (error) throw error
       return data
     },

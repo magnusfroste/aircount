@@ -7,9 +7,11 @@ import { format } from 'date-fns'
 import { toast } from 'sonner'
 import AddEventForm from './AddEventForm'
 import EditEventForm from './EditEventForm'
+import { useSupabaseAuth } from '../integrations/supabase/auth'
 
 const Events = () => {
-  const { data: events, isLoading, error } = useEvents()
+  const { session } = useSupabaseAuth()
+  const { data: events, isLoading, error } = useEvents(session.user.id)
   const [editingEvent, setEditingEvent] = useState(null)
   const deleteEventMutation = useDeleteEvent()
 
@@ -30,7 +32,7 @@ const Events = () => {
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">Upcoming Events</h1>
-      <AddEventForm />
+      <AddEventForm userId={session.user.id} />
       <Table className="mt-4">
         <TableHeader>
           <TableRow>
@@ -79,6 +81,7 @@ const Events = () => {
             <EditEventForm 
               event={editingEvent} 
               onCancel={() => setEditingEvent(null)} 
+              userId={session.user.id}
             />
           </div>
         </div>

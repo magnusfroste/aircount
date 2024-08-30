@@ -21,11 +21,12 @@ const fromSupabase = async (query) => {
 
 */
 
-export const useEvents = () => useQuery({
-    queryKey: ['events'],
+export const useEvents = (userId) => useQuery({
+    queryKey: ['events', userId],
     queryFn: () => fromSupabase(
       supabase.from('events')
         .select('*')
+        .eq('user_id', userId)
         .gte('date', new Date().toISOString())
         .order('date', { ascending: true })
     ),
@@ -35,8 +36,8 @@ export const useAddEvent = () => {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: (newEvent) => fromSupabase(supabase.from('events').insert([newEvent])),
-        onSuccess: () => {
-            queryClient.invalidateQueries('events');
+        onSuccess: (_, variables) => {
+            queryClient.invalidateQueries(['events', variables.user_id]);
         },
     });
 };
@@ -44,9 +45,9 @@ export const useAddEvent = () => {
 export const useUpdateEvent = () => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: ({ id, ...updateData }) => fromSupabase(supabase.from('events').update(updateData).eq('id', id)),
-        onSuccess: () => {
-            queryClient.invalidateQueries('events');
+        mutationFn: ({ id, user_id, ...updateData }) => fromSupabase(supabase.from('events').update(updateData).eq('id', id).eq('user_id', user_id)),
+        onSuccess: (_, variables) => {
+            queryClient.invalidateQueries(['events', variables.user_id]);
         },
     });
 };
@@ -54,9 +55,9 @@ export const useUpdateEvent = () => {
 export const useDeleteEvent = () => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: (id) => fromSupabase(supabase.from('events').delete().eq('id', id)),
-        onSuccess: () => {
-            queryClient.invalidateQueries('events');
+        mutationFn: ({ id, user_id }) => fromSupabase(supabase.from('events').delete().eq('id', id).eq('user_id', user_id)),
+        onSuccess: (_, variables) => {
+            queryClient.invalidateQueries(['events', variables.user_id]);
         },
     });
 };
