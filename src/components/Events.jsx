@@ -1,17 +1,31 @@
 import React, { useState } from 'react'
-import { useEvents } from '../integrations/supabase/hooks/events'
+import { useEvents, useDeleteEvent } from '../integrations/supabase/hooks/events'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import { format } from 'date-fns'
+import { toast } from 'sonner'
 import AddEventForm from './AddEventForm'
 import EditEventForm from './EditEventForm'
 
 const Events = () => {
   const { data: events, isLoading, error } = useEvents()
   const [editingEvent, setEditingEvent] = useState(null)
+  const deleteEventMutation = useDeleteEvent()
 
   if (isLoading) return <div>Loading events...</div>
   if (error) return <div>Error loading events: {error.message}</div>
+
+  const handleDeleteEvent = (id) => {
+    deleteEventMutation.mutate(id, {
+      onSuccess: () => {
+        toast.success('Event deleted successfully')
+      },
+      onError: (error) => {
+        toast.error(`Failed to delete event: ${error.message}`)
+      }
+    })
+  }
 
   return (
     <div className="container mx-auto p-4">
@@ -33,7 +47,26 @@ const Events = () => {
               <TableCell>{format(new Date(event.date), 'PPP')}</TableCell>
               <TableCell>{event.location}</TableCell>
               <TableCell>
-                <Button onClick={() => setEditingEvent(event)}>Edit</Button>
+                <Button onClick={() => setEditingEvent(event)} className="mr-2">Edit</Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive">Delete</Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This action cannot be undone. This will permanently delete the event.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => handleDeleteEvent(event.id)}>
+                        Delete
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </TableCell>
             </TableRow>
           ))}
