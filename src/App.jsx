@@ -5,6 +5,8 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { navItems } from "./nav-items";
 import { SupabaseAuthProvider, useSupabaseAuth } from './integrations/supabase/auth';
 import Login from './components/Login';
+import Index from './pages/Index';
+import EventsPage from './pages/EventsPage';
 
 const queryClient = new QueryClient();
 
@@ -25,13 +27,8 @@ const ProtectedRoute = ({ children }) => {
 const AppRoutes = () => (
   <Routes>
     <Route path="/login" element={<Login />} />
-    {navItems.map(({ to, page }) => (
-      <Route
-        key={to}
-        path={to}
-        element={<ProtectedRoute>{page}</ProtectedRoute>}
-      />
-    ))}
+    <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+    <Route path="/events" element={<ProtectedRoute><EventsPage /></ProtectedRoute>} />
   </Routes>
 );
 
