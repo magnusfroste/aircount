@@ -24,13 +24,17 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 
-const AppRoutes = () => (
-  <Routes>
-    <Route path="/login" element={<Login />} />
-    <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-    <Route path="/events" element={<ProtectedRoute><EventsPage /></ProtectedRoute>} />
-  </Routes>
-);
+const AppRoutes = () => {
+  const { session } = useSupabaseAuth();
+
+  return (
+    <Routes>
+      <Route path="/login" element={session ? <Navigate to="/" replace /> : <Login />} />
+      <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+      <Route path="/events" element={<ProtectedRoute><EventsPage /></ProtectedRoute>} />
+    </Routes>
+  );
+};
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
