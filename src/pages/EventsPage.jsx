@@ -3,14 +3,22 @@ import Events from '../components/Events'
 import { useSupabaseAuth } from '../integrations/supabase/auth'
 import { Button } from '@/components/ui/button'
 import { useNavigate } from 'react-router-dom'
+import { supabase } from '../lib/supabase'
+import { toast } from 'sonner'
 
 const EventsPage = () => {
   const { logout } = useSupabaseAuth()
   const navigate = useNavigate()
 
   const handleLogout = async () => {
-    await logout()
-    navigate('/login')
+    try {
+      await supabase.auth.signOut()
+      toast.success('Logged out successfully')
+      navigate('/login')
+    } catch (error) {
+      console.error('Error logging out:', error)
+      toast.error('Failed to log out')
+    }
   }
 
   return (
