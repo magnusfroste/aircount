@@ -1,20 +1,8 @@
-// Import all the relevant exports from other files in the supabase directory
-import { supabase } from './supabase.js';
-import { SupabaseAuthProvider, useSupabaseAuth, SupabaseAuthUI } from './auth.jsx';
-import {
-  useRecords,
-  useAddRecord,
-  useUpdateRecord,
-  useDeleteRecord,
-} from './hooks/records.js';
-import {
-  useAccounting,
-  useAddAccounting,
-  useUpdateAccounting,
-  useDeleteAccounting,
-} from './hooks/accounting.js';
+import { supabase } from '../../lib/supabase';
+import { SupabaseAuthProvider, useSupabaseAuth, SupabaseAuthUI } from './auth';
+import { useRecords, useAddRecord, useUpdateRecord, useDeleteRecord } from './hooks/records';
+import { useAccounting, useAddAccounting, useUpdateAccounting, useDeleteAccounting } from './hooks/accounting';
 
-// Export all the imported functions and objects
 export {
   supabase,
   SupabaseAuthProvider,
@@ -27,5 +15,5 @@ export {
   useAccounting,
   useAddAccounting,
   useUpdateAccounting,
-  useDeleteAccounting,
+  useDeleteAccounting
 };
