@@ -1,16 +1,18 @@
 import React, { useState } from 'react'
-import { useOpeningBalances, useAddOpeningBalance, useImportOpeningBalances } from '../integrations/supabase/hooks/openingBalances'
+import { useOpeningBalances, useAddOpeningBalance, useImportOpeningBalances, useDeleteOpeningBalance } from '../integrations/supabase/hooks/openingBalances'
 import { useSupabaseAuth } from '../integrations/supabase/auth'
 import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Input } from "@/components/ui/input"
 import { toast } from 'sonner'
+import { Trash2 } from 'lucide-react'
 
 const OpeningBalancesPage = () => {
   const { session } = useSupabaseAuth()
   const { data: openingBalances, isLoading, error } = useOpeningBalances(session?.user?.id)
   const addOpeningBalanceMutation = useAddOpeningBalance()
   const importOpeningBalancesMutation = useImportOpeningBalances()
+  const deleteOpeningBalanceMutation = useDeleteOpeningBalance()
   const [newBalance, setNewBalance] = useState({ account: '', balance: 0 })
 
   const handleAddBalance = () => {
@@ -44,6 +46,17 @@ const OpeningBalancesPage = () => {
         const [, , account, balance] = line.split(' ')
         return { account, balance: parseFloat(balance) }
       })
+  }
+
+  const handleDeleteBalance = (id) => {
+    deleteOpeningBalanceMutation.mutate({ id, user_id: session.user.id }, {
+      onSuccess: () => {
+        toast.success('Opening balance deleted successfully')
+      },
+      onError: (error) => {
+        toast.error(`Error deleting opening balance: ${error.message}`)
+      }
+    })
   }
 
   if (isLoading) return <div>Loading opening balances...</div>
@@ -81,6 +94,7 @@ const OpeningBalancesPage = () => {
           <TableRow>
             <TableHead>Account</TableHead>
             <TableHead>Balance</TableHead>
+            <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -88,6 +102,15 @@ const OpeningBalancesPage = () => {
             <TableRow key={balance.id}>
               <TableCell>{balance.account}</TableCell>
               <TableCell>{balance.balance.toFixed(2)}</TableCell>
+              <TableCell>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => handleDeleteBalance(balance.id)}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>

@@ -50,3 +50,13 @@ export const useImportOpeningBalances = () => {
         },
     });
 };
+
+export const useDeleteOpeningBalance = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({ id, user_id }) => fromSupabase(supabase.from('opening_balances').delete().eq('id', id).eq('user_id', user_id)),
+        onSuccess: (_, variables) => {
+            queryClient.invalidateQueries(['openingBalances', variables.user_id]);
+        },
+    });
+};
