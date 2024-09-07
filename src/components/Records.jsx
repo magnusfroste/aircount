@@ -6,17 +6,15 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { PlusIcon, Pencil, Trash2 } from 'lucide-react'
 import { useSupabaseAuth } from '../integrations/supabase/auth'
-import { toast } from 'sonner'
 
 const Records = () => {
-  const [newRecord, setNewRecord] = useState({ name: '', email: '', customField: '' })
+  const [newRecord, setNewRecord] = useState({ name: '', email: '' })
   const queryClient = useQueryClient()
   const { session } = useSupabaseAuth()
 
   const { data: records, isLoading, error } = useQuery({
-    queryKey: ['records', session?.user?.id],
+    queryKey: ['records'],
     queryFn: async () => {
-      if (!session?.user?.id) return []
       const { data, error } = await supabase
         .from('records')
         .select('*')
@@ -24,45 +22,35 @@ const Records = () => {
       if (error) throw error
       return data
     },
-    enabled: !!session?.user?.id
   })
 
   const addRecordMutation = useMutation({
     mutationFn: async (newRecord) => {
-      const { data, error } = await supabase.rpc('insert_record', {
-        p_user_id: session.user.id,
-        p_record: newRecord
-      })
+      const { data, error } = await supabase
+        .from('records')
+        .insert([{ ...newRecord, user_id: session.user.id }])
       if (error) throw error
       return data
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['records', session?.user?.id])
-      setNewRecord({ name: '', email: '', customField: '' })
-      toast.success('Record added successfully')
+      queryClient.invalidateQueries(['records'])
+      setNewRecord({ name: '', email: '' })
     },
-    onError: (error) => {
-      toast.error(`Failed to add record: ${error.message}`)
-    }
   })
 
   const updateRecordMutation = useMutation({
     mutationFn: async ({ id, ...updateData }) => {
       const { data, error } = await supabase
         .from('records')
-        .update({ data: updateData })
+        .update(updateData)
         .eq('id', id)
         .eq('user_id', session.user.id)
       if (error) throw error
       return data
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['records', session?.user?.id])
-      toast.success('Record updated successfully')
+      queryClient.invalidateQueries(['records'])
     },
-    onError: (error) => {
-      toast.error(`Failed to update record: ${error.message}`)
-    }
   })
 
   const deleteRecordMutation = useMutation({
@@ -76,12 +64,8 @@ const Records = () => {
       return data
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['records', session?.user?.id])
-      toast.success('Record deleted successfully')
+      queryClient.invalidateQueries(['records'])
     },
-    onError: (error) => {
-      toast.error(`Failed to delete record: ${error.message}`)
-    }
   })
 
   const handleAddRecord = () => {
@@ -113,11 +97,6 @@ const Records = () => {
           value={newRecord.email}
           onChange={(e) => setNewRecord({ ...newRecord, email: e.target.value })}
         />
-        <Input
-          placeholder="Custom Field"
-          value={newRecord.customField}
-          onChange={(e) => setNewRecord({ ...newRecord, customField: e.target.value })}
-        />
         <Button onClick={handleAddRecord}>
           <PlusIcon className="mr-2 h-4 w-4" /> Add Record
         </Button>
@@ -127,27 +106,24 @@ const Records = () => {
           <TableRow>
             <TableHead>Name</TableHead>
             <TableHead>Email</TableHead>
-            <TableHead>Custom Field</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {records && records.map((record) => (
+          {records.map((record) => (
             <TableRow key={record.id}>
-              <TableCell>{record.data?.name || 'N/A'}</TableCell>
-              <TableCell>{record.data?.email || 'N/A'}</TableCell>
-              <TableCell>{record.data?.customField || 'N/A'}</TableCell>
+              <TableCell>{record.name}</TableCell>
+              <TableCell>{record.email}</TableCell>
               <TableCell>
                 <Button
                   variant="outline"
                   size="sm"
                   className="mr-2"
                   onClick={() => {
-                    const name = prompt('Enter new name', record.data?.name || '')
-                    const email = prompt('Enter new email', record.data?.email || '')
-                    const customField = prompt('Enter new custom field', record.data?.customField || '')
-                    if (name !== null && email !== null) {
-                      handleUpdateRecord(record.id, { name, email, customField })
+                    const name = prompt('Enter new name', record.name)
+                    const email = prompt('Enter new email', record.email)
+                    if (name && email) {
+                      handleUpdateRecord(record.id, { name, email })
                     }
                   }}
                 >
