@@ -22,8 +22,7 @@ const ProfitAndLoss = () => {
       'Income': ['3', '30', '31', '32', '33', '34', '35', '36', '37', '38', '39'],
       'Costs': ['4', '5', '6', '7'],
       'Financial Income': ['8314'],
-      'Financial Costs': ['8910'],
-      'Taxes': ['89'],
+      'Taxes': ['8910'],
       'Net Income': []
     }
 
@@ -41,13 +40,12 @@ const ProfitAndLoss = () => {
     const totalIncome = plData.find(item => item.category === 'Income')?.sum || 0
     const totalCosts = plData.find(item => item.category === 'Costs')?.sum || 0
     const financialIncome = plData.find(item => item.category === 'Financial Income')?.sum || 0
-    const financialCosts = plData.find(item => item.category === 'Financial Costs')?.sum || 0
     const taxes = plData.find(item => item.category === 'Taxes')?.sum || 0
-    const netIncome = totalIncome + totalCosts + financialIncome + financialCosts + taxes
+    const netIncome = totalIncome + totalCosts + financialIncome + taxes
 
     plData.find(item => item.category === 'Net Income').sum = netIncome
 
-    return { plData, totalIncome, totalCosts, financialIncome, financialCosts, taxes, netIncome }
+    return { plData, totalIncome, totalCosts, financialIncome, taxes, netIncome }
   }, [transactions])
 
   if (isLoading) return <div>Loading P&L statement...</div>
@@ -105,10 +103,6 @@ const ProfitAndLoss = () => {
               <TableRow>
                 <TableCell>Financial Income</TableCell>
                 <TableCell className="text-right">{plStatement.financialIncome.toFixed(2)}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>Financial Costs</TableCell>
-                <TableCell className="text-right">{plStatement.financialCosts.toFixed(2)}</TableCell>
               </TableRow>
               <TableRow>
                 <TableCell>Taxes</TableCell>
