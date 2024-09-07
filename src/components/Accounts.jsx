@@ -49,29 +49,34 @@ const Accounts = () => {
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">Accounts</h1>
-      <div className="mb-4 flex space-x-2">
-        <Input
-          placeholder="Account"
-          value={newAccount.account}
-          onChange={(e) => setNewAccount({ ...newAccount, account: e.target.value })}
-        />
-        <Input
-          placeholder="Account Name"
-          value={newAccount.account_name}
-          onChange={(e) => setNewAccount({ ...newAccount, account_name: e.target.value })}
-        />
-        <Button onClick={handleAddAccount}>
-          <PlusIcon className="mr-2 h-4 w-4" /> Add Account
-        </Button>
-        <Button component="label" variant="outlined" startIcon={<Upload />}>
-          Import JSON
-          <input
+      <div className="mb-4 flex flex-col space-y-4 md:flex-row md:space-y-0 md:space-x-4">
+        <div className="flex-grow flex space-x-2">
+          <Input
+            placeholder="Account"
+            value={newAccount.account}
+            onChange={(e) => setNewAccount({ ...newAccount, account: e.target.value })}
+          />
+          <Input
+            placeholder="Account Name"
+            value={newAccount.account_name}
+            onChange={(e) => setNewAccount({ ...newAccount, account_name: e.target.value })}
+          />
+          <Button onClick={handleAddAccount}>
+            <PlusIcon className="mr-2 h-4 w-4" /> Add Account
+          </Button>
+        </div>
+        <div className="flex items-center">
+          <Input
             type="file"
-            hidden
+            id="import-json"
+            className="hidden"
             accept=".json"
             onChange={handleImportAccounts}
           />
-        </Button>
+          <Button component="label" htmlFor="import-json" variant="outline">
+            <Upload className="mr-2 h-4 w-4" /> Import JSON
+          </Button>
+        </div>
       </div>
       <Table>
         <TableHeader>
@@ -96,7 +101,9 @@ const Accounts = () => {
                       account: prompt('Enter new account', account.account),
                       account_name: prompt('Enter new account name', account.account_name)
                     }
-                    handleUpdateAccount(account.id, updatedAccount)
+                    if (updatedAccount.account && updatedAccount.account_name) {
+                      handleUpdateAccount(account.id, updatedAccount)
+                    }
                   }}
                 >
                   <Pencil className="h-4 w-4" />
