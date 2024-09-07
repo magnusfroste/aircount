@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 import { useAccounts, useAddAccount, useUpdateAccount, useDeleteAccount, useImportAccounts } from '../integrations/supabase/hooks/accounts'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Input } from "@/components/ui/input"
@@ -15,6 +15,7 @@ const Accounts = () => {
   const updateAccountMutation = useUpdateAccount()
   const deleteAccountMutation = useDeleteAccount()
   const importAccountsMutation = useImportAccounts()
+  const fileInputRef = useRef(null)
 
   const handleAddAccount = () => {
     addAccountMutation.mutate({ ...newAccount, user_id: session.user.id })
@@ -29,6 +30,10 @@ const Accounts = () => {
     deleteAccountMutation.mutate({ id, user_id: session.user.id })
   }
 
+  const handleImportClick = () => {
+    fileInputRef.current.click()
+  }
+
   const handleImportAccounts = async (event) => {
     const file = event.target.files[0]
     if (file) {
@@ -37,12 +42,11 @@ const Accounts = () => {
         const importedAccounts = JSON.parse(content)
         await importAccountsMutation.mutateAsync({ accounts: importedAccounts, userId: session.user.id })
         toast.success(`Successfully imported ${importedAccounts.length} accounts`)
-        event.target.value = '' // Reset the file input
       } catch (error) {
         console.error('Error importing accounts:', error)
         toast.error(`Error importing accounts: ${error.message}`)
-        event.target.value = '' // Reset the file input
       }
+      event.target.value = '' // Reset the file input
     }
   }
 
@@ -67,18 +71,16 @@ const Accounts = () => {
           <Button onClick={handleAddAccount}>
             <PlusIcon className="mr-2 h-4 w-4" /> Add Account
           </Button>
-        </div>
-        <div className="flex items-center">
+          <Button onClick={handleImportClick} variant="outline">
+            <Upload className="mr-2 h-4 w-4" /> Import JSON
+          </Button>
           <Input
             type="file"
-            id="import-json"
+            ref={fileInputRef}
             className="hidden"
             accept=".json"
             onChange={handleImportAccounts}
           />
-          <Button component="label" htmlFor="import-json" variant="outline">
-            <Upload className="mr-2 h-4 w-4" /> Import JSON
-          </Button>
         </div>
       </div>
       <Table>
