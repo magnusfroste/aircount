@@ -129,7 +129,7 @@ const Transactions = () => {
           onChange={handleImportTransactions}
         />
         <Button onClick={handleDeleteAllTransactions} variant="destructive">
-          <Trash2 className="mr-2 h-4 w-4" /> Delete All Transactions
+          <Trash2 className="mr-2 h-4 w-4" /> Delete All
         </Button>
       </div>
       <Table>
