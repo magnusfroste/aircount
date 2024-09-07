@@ -47,32 +47,32 @@ const BalanceSheet = () => {
       }
     }
 
-    const calculateSum = (accounts, balances) => {
+    const calculateSum = (accounts, balances, changes) => {
       return accounts.reduce((sum, account) => {
         const opening = balances[account] || 0
-        const change = accountSums[account] || 0
+        const change = changes[account] || 0
         return sum + opening + change
       }, 0)
     }
 
-    const processCategory = (category, balances) => {
+    const processCategory = (category, balances, changes) => {
       if (Array.isArray(category)) {
-        const opening = calculateSum(category, balances)
-        const change = calculateSum(category, accountSums)
+        const opening = calculateSum(category, balances, {})
+        const change = calculateSum(category, {}, changes)
         const closing = opening + change
         return { opening, change, closing }
       }
       
       const result = {}
       for (const [subCategory, accounts] of Object.entries(category)) {
-        result[subCategory] = processCategory(accounts, balances)
+        result[subCategory] = processCategory(accounts, balances, changes)
       }
       return result
     }
 
     const balanceSheet = {}
     for (const [mainCategory, subCategories] of Object.entries(categories)) {
-      balanceSheet[mainCategory] = processCategory(subCategories, openingBalancesMap)
+      balanceSheet[mainCategory] = processCategory(subCategories, openingBalancesMap, accountSums)
     }
 
     return balanceSheet
