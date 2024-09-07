@@ -59,9 +59,12 @@ export const useImportAccounts = () => {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async ({ accounts, userId }) => {
-            const { data, error } = await supabase.from('accounts').insert(
-                accounts.map(account => ({ ...account, user_id: userId }))
-            );
+            const formattedAccounts = accounts.map(account => ({
+                account: account.number,
+                account_name: account.name,
+                user_id: userId
+            }));
+            const { data, error } = await supabase.from('accounts').insert(formattedAccounts);
             if (error) throw new Error(error.message);
             return data;
         },
