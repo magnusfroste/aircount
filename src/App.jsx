@@ -12,6 +12,7 @@ import TransactionsPage from './pages/TransactionsPage';
 import AccountsPage from './pages/AccountsPage';
 import ProfitAndLossPage from './pages/ProfitAndLossPage';
 import LedgerPage from './pages/LedgerPage';
+import BalanceSheetPage from './pages/BalanceSheetPage';
 
 const queryClient = new QueryClient();
 
@@ -44,6 +45,7 @@ const AppRoutes = () => {
         <Route path="/accounts" element={<ProtectedRoute><AccountsPage /></ProtectedRoute>} />
         <Route path="/profit-and-loss" element={<ProtectedRoute><ProfitAndLossPage /></ProtectedRoute>} />
         <Route path="/ledger" element={<ProtectedRoute><LedgerPage /></ProtectedRoute>} />
+        <Route path="/balance-sheet" element={<ProtectedRoute><BalanceSheetPage /></ProtectedRoute>} />
       </Routes>
     </>
   );
