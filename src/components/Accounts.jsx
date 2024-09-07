@@ -35,10 +35,13 @@ const Accounts = () => {
       try {
         const content = await file.text()
         const importedAccounts = JSON.parse(content)
-        importAccountsMutation.mutate({ accounts: importedAccounts, userId: session.user.id })
-        toast.success('Accounts imported successfully')
+        await importAccountsMutation.mutateAsync({ accounts: importedAccounts, userId: session.user.id })
+        toast.success(`Successfully imported ${importedAccounts.length} accounts`)
+        event.target.value = '' // Reset the file input
       } catch (error) {
-        toast.error('Error importing accounts: ' + error.message)
+        console.error('Error importing accounts:', error)
+        toast.error(`Error importing accounts: ${error.message}`)
+        event.target.value = '' // Reset the file input
       }
     }
   }
