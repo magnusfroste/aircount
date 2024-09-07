@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { supabase } from '../lib/supabase'
+import { useTransactions, useAddTransaction, useUpdateTransaction, useDeleteTransaction } from '../integrations/supabase/hooks/transactions'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -10,75 +9,23 @@ import { format } from 'date-fns'
 
 const Transactions = () => {
   const [newTransaction, setNewTransaction] = useState({ date: '', account: '', debit: 0, credit: 0 })
-  const queryClient = useQueryClient()
   const { session } = useSupabaseAuth()
-
-  const { data: transactions, isLoading, error } = useQuery({
-    queryKey: ['transactions'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('transactions')
-        .select('*')
-        .eq('user_id', session.user.id)
-      if (error) throw error
-      return data
-    },
-  })
-
-  const addTransactionMutation = useMutation({
-    mutationFn: async (newTransaction) => {
-      const { data, error } = await supabase
-        .from('transactions')
-        .insert([{ ...newTransaction, user_id: session.user.id }])
-      if (error) throw error
-      return data
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries(['transactions'])
-      setNewTransaction({ date: '', account: '', debit: 0, credit: 0 })
-    },
-  })
-
-  const updateTransactionMutation = useMutation({
-    mutationFn: async ({ id, ...updateData }) => {
-      const { data, error } = await supabase
-        .from('transactions')
-        .update(updateData)
-        .eq('id', id)
-        .eq('user_id', session.user.id)
-      if (error) throw error
-      return data
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries(['transactions'])
-    },
-  })
-
-  const deleteTransactionMutation = useMutation({
-    mutationFn: async (id) => {
-      const { data, error } = await supabase
-        .from('transactions')
-        .delete()
-        .eq('id', id)
-        .eq('user_id', session.user.id)
-      if (error) throw error
-      return data
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries(['transactions'])
-    },
-  })
+  const { data: transactions, isLoading, error } = useTransactions(session.user.id)
+  const addTransactionMutation = useAddTransaction()
+  const updateTransactionMutation = useUpdateTransaction()
+  const deleteTransactionMutation = useDeleteTransaction()
 
   const handleAddTransaction = () => {
-    addTransactionMutation.mutate(newTransaction)
+    addTransactionMutation.mutate({ ...newTransaction, user_id: session.user.id })
+    setNewTransaction({ date: '', account: '', debit: 0, credit: 0 })
   }
 
   const handleUpdateTransaction = (id, updateData) => {
-    updateTransactionMutation.mutate({ id, ...updateData })
+    updateTransactionMutation.mutate({ id, user_id: session.user.id, ...updateData })
   }
 
   const handleDeleteTransaction = (id) => {
-    deleteTransactionMutation.mutate(id)
+    deleteTransactionMutation.mutate({ id, user_id: session.user.id })
   }
 
   if (isLoading) return <div>Loading...</div>
