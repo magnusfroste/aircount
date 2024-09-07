@@ -130,21 +130,21 @@ const Records = () => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {records && records.map((record) => (
+          {records.map((record) => (
             <TableRow key={record.id}>
-              <TableCell>{record.data?.name || 'N/A'}</TableCell>
-              <TableCell>{record.data?.email || 'N/A'}</TableCell>
-              <TableCell>{record.data?.customField || 'N/A'}</TableCell>
+              <TableCell>{record.data.name}</TableCell>
+              <TableCell>{record.data.email}</TableCell>
+              <TableCell>{record.data.customField}</TableCell>
               <TableCell>
                 <Button
                   variant="outline"
                   size="sm"
                   className="mr-2"
                   onClick={() => {
-                    const name = prompt('Enter new name', record.data?.name || '')
-                    const email = prompt('Enter new email', record.data?.email || '')
-                    const customField = prompt('Enter new custom field', record.data?.customField || '')
-                    if (name !== null && email !== null) {
+                    const name = prompt('Enter new name', record.data.name)
+                    const email = prompt('Enter new email', record.data.email)
+                    const customField = prompt('Enter new custom field', record.data.customField)
+                    if (name && email) {
                       handleUpdateRecord(record.id, { name, email, customField })
                     }
                   }}
