@@ -14,8 +14,9 @@ const Records = () => {
   const { session } = useSupabaseAuth()
 
   const { data: records, isLoading, error } = useQuery({
-    queryKey: ['records'],
+    queryKey: ['records', session?.user?.id],
     queryFn: async () => {
+      if (!session?.user?.id) return []
       const { data, error } = await supabase
         .from('records')
         .select('*')
@@ -23,6 +24,7 @@ const Records = () => {
       if (error) throw error
       return data
     },
+    enabled: !!session?.user?.id
   })
 
   const addRecordMutation = useMutation({
@@ -35,7 +37,7 @@ const Records = () => {
       return data
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['records'])
+      queryClient.invalidateQueries(['records', session?.user?.id])
       setNewRecord({ name: '', email: '', customField: '' })
       toast.success('Record added successfully')
     },
@@ -55,7 +57,7 @@ const Records = () => {
       return data
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['records'])
+      queryClient.invalidateQueries(['records', session?.user?.id])
       toast.success('Record updated successfully')
     },
     onError: (error) => {
@@ -74,7 +76,7 @@ const Records = () => {
       return data
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['records'])
+      queryClient.invalidateQueries(['records', session?.user?.id])
       toast.success('Record deleted successfully')
     },
     onError: (error) => {
