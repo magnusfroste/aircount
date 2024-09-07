@@ -9,6 +9,7 @@ import EventsPage from './pages/EventsPage';
 import Navigation from './components/Navigation';
 import Records from './components/Records';
 import TransactionsPage from './pages/TransactionsPage';
+import AccountsPage from './pages/AccountsPage';
 
 const queryClient = new QueryClient();
 
@@ -38,6 +39,7 @@ const AppRoutes = () => {
         <Route path="/records" element={<ProtectedRoute><Records /></ProtectedRoute>} />
         <Route path="/events" element={<ProtectedRoute><EventsPage /></ProtectedRoute>} />
         <Route path="/transactions" element={<ProtectedRoute><TransactionsPage /></ProtectedRoute>} />
+        <Route path="/accounts" element={<ProtectedRoute><AccountsPage /></ProtectedRoute>} />
       </Routes>
     </>
   );
