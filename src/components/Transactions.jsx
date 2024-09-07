@@ -116,7 +116,7 @@ const Transactions = () => {
           onChange={(e) => setNewTransaction({ ...newTransaction, ver: e.target.value })}
         />
         <Button onClick={handleAddTransaction}>
-          <PlusIcon className="mr-2 h-4 w-4" /> Add Transaction
+          <PlusIcon className="mr-2 h-4 w-4" /> Add
         </Button>
         <Button onClick={handleImportClick} variant="outline">
           <Upload className="mr-2 h-4 w-4" /> Import .se File
