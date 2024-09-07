@@ -88,17 +88,20 @@ const BalanceSheet = () => {
     ))
   }
 
-  const totalAssets = balanceSheetData.Assets.Fixed_Assets + 
-    balanceSheetData.Assets.Current_Assets.Accounts_Receivable + 
-    balanceSheetData.Assets.Current_Assets.Cash_and_Bank
+  const totalAssets = (
+    (balanceSheetData.Assets?.Fixed_Assets || 0) +
+    (balanceSheetData.Assets?.Current_Assets?.Accounts_Receivable || 0) +
+    (balanceSheetData.Assets?.Current_Assets?.Cash_and_Bank || 0)
+  )
 
-  const totalEquityAndLiabilities = 
-    balanceSheetData['Equity and Liabilities'].Equity.Share_Capital +
-    balanceSheetData['Equity and Liabilities'].Equity.Reserves +
-    balanceSheetData['Equity and Liabilities'].Equity.Retained_Earnings +
-    balanceSheetData['Equity and Liabilities'].Equity['Profit/Loss for the Year'] +
-    balanceSheetData['Equity and Liabilities'].Liabilities.Tax_Liabilities +
-    balanceSheetData['Equity and Liabilities'].Liabilities.Other_Liabilities
+  const totalEquityAndLiabilities = (
+    (balanceSheetData['Equity and Liabilities']?.Equity?.Share_Capital || 0) +
+    (balanceSheetData['Equity and Liabilities']?.Equity?.Reserves || 0) +
+    (balanceSheetData['Equity and Liabilities']?.Equity?.Retained_Earnings || 0) +
+    (balanceSheetData['Equity and Liabilities']?.Equity?.['Profit/Loss for the Year'] || 0) +
+    (balanceSheetData['Equity and Liabilities']?.Liabilities?.Tax_Liabilities || 0) +
+    (balanceSheetData['Equity and Liabilities']?.Liabilities?.Other_Liabilities || 0)
+  )
 
   return (
     <div className="space-y-6">
