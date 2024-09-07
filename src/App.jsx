@@ -11,6 +11,7 @@ import Records from './components/Records';
 import TransactionsPage from './pages/TransactionsPage';
 import AccountsPage from './pages/AccountsPage';
 import ProfitAndLossPage from './pages/ProfitAndLossPage';
+import LedgerPage from './pages/LedgerPage';
 
 const queryClient = new QueryClient();
 
@@ -42,6 +43,7 @@ const AppRoutes = () => {
         <Route path="/transactions" element={<ProtectedRoute><TransactionsPage /></ProtectedRoute>} />
         <Route path="/accounts" element={<ProtectedRoute><AccountsPage /></ProtectedRoute>} />
         <Route path="/profit-and-loss" element={<ProtectedRoute><ProfitAndLossPage /></ProtectedRoute>} />
+        <Route path="/ledger" element={<ProtectedRoute><LedgerPage /></ProtectedRoute>} />
       </Routes>
     </>
   );
