@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react'
-import { useTransactions, useAddTransaction, useUpdateTransaction, useDeleteTransaction, useImportTransactions } from '../integrations/supabase/hooks/transactions'
+import { useTransactions, useAddTransaction, useUpdateTransaction, useDeleteTransaction, useImportTransactions, useDeleteAllTransactions } from '../integrations/supabase/hooks/transactions'
 import { useAccounts } from '../integrations/supabase/hooks/accounts'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Input } from "@/components/ui/input"
@@ -20,6 +20,7 @@ const Transactions = () => {
   const updateTransactionMutation = useUpdateTransaction()
   const deleteTransactionMutation = useDeleteTransaction()
   const importTransactionsMutation = useImportTransactions()
+  const deleteAllTransactionsMutation = useDeleteAllTransactions()
   const fileInputRef = useRef(null)
 
   const handleAddTransaction = () => {
@@ -52,6 +53,19 @@ const Transactions = () => {
         toast.error(`Error importing transactions: ${error.message}`)
       }
       event.target.value = '' // Reset the file input
+    }
+  }
+
+  const handleDeleteAllTransactions = () => {
+    if (window.confirm('Are you sure you want to delete all transactions? This action cannot be undone.')) {
+      deleteAllTransactionsMutation.mutate(session.user.id, {
+        onSuccess: () => {
+          toast.success('All transactions have been deleted')
+        },
+        onError: (error) => {
+          toast.error(`Error deleting transactions: ${error.message}`)
+        }
+      })
     }
   }
 
@@ -108,6 +122,9 @@ const Transactions = () => {
           accept=".se"
           onChange={handleImportTransactions}
         />
+        <Button onClick={handleDeleteAllTransactions} variant="destructive">
+          <Trash2 className="mr-2 h-4 w-4" /> Delete All Transactions
+        </Button>
       </div>
       <Table>
         <TableHeader>

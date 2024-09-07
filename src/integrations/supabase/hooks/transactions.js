@@ -72,3 +72,13 @@ export const useImportTransactions = () => {
         },
     });
 };
+
+export const useDeleteAllTransactions = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (userId) => fromSupabase(supabase.from('transactions').delete().eq('user_id', userId)),
+        onSuccess: (_, userId) => {
+            queryClient.invalidateQueries(['transactions', userId]);
+        },
+    });
+};
