@@ -8,6 +8,7 @@ import Index from './pages/Index';
 import EventsPage from './pages/EventsPage';
 import Navigation from './components/Navigation';
 import Records from './components/Records';
+import TransactionsPage from './pages/TransactionsPage';
 
 const queryClient = new QueryClient();
 
@@ -36,6 +37,7 @@ const AppRoutes = () => {
         <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
         <Route path="/records" element={<ProtectedRoute><Records /></ProtectedRoute>} />
         <Route path="/events" element={<ProtectedRoute><EventsPage /></ProtectedRoute>} />
+        <Route path="/transactions" element={<ProtectedRoute><TransactionsPage /></ProtectedRoute>} />
       </Routes>
     </>
   );
