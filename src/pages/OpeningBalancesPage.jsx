@@ -39,7 +39,7 @@ const OpeningBalancesPage = () => {
   const parseOpeningBalances = (content) => {
     const lines = content.split('\n')
     return lines
-      .filter(line => line.startsWith('#IB'))
+      .filter(line => line.startsWith('#UB'))
       .map(line => {
         const [, , account, balance] = line.split(' ')
         return { account, balance: parseFloat(balance) }
