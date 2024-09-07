@@ -19,25 +19,33 @@ const ProfitAndLoss = () => {
     }, {})
 
     const categories = {
-      'Rörelseintäkter': ['3001'],
-      'Rörelsekostnader': ['6200', '6570'],
-      'Finansiella poster': ['8314'],
-      'Skatter': ['8910'],
-      'Årets resultat': ['8999']
+      'Income': ['3', '30', '31', '32', '33', '34', '35', '36', '37', '38', '39'],
+      'Costs': ['4', '5', '6', '7'],
+      'Financial Items': ['8'],
+      'Taxes': ['89'],
+      'Net Income': []
     }
 
-    const plData = Object.entries(categories).map(([category, accounts]) => {
-      const sum = accounts.reduce((acc, account) => acc + (accountSums[account] || 0), 0)
-      return { category, sum, accounts: accounts.map(account => ({ account, sum: accountSums[account] || 0 })) }
+    const plData = Object.entries(categories).map(([category, prefixes]) => {
+      const accounts = Object.entries(accountSums)
+        .filter(([account, sum]) => 
+          prefixes.some(prefix => account.startsWith(prefix)) && sum !== 0
+        )
+        .map(([account, sum]) => ({ account, sum }))
+      
+      const sum = accounts.reduce((acc, { sum }) => acc + sum, 0)
+      return { category, sum, accounts }
     })
 
-    const totalRevenue = plData.find(item => item.category === 'Rörelseintäkter')?.sum || 0
-    const totalExpenses = plData.find(item => item.category === 'Rörelsekostnader')?.sum || 0
-    const financialItems = plData.find(item => item.category === 'Finansiella poster')?.sum || 0
-    const taxes = plData.find(item => item.category === 'Skatter')?.sum || 0
-    const netIncome = totalRevenue + totalExpenses + financialItems + taxes
+    const totalIncome = plData.find(item => item.category === 'Income')?.sum || 0
+    const totalCosts = plData.find(item => item.category === 'Costs')?.sum || 0
+    const financialItems = plData.find(item => item.category === 'Financial Items')?.sum || 0
+    const taxes = plData.find(item => item.category === 'Taxes')?.sum || 0
+    const netIncome = totalIncome + totalCosts + financialItems + taxes
 
-    return { plData, totalRevenue, totalExpenses, financialItems, taxes, netIncome }
+    plData.find(item => item.category === 'Net Income').sum = netIncome
+
+    return { plData, totalIncome, totalCosts, financialItems, taxes, netIncome }
   }, [transactions])
 
   if (isLoading) return <div>Loading P&L statement...</div>
@@ -73,10 +81,6 @@ const ProfitAndLoss = () => {
                   ))}
                 </React.Fragment>
               ))}
-              <TableRow className="font-bold">
-                <TableCell>Net Income</TableCell>
-                <TableCell className="text-right">{plStatement.netIncome.toFixed(2)}</TableCell>
-              </TableRow>
             </TableBody>
           </Table>
         </CardContent>
@@ -89,12 +93,12 @@ const ProfitAndLoss = () => {
           <Table>
             <TableBody>
               <TableRow>
-                <TableCell>Total Revenue</TableCell>
-                <TableCell className="text-right">{plStatement.totalRevenue.toFixed(2)}</TableCell>
+                <TableCell>Total Income</TableCell>
+                <TableCell className="text-right">{plStatement.totalIncome.toFixed(2)}</TableCell>
               </TableRow>
               <TableRow>
-                <TableCell>Total Expenses</TableCell>
-                <TableCell className="text-right">{plStatement.totalExpenses.toFixed(2)}</TableCell>
+                <TableCell>Total Costs</TableCell>
+                <TableCell className="text-right">{plStatement.totalCosts.toFixed(2)}</TableCell>
               </TableRow>
               <TableRow>
                 <TableCell>Financial Items</TableCell>
