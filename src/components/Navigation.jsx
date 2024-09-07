@@ -26,7 +26,6 @@ const Navigation = () => {
       <div className="container mx-auto flex justify-between items-center">
         <Link to="/" className="text-xl font-bold">Dashboard</Link>
         <div className="space-x-4">
-          <Link to="/records" className="hover:text-gray-300">Records</Link>
           <Link to="/events" className="hover:text-gray-300">Events</Link>
           <Link to="/transactions" className="hover:text-gray-300">Transactions</Link>
           <Link to="/accounts" className="hover:text-gray-300">Accounts</Link>
