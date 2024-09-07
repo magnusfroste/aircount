@@ -1,27 +1,20 @@
 import React, { useMemo } from 'react'
 import { useTransactions } from '../integrations/supabase/hooks/transactions'
-import { useOpeningBalances } from '../integrations/supabase/hooks/openingBalances'
 import { useSupabaseAuth } from '../integrations/supabase/auth'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 const BalanceSheet = () => {
   const { session } = useSupabaseAuth()
-  const { data: transactions, isLoading: transactionsLoading, error: transactionsError } = useTransactions(session?.user?.id)
-  const { data: openingBalances, isLoading: openingBalancesLoading, error: openingBalancesError } = useOpeningBalances(session?.user?.id)
+  const { data: transactions, isLoading, error } = useTransactions(session?.user?.id)
 
   const balanceSheetData = useMemo(() => {
-    if (!transactions || !openingBalances) return null
+    if (!transactions) return null
 
     const accountSums = transactions.reduce((acc, transaction) => {
       const account = transaction.account
       const amount = transaction.debit - transaction.credit
       acc[account] = (acc[account] || 0) + amount
-      return acc
-    }, {})
-
-    const openingBalancesMap = openingBalances.reduce((acc, balance) => {
-      acc[balance.account] = balance.balance
       return acc
     }, {})
 
@@ -47,49 +40,39 @@ const BalanceSheet = () => {
       }
     }
 
-    const calculateSum = (accounts, balances, changes) => {
-      return accounts.reduce((sum, account) => {
-        const opening = balances[account] || 0
-        const change = changes[account] || 0
-        return sum + opening + change
-      }, 0)
+    const calculateSum = (accounts) => {
+      return accounts.reduce((sum, account) => sum + (accountSums[account] || 0), 0)
     }
 
-    const processCategory = (category, balances, changes) => {
+    const processCategory = (category) => {
       if (Array.isArray(category)) {
-        const opening = calculateSum(category, balances, {})
-        const change = calculateSum(category, {}, changes)
-        const closing = opening + change
-        return { opening, change, closing }
+        return calculateSum(category)
       }
       
       const result = {}
       for (const [subCategory, accounts] of Object.entries(category)) {
-        result[subCategory] = processCategory(accounts, balances, changes)
+        result[subCategory] = processCategory(accounts)
       }
       return result
     }
 
     const balanceSheet = {}
     for (const [mainCategory, subCategories] of Object.entries(categories)) {
-      balanceSheet[mainCategory] = processCategory(subCategories, openingBalancesMap, accountSums)
+      balanceSheet[mainCategory] = processCategory(subCategories)
     }
 
     return balanceSheet
-  }, [transactions, openingBalances])
+  }, [transactions])
 
-  if (transactionsLoading || openingBalancesLoading) return <div>Loading balance sheet data...</div>
-  if (transactionsError) return <div>Error loading transactions: {transactionsError.message}</div>
-  if (openingBalancesError) return <div>Error loading opening balances: {openingBalancesError.message}</div>
+  if (isLoading) return <div>Loading balance sheet data...</div>
+  if (error) return <div>Error loading balance sheet data: {error.message}</div>
   if (!balanceSheetData) return <div>No data available for balance sheet</div>
 
   const renderCategory = (category, depth = 0) => {
-    if (category.opening !== undefined) {
+    if (typeof category === 'number') {
       return (
         <TableRow key={`value-${depth}`}>
-          <TableCell className={`pl-${depth * 4}`}>{category.opening.toFixed(2)}</TableCell>
-          <TableCell>{category.change.toFixed(2)}</TableCell>
-          <TableCell>{category.closing.toFixed(2)}</TableCell>
+          <TableCell className={`pl-${depth * 4}`}>{category.toFixed(2)}</TableCell>
         </TableRow>
       )
     }
@@ -97,34 +80,28 @@ const BalanceSheet = () => {
     return Object.entries(category).map(([subCategory, value]) => (
       <React.Fragment key={subCategory}>
         <TableRow>
-          <TableCell className={`font-medium pl-${depth * 4}`} colSpan={3}>{subCategory}</TableCell>
+          <TableCell className={`font-medium pl-${depth * 4}`}>{subCategory}</TableCell>
+          {typeof value === 'number' && <TableCell>{value.toFixed(2)}</TableCell>}
         </TableRow>
-        {renderCategory(value, depth + 1)}
+        {typeof value === 'object' && renderCategory(value, depth + 1)}
       </React.Fragment>
     ))
   }
 
-  const calculateTotals = (data) => {
-    const totals = { opening: 0, change: 0, closing: 0 }
-    Object.values(data).forEach(category => {
-      Object.values(category).forEach(subCategory => {
-        if (subCategory.opening !== undefined) {
-          totals.opening += subCategory.opening
-          totals.change += subCategory.change
-          totals.closing += subCategory.closing
-        } else {
-          const subTotals = calculateTotals({ dummy: subCategory })
-          totals.opening += subTotals.opening
-          totals.change += subTotals.change
-          totals.closing += subTotals.closing
-        }
-      })
-    })
-    return totals
-  }
+  const totalAssets = (
+    (balanceSheetData.Assets?.Fixed_Assets || 0) +
+    (balanceSheetData.Assets?.Current_Assets?.Accounts_Receivable || 0) +
+    (balanceSheetData.Assets?.Current_Assets?.Cash_and_Bank || 0)
+  )
 
-  const assetsTotals = calculateTotals(balanceSheetData.Assets)
-  const equityLiabilitiesTotals = calculateTotals(balanceSheetData['Equity and Liabilities'])
+  const totalEquityAndLiabilities = (
+    (balanceSheetData['Equity and Liabilities']?.Equity?.Share_Capital || 0) +
+    (balanceSheetData['Equity and Liabilities']?.Equity?.Reserves || 0) +
+    (balanceSheetData['Equity and Liabilities']?.Equity?.Retained_Earnings || 0) +
+    (balanceSheetData['Equity and Liabilities']?.Equity?.['Profit/Loss for the Year'] || 0) +
+    (balanceSheetData['Equity and Liabilities']?.Liabilities?.Tax_Liabilities || 0) +
+    (balanceSheetData['Equity and Liabilities']?.Liabilities?.Other_Liabilities || 0)
+  )
 
   return (
     <div className="space-y-6">
@@ -137,24 +114,18 @@ const BalanceSheet = () => {
             <TableHeader>
               <TableRow>
                 <TableHead>Category</TableHead>
-                <TableHead>Opening Balance</TableHead>
-                <TableHead>Change</TableHead>
-                <TableHead>Closing Balance</TableHead>
+                <TableHead className="text-right">Amount (SEK)</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {renderCategory(balanceSheetData)}
               <TableRow className="font-bold">
                 <TableCell>Total Assets</TableCell>
-                <TableCell>{assetsTotals.opening.toFixed(2)}</TableCell>
-                <TableCell>{assetsTotals.change.toFixed(2)}</TableCell>
-                <TableCell>{assetsTotals.closing.toFixed(2)}</TableCell>
+                <TableCell className="text-right">{totalAssets.toFixed(2)}</TableCell>
               </TableRow>
               <TableRow className="font-bold">
                 <TableCell>Total Equity and Liabilities</TableCell>
-                <TableCell>{equityLiabilitiesTotals.opening.toFixed(2)}</TableCell>
-                <TableCell>{equityLiabilitiesTotals.change.toFixed(2)}</TableCell>
-                <TableCell>{equityLiabilitiesTotals.closing.toFixed(2)}</TableCell>
+                <TableCell className="text-right">{totalEquityAndLiabilities.toFixed(2)}</TableCell>
               </TableRow>
             </TableBody>
           </Table>
