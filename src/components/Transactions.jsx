@@ -9,7 +9,7 @@ import { PlusIcon, Pencil, Trash2, Upload } from 'lucide-react'
 import { useSupabaseAuth } from '../integrations/supabase/auth'
 import { format } from 'date-fns'
 import { toast } from 'sonner'
-import { parseSIFile } from '../utils/siFileParser'
+import { parseSEFile } from '../utils/seFileParser'
 
 const Transactions = () => {
   const [newTransaction, setNewTransaction] = useState({ date: '', account: '', debit: 0, credit: 0 })
@@ -44,7 +44,7 @@ const Transactions = () => {
     if (file) {
       try {
         const content = await file.text()
-        const importedTransactions = parseSIFile(content)
+        const importedTransactions = parseSEFile(content)
         await importTransactionsMutation.mutateAsync({ transactions: importedTransactions, userId: session.user.id })
         toast.success(`Successfully imported ${importedTransactions.length} transactions`)
       } catch (error) {
@@ -99,13 +99,13 @@ const Transactions = () => {
           <PlusIcon className="mr-2 h-4 w-4" /> Add Transaction
         </Button>
         <Button onClick={handleImportClick} variant="outline">
-          <Upload className="mr-2 h-4 w-4" /> Import .si File
+          <Upload className="mr-2 h-4 w-4" /> Import .se File
         </Button>
         <Input
           type="file"
           ref={fileInputRef}
           className="hidden"
-          accept=".si"
+          accept=".se"
           onChange={handleImportTransactions}
         />
       </div>
