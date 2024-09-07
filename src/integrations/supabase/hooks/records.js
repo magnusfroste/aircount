@@ -14,22 +14,21 @@ const fromSupabase = async (query) => {
 |------------|--------------------------|--------|----------|
 | id         | int8                     | number | true     |
 | name       | text                     | string | true     |
-| email      | text                     | string | true     |
 | created_at | timestamp with time zone | string | false    |
 
 */
 
-export const useRecords = () => useQuery({
-    queryKey: ['records'],
-    queryFn: () => fromSupabase(supabase.from('records').select('*')),
+export const useRecords = (userId) => useQuery({
+    queryKey: ['records', userId],
+    queryFn: () => fromSupabase(supabase.from('records').select('*').eq('user_id', userId)),
 });
 
 export const useAddRecord = () => {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: (newRecord) => fromSupabase(supabase.from('records').insert([newRecord])),
-        onSuccess: () => {
-            queryClient.invalidateQueries('records');
+        onSuccess: (_, variables) => {
+            queryClient.invalidateQueries(['records', variables.user_id]);
         },
     });
 };
@@ -37,9 +36,9 @@ export const useAddRecord = () => {
 export const useUpdateRecord = () => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: ({ id, ...updateData }) => fromSupabase(supabase.from('records').update(updateData).eq('id', id)),
-        onSuccess: () => {
-            queryClient.invalidateQueries('records');
+        mutationFn: ({ id, user_id, ...updateData }) => fromSupabase(supabase.from('records').update(updateData).eq('id', id).eq('user_id', user_id)),
+        onSuccess: (_, variables) => {
+            queryClient.invalidateQueries(['records', variables.user_id]);
         },
     });
 };
@@ -47,9 +46,9 @@ export const useUpdateRecord = () => {
 export const useDeleteRecord = () => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: (id) => fromSupabase(supabase.from('records').delete().eq('id', id)),
-        onSuccess: () => {
-            queryClient.invalidateQueries('records');
+        mutationFn: ({ id, user_id }) => fromSupabase(supabase.from('records').delete().eq('id', id).eq('user_id', user_id)),
+        onSuccess: (_, variables) => {
+            queryClient.invalidateQueries(['records', variables.user_id]);
         },
     });
 };

@@ -8,7 +8,7 @@ import { PlusIcon, Pencil, Trash2 } from 'lucide-react'
 import { useSupabaseAuth } from '../integrations/supabase/auth'
 
 const Records = () => {
-  const [newRecord, setNewRecord] = useState({ name: '', email: '' })
+  const [newRecord, setNewRecord] = useState({ name: '' })
   const queryClient = useQueryClient()
   const { session } = useSupabaseAuth()
 
@@ -34,7 +34,7 @@ const Records = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['records'])
-      setNewRecord({ name: '', email: '' })
+      setNewRecord({ name: '' })
     },
   })
 
@@ -92,11 +92,6 @@ const Records = () => {
           value={newRecord.name}
           onChange={(e) => setNewRecord({ ...newRecord, name: e.target.value })}
         />
-        <Input
-          placeholder="Email"
-          value={newRecord.email}
-          onChange={(e) => setNewRecord({ ...newRecord, email: e.target.value })}
-        />
         <Button onClick={handleAddRecord}>
           <PlusIcon className="mr-2 h-4 w-4" /> Add Record
         </Button>
@@ -105,7 +100,6 @@ const Records = () => {
         <TableHeader>
           <TableRow>
             <TableHead>Name</TableHead>
-            <TableHead>Email</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -113,7 +107,6 @@ const Records = () => {
           {records.map((record) => (
             <TableRow key={record.id}>
               <TableCell>{record.name}</TableCell>
-              <TableCell>{record.email}</TableCell>
               <TableCell>
                 <Button
                   variant="outline"
@@ -121,9 +114,8 @@ const Records = () => {
                   className="mr-2"
                   onClick={() => {
                     const name = prompt('Enter new name', record.name)
-                    const email = prompt('Enter new email', record.email)
-                    if (name && email) {
-                      handleUpdateRecord(record.id, { name, email })
+                    if (name) {
+                      handleUpdateRecord(record.id, { name })
                     }
                   }}
                 >
