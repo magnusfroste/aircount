@@ -1,5 +1,5 @@
 import React from 'react'
-import AirtableInterface from '../components/AirtableInterface'
+import Records from '../components/Records'
 import { useSupabaseAuth } from '../integrations/supabase/auth'
 import { Button } from '@/components/ui/button'
 import { useNavigate } from 'react-router-dom'
@@ -27,7 +27,7 @@ const Index = () => {
         <div className="flex justify-end mb-4">
           <Button onClick={handleLogout}>Logout</Button>
         </div>
-        <AirtableInterface />
+        <Records />
       </div>
     </div>
   )
