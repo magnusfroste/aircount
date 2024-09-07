@@ -12,7 +12,7 @@ import { toast } from 'sonner'
 import { parseSEFile } from '../utils/seFileParser'
 
 const Transactions = () => {
-  const [newTransaction, setNewTransaction] = useState({ date: '', account: '', debit: 0, credit: 0 })
+  const [newTransaction, setNewTransaction] = useState({ date: '', account: '', debit: 0, credit: 0, ver: '' })
   const { session } = useSupabaseAuth()
   const { data: transactions, isLoading: transactionsLoading, error: transactionsError } = useTransactions(session.user.id)
   const { data: accounts, isLoading: accountsLoading, error: accountsError } = useAccounts(session.user.id)
@@ -25,7 +25,7 @@ const Transactions = () => {
 
   const handleAddTransaction = () => {
     addTransactionMutation.mutate({ ...newTransaction, user_id: session.user.id })
-    setNewTransaction({ date: '', account: '', debit: 0, credit: 0 })
+    setNewTransaction({ date: '', account: '', debit: 0, credit: 0, ver: '' })
   }
 
   const handleUpdateTransaction = (id, updateData) => {
@@ -109,6 +109,12 @@ const Transactions = () => {
           value={newTransaction.credit}
           onChange={(e) => setNewTransaction({ ...newTransaction, credit: parseFloat(e.target.value) })}
         />
+        <Input
+          type="text"
+          placeholder="Ver"
+          value={newTransaction.ver}
+          onChange={(e) => setNewTransaction({ ...newTransaction, ver: e.target.value })}
+        />
         <Button onClick={handleAddTransaction}>
           <PlusIcon className="mr-2 h-4 w-4" /> Add Transaction
         </Button>
@@ -129,7 +135,7 @@ const Transactions = () => {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Transaction ID</TableHead>
+            <TableHead>Ver</TableHead>
             <TableHead>Date</TableHead>
             <TableHead>Account</TableHead>
             <TableHead>Debit</TableHead>
@@ -140,7 +146,7 @@ const Transactions = () => {
         <TableBody>
           {transactions.map((transaction) => (
             <TableRow key={transaction.id}>
-              <TableCell>{transaction.id}</TableCell>
+              <TableCell>{transaction.ver}</TableCell>
               <TableCell>{format(new Date(transaction.date), 'yyyy-MM-dd')}</TableCell>
               <TableCell>{transaction.account}</TableCell>
               <TableCell>{transaction.debit}</TableCell>
@@ -155,7 +161,8 @@ const Transactions = () => {
                       date: prompt('Enter new date', transaction.date),
                       account: prompt('Enter new account', transaction.account),
                       debit: parseFloat(prompt('Enter new debit', transaction.debit)),
-                      credit: parseFloat(prompt('Enter new credit', transaction.credit))
+                      credit: parseFloat(prompt('Enter new credit', transaction.credit)),
+                      ver: prompt('Enter new ver', transaction.ver)
                     }
                     handleUpdateTransaction(transaction.id, updatedTransaction)
                   }}

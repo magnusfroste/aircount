@@ -17,6 +17,7 @@ const fromSupabase = async (query) => {
 | account        | text                     | string | true     |
 | debit          | numeric                  | number | true     |
 | credit         | numeric                  | number | true     |
+| ver            | text                     | string | false    |
 | user_id        | uuid                     | string | true     |
 | created_at     | timestamp with time zone | string | false    |
 
