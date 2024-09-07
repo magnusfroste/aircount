@@ -12,7 +12,7 @@ import { toast } from 'sonner'
 import { parseSEFile } from '../utils/seFileParser'
 
 const Transactions = () => {
-  const [newTransaction, setNewTransaction] = useState({ date: '', account: '', debit: 0, credit: 0, ver: '' })
+  const [newTransaction, setNewTransaction] = useState({ ver: '', date: '', account: '', debit: 0, credit: 0 })
   const { session } = useSupabaseAuth()
   const { data: transactions, isLoading: transactionsLoading, error: transactionsError } = useTransactions(session.user.id)
   const { data: accounts, isLoading: accountsLoading, error: accountsError } = useAccounts(session.user.id)
@@ -25,7 +25,7 @@ const Transactions = () => {
 
   const handleAddTransaction = () => {
     addTransactionMutation.mutate({ ...newTransaction, user_id: session.user.id })
-    setNewTransaction({ date: '', account: '', debit: 0, credit: 0, ver: '' })
+    setNewTransaction({ ver: '', date: '', account: '', debit: 0, credit: 0 })
   }
 
   const handleUpdateTransaction = (id, updateData) => {
@@ -78,6 +78,12 @@ const Transactions = () => {
       <h1 className="text-2xl font-bold mb-4">Transactions</h1>
       <div className="mb-4 flex space-x-2">
         <Input
+          type="text"
+          placeholder="Ver"
+          value={newTransaction.ver}
+          onChange={(e) => setNewTransaction({ ...newTransaction, ver: e.target.value })}
+        />
+        <Input
           type="date"
           value={newTransaction.date}
           onChange={(e) => setNewTransaction({ ...newTransaction, date: e.target.value })}
@@ -108,12 +114,6 @@ const Transactions = () => {
           placeholder="Credit"
           value={newTransaction.credit}
           onChange={(e) => setNewTransaction({ ...newTransaction, credit: parseFloat(e.target.value) })}
-        />
-        <Input
-          type="text"
-          placeholder="Ver"
-          value={newTransaction.ver}
-          onChange={(e) => setNewTransaction({ ...newTransaction, ver: e.target.value })}
         />
         <Button onClick={handleAddTransaction}>
           <PlusIcon className="mr-2 h-4 w-4" /> Add
@@ -158,11 +158,11 @@ const Transactions = () => {
                   className="mr-2"
                   onClick={() => {
                     const updatedTransaction = {
+                      ver: prompt('Enter new ver', transaction.ver),
                       date: prompt('Enter new date', transaction.date),
                       account: prompt('Enter new account', transaction.account),
                       debit: parseFloat(prompt('Enter new debit', transaction.debit)),
-                      credit: parseFloat(prompt('Enter new credit', transaction.credit)),
-                      ver: prompt('Enter new ver', transaction.ver)
+                      credit: parseFloat(prompt('Enter new credit', transaction.credit))
                     }
                     handleUpdateTransaction(transaction.id, updatedTransaction)
                   }}
