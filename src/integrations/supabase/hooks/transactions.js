@@ -56,3 +56,19 @@ export const useDeleteTransaction = () => {
         },
     });
 };
+
+export const useImportTransactions = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async ({ transactions, userId }) => {
+            const { data, error } = await supabase.from('transactions').insert(
+                transactions.map(transaction => ({ ...transaction, user_id: userId }))
+            );
+            if (error) throw new Error(error.message);
+            return data;
+        },
+        onSuccess: (_, variables) => {
+            queryClient.invalidateQueries(['transactions', variables.userId]);
+        },
+    });
+};

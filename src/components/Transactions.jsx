@@ -1,13 +1,15 @@
-import React, { useState } from 'react'
-import { useTransactions, useAddTransaction, useUpdateTransaction, useDeleteTransaction } from '../integrations/supabase/hooks/transactions'
+import React, { useState, useRef } from 'react'
+import { useTransactions, useAddTransaction, useUpdateTransaction, useDeleteTransaction, useImportTransactions } from '../integrations/supabase/hooks/transactions'
 import { useAccounts } from '../integrations/supabase/hooks/accounts'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { PlusIcon, Pencil, Trash2 } from 'lucide-react'
+import { PlusIcon, Pencil, Trash2, Upload } from 'lucide-react'
 import { useSupabaseAuth } from '../integrations/supabase/auth'
 import { format } from 'date-fns'
+import { toast } from 'sonner'
+import { parseSIFile } from '../utils/siFileParser'
 
 const Transactions = () => {
   const [newTransaction, setNewTransaction] = useState({ date: '', account: '', debit: 0, credit: 0 })
@@ -17,6 +19,8 @@ const Transactions = () => {
   const addTransactionMutation = useAddTransaction()
   const updateTransactionMutation = useUpdateTransaction()
   const deleteTransactionMutation = useDeleteTransaction()
+  const importTransactionsMutation = useImportTransactions()
+  const fileInputRef = useRef(null)
 
   const handleAddTransaction = () => {
     addTransactionMutation.mutate({ ...newTransaction, user_id: session.user.id })
@@ -29,6 +33,26 @@ const Transactions = () => {
 
   const handleDeleteTransaction = (id) => {
     deleteTransactionMutation.mutate({ id, user_id: session.user.id })
+  }
+
+  const handleImportClick = () => {
+    fileInputRef.current.click()
+  }
+
+  const handleImportTransactions = async (event) => {
+    const file = event.target.files[0]
+    if (file) {
+      try {
+        const content = await file.text()
+        const importedTransactions = parseSIFile(content)
+        await importTransactionsMutation.mutateAsync({ transactions: importedTransactions, userId: session.user.id })
+        toast.success(`Successfully imported ${importedTransactions.length} transactions`)
+      } catch (error) {
+        console.error('Error importing transactions:', error)
+        toast.error(`Error importing transactions: ${error.message}`)
+      }
+      event.target.value = '' // Reset the file input
+    }
   }
 
   if (transactionsLoading || accountsLoading) return <div>Loading...</div>
@@ -74,6 +98,16 @@ const Transactions = () => {
         <Button onClick={handleAddTransaction}>
           <PlusIcon className="mr-2 h-4 w-4" /> Add Transaction
         </Button>
+        <Button onClick={handleImportClick} variant="outline">
+          <Upload className="mr-2 h-4 w-4" /> Import .si File
+        </Button>
+        <Input
+          type="file"
+          ref={fileInputRef}
+          className="hidden"
+          accept=".si"
+          onChange={handleImportTransactions}
+        />
       </div>
       <Table>
         <TableHeader>
