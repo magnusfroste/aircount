@@ -10,6 +10,7 @@ import Navigation from './components/Navigation';
 import Records from './components/Records';
 import TransactionsPage from './pages/TransactionsPage';
 import AccountsPage from './pages/AccountsPage';
+import ProfitAndLossPage from './pages/ProfitAndLossPage';
 
 const queryClient = new QueryClient();
 
@@ -40,6 +41,7 @@ const AppRoutes = () => {
         <Route path="/events" element={<ProtectedRoute><EventsPage /></ProtectedRoute>} />
         <Route path="/transactions" element={<ProtectedRoute><TransactionsPage /></ProtectedRoute>} />
         <Route path="/accounts" element={<ProtectedRoute><AccountsPage /></ProtectedRoute>} />
+        <Route path="/profit-and-loss" element={<ProtectedRoute><ProfitAndLossPage /></ProtectedRoute>} />
       </Routes>
     </>
   );
