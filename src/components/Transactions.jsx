@@ -48,13 +48,13 @@ const Transactions = () => {
           value={newTransaction.account}
           onValueChange={(value) => setNewTransaction({ ...newTransaction, account: value })}
         >
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-[300px]">
             <SelectValue placeholder="Select account" />
           </SelectTrigger>
           <SelectContent>
             {accounts.map((account) => (
-              <SelectItem key={account.id} value={account.account_name}>
-                {account.account_name}
+              <SelectItem key={account.id} value={account.account}>
+                {account.account} - {account.account_name}
               </SelectItem>
             ))}
           </SelectContent>
