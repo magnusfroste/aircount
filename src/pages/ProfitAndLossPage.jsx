@@ -1,14 +1,21 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import ProfitAndLoss from '../components/ProfitAndLoss'
 import { useSupabaseAuth } from '../integrations/supabase/auth'
 import { Button } from '@/components/ui/button'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { toast } from 'sonner'
+import { useQueryClient } from '@tanstack/react-query'
 
 const ProfitAndLossPage = () => {
   const { logout } = useSupabaseAuth()
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
+
+  useEffect(() => {
+    // Invalidate and refetch transactions when the component mounts
+    queryClient.invalidateQueries(['transactions'])
+  }, [queryClient])
 
   const handleLogout = async () => {
     try {
