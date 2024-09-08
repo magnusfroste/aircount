@@ -49,54 +49,23 @@ const AccountRow = ({ account, handleUpdateAccount, handleDeleteAccount }) => (
   </TableRow>
 )
 
-const PaginationControls = ({ currentPage, totalPages, setCurrentPage }) => {
-  const [inputPage, setInputPage] = useState(currentPage.toString())
-
-  const handlePageChange = (newPage) => {
-    if (newPage >= 1 && newPage <= totalPages) {
-      setCurrentPage(newPage)
-      setInputPage(newPage.toString())
-    }
-  }
-
-  const handleInputChange = (e) => {
-    setInputPage(e.target.value)
-  }
-
-  const handleInputBlur = () => {
-    const page = parseInt(inputPage, 10)
-    if (!isNaN(page)) {
-      handlePageChange(page)
-    } else {
-      setInputPage(currentPage.toString())
-    }
-  }
-
-  return (
-    <div className="flex items-center space-x-2">
-      <Button
-        onClick={() => handlePageChange(currentPage - 1)}
-        disabled={currentPage === 1}
-      >
-        <ChevronLeft className="h-4 w-4" />
-      </Button>
-      <Input
-        type="text"
-        value={inputPage}
-        onChange={handleInputChange}
-        onBlur={handleInputBlur}
-        className="w-16 text-center"
-      />
-      <span>of {totalPages}</span>
-      <Button
-        onClick={() => handlePageChange(currentPage + 1)}
-        disabled={currentPage === totalPages}
-      >
-        <ChevronRight className="h-4 w-4" />
-      </Button>
-    </div>
-  )
-}
+const PaginationControls = ({ currentPage, totalPages, setCurrentPage }) => (
+  <div className="flex items-center space-x-2">
+    <Button
+      onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+      disabled={currentPage === 1}
+    >
+      <ChevronLeft className="h-4 w-4" />
+    </Button>
+    <span>{currentPage} of {totalPages}</span>
+    <Button
+      onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+      disabled={currentPage === totalPages}
+    >
+      <ChevronRight className="h-4 w-4" />
+    </Button>
+  </div>
+)
 
 const Accounts = () => {
   const [newAccount, setNewAccount] = useState({ account: '', account_name: '' })
@@ -104,7 +73,7 @@ const Accounts = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const pageSize = 50
   const { session } = useSupabaseAuth()
-  const { data: accountsData, isLoading, error } = useAccounts(session.user.id, currentPage, pageSize)
+  const { data: accountsData, isLoading, error } = useAccounts(session.user.id, 1, 1000000, true) // Fetch all accounts
   const addAccountMutation = useAddAccount()
   const updateAccountMutation = useUpdateAccount()
   const deleteAccountMutation = useDeleteAccount()
@@ -150,10 +119,11 @@ const Accounts = () => {
     account.account_name.toLowerCase().includes(searchTerm.toLowerCase())
   ) || []
 
+  const paginatedAccounts = filteredAccounts.slice((currentPage - 1) * pageSize, currentPage * pageSize)
+  const totalPages = Math.ceil(filteredAccounts.length / pageSize)
+
   if (isLoading) return <div>Loading...</div>
   if (error) return <div>Error: {error.message}</div>
-
-  const totalPages = Math.ceil(accountsData.count / pageSize)
 
   return (
     <div className="container mx-auto p-4">
@@ -181,7 +151,7 @@ const Accounts = () => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {filteredAccounts.map((account) => (
+          {paginatedAccounts.map((account) => (
             <AccountRow
               key={account.id}
               account={account}
@@ -193,7 +163,7 @@ const Accounts = () => {
       </Table>
       <div className="mt-4 flex justify-between items-center">
         <div>
-          Showing {filteredAccounts.length} of {accountsData.count} accounts
+          Showing {paginatedAccounts.length} of {filteredAccounts.length} accounts
         </div>
         <PaginationControls
           currentPage={currentPage}
