@@ -15,6 +15,7 @@ const Dashboard = () => {
     if (!transactions || !accounts) return null
 
     const totalIncome = 4000 // Single transaction of 4000 SEK for 2023
+
     const totalExpenses = transactions.reduce((sum, t) => {
       const account = accounts.find(a => a.account === t.account)
       if (account && (account.account.startsWith('4') || account.account.startsWith('5') || account.account.startsWith('6') || account.account.startsWith('7'))) {
@@ -22,16 +23,33 @@ const Dashboard = () => {
       }
       return sum
     }, 0)
+
     const netProfit = totalIncome - totalExpenses
     const profitMargin = totalIncome > 0 ? (netProfit / totalIncome) * 100 : 0
 
+    // Calculate monthly expenses
+    const monthlyExpenses = transactions.reduce((acc, t) => {
+      const account = accounts.find(a => a.account === t.account)
+      if (account && (account.account.startsWith('4') || account.account.startsWith('5') || account.account.startsWith('6') || account.account.startsWith('7'))) {
+        const month = new Date(t.date).getMonth()
+        acc[month] = (acc[month] || 0) + (t.debit > 0 ? t.debit : 0)
+      }
+      return acc
+    }, Array(12).fill(0))
+
     const monthlyData = [
-      { month: 'Jan', income: 4000, expenses: 0 },
-      { month: 'Feb', income: 0, expenses: 0 },
-      { month: 'Mar', income: 0, expenses: 0 },
-      { month: 'Apr', income: 0, expenses: 0 },
-      { month: 'May', income: 0, expenses: 0 },
-      { month: 'Jun', income: 0, expenses: 0 },
+      { month: 'Jan', income: 4000, expenses: monthlyExpenses[0] },
+      { month: 'Feb', income: 0, expenses: monthlyExpenses[1] },
+      { month: 'Mar', income: 0, expenses: monthlyExpenses[2] },
+      { month: 'Apr', income: 0, expenses: monthlyExpenses[3] },
+      { month: 'May', income: 0, expenses: monthlyExpenses[4] },
+      { month: 'Jun', income: 0, expenses: monthlyExpenses[5] },
+      { month: 'Jul', income: 0, expenses: monthlyExpenses[6] },
+      { month: 'Aug', income: 0, expenses: monthlyExpenses[7] },
+      { month: 'Sep', income: 0, expenses: monthlyExpenses[8] },
+      { month: 'Oct', income: 0, expenses: monthlyExpenses[9] },
+      { month: 'Nov', income: 0, expenses: monthlyExpenses[10] },
+      { month: 'Dec', income: 0, expenses: monthlyExpenses[11] },
     ]
 
     // Calculate year-over-year growth (simulated)
@@ -54,6 +72,12 @@ const Dashboard = () => {
       { month: 'Apr', mrr: 4000 },
       { month: 'May', mrr: 4000 },
       { month: 'Jun', mrr: 4000 },
+      { month: 'Jul', mrr: 4000 },
+      { month: 'Aug', mrr: 4000 },
+      { month: 'Sep', mrr: 4000 },
+      { month: 'Oct', mrr: 4000 },
+      { month: 'Nov', mrr: 4000 },
+      { month: 'Dec', mrr: 4000 },
     ]
 
     return {
