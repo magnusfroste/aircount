@@ -10,6 +10,79 @@ import { useSupabaseAuth } from '../integrations/supabase/auth'
 import { format } from 'date-fns'
 import { toast } from 'sonner'
 
+const TransactionForm = ({ newTransaction, setNewTransaction, accounts, handleAddTransaction }) => (
+  <div className="mb-4 flex space-x-2">
+    <Input
+      type="text"
+      placeholder="Ver"
+      value={newTransaction.ver}
+      onChange={(e) => setNewTransaction({ ...newTransaction, ver: e.target.value })}
+    />
+    <Input
+      type="date"
+      value={newTransaction.date}
+      onChange={(e) => setNewTransaction({ ...newTransaction, date: e.target.value })}
+    />
+    <Select
+      value={newTransaction.account}
+      onValueChange={(value) => setNewTransaction({ ...newTransaction, account: value })}
+    >
+      <SelectTrigger className="w-[300px]">
+        <SelectValue placeholder="Select account" />
+      </SelectTrigger>
+      <SelectContent>
+        {accounts.map((account) => (
+          <SelectItem key={account.id} value={account.account}>
+            {account.account} - {account.account_name}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+    <Input
+      type="number"
+      placeholder="Debit"
+      value={newTransaction.debit}
+      onChange={(e) => setNewTransaction({ ...newTransaction, debit: parseFloat(e.target.value) })}
+    />
+    <Input
+      type="number"
+      placeholder="Credit"
+      value={newTransaction.credit}
+      onChange={(e) => setNewTransaction({ ...newTransaction, credit: parseFloat(e.target.value) })}
+    />
+    <Button onClick={handleAddTransaction}>
+      <PlusIcon className="mr-2 h-4 w-4" /> Add
+    </Button>
+  </div>
+)
+
+const TransactionRow = ({ transaction, accounts, handleUpdateTransaction, handleDeleteTransaction }) => (
+  <TableRow key={transaction.id}>
+    <TableCell>{transaction.ver}</TableCell>
+    <TableCell>{format(new Date(transaction.date), 'yyyy-MM-dd')}</TableCell>
+    <TableCell>{transaction.account}</TableCell>
+    <TableCell>{transaction.debit}</TableCell>
+    <TableCell>{transaction.credit}</TableCell>
+    <TableCell>
+      <Button
+        variant="outline"
+        size="sm"
+        className="mr-2"
+        onClick={() => handleUpdateTransaction(transaction.id)}
+      >
+        <Pencil className="h-4 w-4" />
+      </Button>
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => handleDeleteTransaction(transaction.id)}
+      >
+        <Trash2 className="h-4 w-4" />
+      </Button>
+    </TableCell>
+  </TableRow>
+)
+
 const Transactions = () => {
   const [newTransaction, setNewTransaction] = useState({ ver: '', date: '', account: '', debit: 0, credit: 0 })
   const { session } = useSupabaseAuth()
@@ -25,8 +98,16 @@ const Transactions = () => {
     setNewTransaction({ ver: '', date: '', account: '', debit: 0, credit: 0 })
   }
 
-  const handleUpdateTransaction = (id, updateData) => {
-    updateTransactionMutation.mutate({ id, user_id: session.user.id, ...updateData })
+  const handleUpdateTransaction = (id) => {
+    const transaction = transactions.find(t => t.id === id)
+    const updatedTransaction = {
+      ver: prompt('Enter new ver', transaction.ver),
+      date: prompt('Enter new date', transaction.date),
+      account: prompt('Enter new account', transaction.account),
+      debit: parseFloat(prompt('Enter new debit', transaction.debit)),
+      credit: parseFloat(prompt('Enter new credit', transaction.credit))
+    }
+    updateTransactionMutation.mutate({ id, user_id: session.user.id, ...updatedTransaction })
   }
 
   const handleDeleteTransaction = (id) => {
@@ -53,52 +134,15 @@ const Transactions = () => {
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">Transactions</h1>
-      <div className="mb-4 flex space-x-2">
-        <Input
-          type="text"
-          placeholder="Ver"
-          value={newTransaction.ver}
-          onChange={(e) => setNewTransaction({ ...newTransaction, ver: e.target.value })}
-        />
-        <Input
-          type="date"
-          value={newTransaction.date}
-          onChange={(e) => setNewTransaction({ ...newTransaction, date: e.target.value })}
-        />
-        <Select
-          value={newTransaction.account}
-          onValueChange={(value) => setNewTransaction({ ...newTransaction, account: value })}
-        >
-          <SelectTrigger className="w-[300px]">
-            <SelectValue placeholder="Select account" />
-          </SelectTrigger>
-          <SelectContent>
-            {accounts.map((account) => (
-              <SelectItem key={account.id} value={account.account}>
-                {account.account} - {account.account_name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Input
-          type="number"
-          placeholder="Debit"
-          value={newTransaction.debit}
-          onChange={(e) => setNewTransaction({ ...newTransaction, debit: parseFloat(e.target.value) })}
-        />
-        <Input
-          type="number"
-          placeholder="Credit"
-          value={newTransaction.credit}
-          onChange={(e) => setNewTransaction({ ...newTransaction, credit: parseFloat(e.target.value) })}
-        />
-        <Button onClick={handleAddTransaction}>
-          <PlusIcon className="mr-2 h-4 w-4" /> Add
-        </Button>
-        <Button onClick={handleDeleteAllTransactions} variant="destructive">
-          <Trash2 className="mr-2 h-4 w-4" /> Delete All
-        </Button>
-      </div>
+      <TransactionForm
+        newTransaction={newTransaction}
+        setNewTransaction={setNewTransaction}
+        accounts={accounts}
+        handleAddTransaction={handleAddTransaction}
+      />
+      <Button onClick={handleDeleteAllTransactions} variant="destructive" className="mb-4">
+        <Trash2 className="mr-2 h-4 w-4" /> Delete All
+      </Button>
       <Table>
         <TableHeader>
           <TableRow>
@@ -112,39 +156,13 @@ const Transactions = () => {
         </TableHeader>
         <TableBody>
           {transactions.map((transaction) => (
-            <TableRow key={transaction.id}>
-              <TableCell>{transaction.ver}</TableCell>
-              <TableCell>{format(new Date(transaction.date), 'yyyy-MM-dd')}</TableCell>
-              <TableCell>{transaction.account}</TableCell>
-              <TableCell>{transaction.debit}</TableCell>
-              <TableCell>{transaction.credit}</TableCell>
-              <TableCell>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="mr-2"
-                  onClick={() => {
-                    const updatedTransaction = {
-                      ver: prompt('Enter new ver', transaction.ver),
-                      date: prompt('Enter new date', transaction.date),
-                      account: prompt('Enter new account', transaction.account),
-                      debit: parseFloat(prompt('Enter new debit', transaction.debit)),
-                      credit: parseFloat(prompt('Enter new credit', transaction.credit))
-                    }
-                    handleUpdateTransaction(transaction.id, updatedTransaction)
-                  }}
-                >
-                  <Pencil className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleDeleteTransaction(transaction.id)}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </TableCell>
-            </TableRow>
+            <TransactionRow
+              key={transaction.id}
+              transaction={transaction}
+              accounts={accounts}
+              handleUpdateTransaction={handleUpdateTransaction}
+              handleDeleteTransaction={handleDeleteTransaction}
+            />
           ))}
         </TableBody>
       </Table>
