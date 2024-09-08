@@ -36,17 +36,27 @@ export const parseSEFile = (content) => {
   return accounts;
 };
 
-// Simple encoding detection based on the presence of Swedish characters
+// More comprehensive encoding detection
 export const detectEncoding = (content) => {
-  if (containsSwedishChars(content)) {
-    console.log('Detected encoding: UTF-8 or ISO-8859-1');
-    return 'UTF-8 or ISO-8859-1';
+  const encodings = [
+    { name: 'UTF-8', detect: (str) => /[\u0080-\uFFFF]/.test(str) },
+    { name: 'ISO-8859-1', detect: (str) => /[\x80-\xFF]/.test(str) && !/[\u0100-\uFFFF]/.test(str) },
+    { name: 'PC-8 (DOS Latin US)', detect: (str) => /[\x80-\xFF]/.test(str) && !/[\u0100-\uFFFF]/.test(str) },
+    { name: 'ASCII', detect: (str) => !/[\x80-\xFF]/.test(str) },
+  ];
+
+  for (const encoding of encodings) {
+    if (encoding.detect(content)) {
+      console.log(`Detected encoding: ${encoding.name}`);
+      return encoding.name;
+    }
   }
+
   console.log('No specific encoding detected, assuming UTF-8');
-  return 'UTF-8';
+  return 'Unknown (possibly UTF-8)';
 };
 
 // This function is no longer needed, but we'll keep it for compatibility
 export const getAvailableEncodings = () => {
-  return ['UTF-8', 'ISO-8859-1'];
+  return ['UTF-8', 'ISO-8859-1', 'PC-8 (DOS Latin US)', 'ASCII'];
 };

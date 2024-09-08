@@ -24,15 +24,24 @@ const ImportPage = () => {
     if (file) {
       setIsImporting(true)
       try {
-        const content = await file.text()
-        setFileContent(content)
-        const contentLength = content.length
-        const detectedEncoding = detectEncoding(content)
+        const content = await file.arrayBuffer()
+        const decoder = new TextDecoder('utf-8', { fatal: true })
+        let decodedContent
+        try {
+          decodedContent = decoder.decode(content)
+        } catch (error) {
+          // If UTF-8 decoding fails, try ISO-8859-1
+          const fallbackDecoder = new TextDecoder('iso-8859-1')
+          decodedContent = fallbackDecoder.decode(content)
+        }
+        setFileContent(decodedContent)
+        const contentLength = decodedContent.length
+        const detectedEncoding = detectEncoding(decodedContent)
         setOriginalEncoding(detectedEncoding)
         console.log(`File content length: ${contentLength} characters`)
         console.log(`Detected encoding: ${detectedEncoding}`)
         
-        const parsedContent = parseSEFile(content)
+        const parsedContent = parseSEFile(decodedContent)
         setProcessedEncoding(detectEncoding(JSON.stringify(parsedContent)))
         
         if (parsedContent.length === 0) {
