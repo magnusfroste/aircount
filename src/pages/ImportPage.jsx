@@ -6,6 +6,7 @@ import { parseSEFile, detectEncoding } from '../utils/seFileParser'
 import { useImportAccounts } from '../integrations/supabase/hooks/accounts'
 import { useSupabaseAuth } from '../integrations/supabase/auth'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Textarea } from "@/components/ui/textarea"
 
 const ImportPage = () => {
   const fileInputRef = useRef(null)
@@ -13,6 +14,10 @@ const ImportPage = () => {
   const importAccountsMutation = useImportAccounts()
   const [isImporting, setIsImporting] = useState(false)
   const [fileInfo, setFileInfo] = useState(null)
+  const [parsedAccounts, setParsedAccounts] = useState(null)
+  const [fileContent, setFileContent] = useState('')
+  const [originalEncoding, setOriginalEncoding] = useState('')
+  const [processedEncoding, setProcessedEncoding] = useState('')
 
   const handleFileUpload = async (event) => {
     const file = event.target.files[0]
@@ -20,12 +25,15 @@ const ImportPage = () => {
       setIsImporting(true)
       try {
         const content = await file.text()
+        setFileContent(content)
         const contentLength = content.length
         const detectedEncoding = detectEncoding(content)
+        setOriginalEncoding(detectedEncoding)
         console.log(`File content length: ${contentLength} characters`)
         console.log(`Detected encoding: ${detectedEncoding}`)
         
-        const parsedContent = parseSEFile(content, detectedEncoding)
+        const parsedContent = parseSEFile(content)
+        setProcessedEncoding(detectEncoding(JSON.stringify(parsedContent)))
         
         if (parsedContent.length === 0) {
           throw new Error('No valid accounts found in the file')
@@ -47,8 +55,7 @@ const ImportPage = () => {
           validAccountsExtracted: validAccounts.length
         })
 
-        await importAccountsMutation.mutateAsync({ accounts: validAccounts, userId: session.user.id })
-        toast.success(`Successfully imported ${validAccounts.length} accounts`)
+        setParsedAccounts(validAccounts)
       } catch (error) {
         console.error('Error importing file:', error)
         toast.error(`Error importing file: ${error.message}`)
@@ -59,6 +66,21 @@ const ImportPage = () => {
       } finally {
         setIsImporting(false)
         event.target.value = '' // Reset the file input
+      }
+    }
+  }
+
+  const handleSaveToAccounts = async () => {
+    if (parsedAccounts) {
+      try {
+        await importAccountsMutation.mutateAsync({ accounts: parsedAccounts, userId: session.user.id })
+        toast.success(`Successfully imported ${parsedAccounts.length} accounts`)
+        setParsedAccounts(null)
+        setFileContent('')
+        setFileInfo(null)
+      } catch (error) {
+        console.error('Error saving accounts:', error)
+        toast.error(`Error saving accounts: ${error.message}`)
       }
     }
   }
@@ -79,6 +101,16 @@ const ImportPage = () => {
           {isImporting ? 'Importing...' : 'Import .SE File'}
         </Button>
       </div>
+      {fileContent && (
+        <Card className="mt-4">
+          <CardHeader>
+            <CardTitle>File Content</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Textarea value={fileContent} readOnly rows={10} />
+          </CardContent>
+        </Card>
+      )}
       {fileInfo && (
         <Card className="mt-4">
           <CardHeader>
@@ -88,11 +120,23 @@ const ImportPage = () => {
             <p><strong>File Name:</strong> {fileInfo.name}</p>
             <p><strong>File Size:</strong> {fileInfo.size} bytes</p>
             <p><strong>Content Length:</strong> {fileInfo.contentLength} characters</p>
-            <p><strong>Detected Encoding:</strong> {fileInfo.detectedEncoding}</p>
+            <p><strong>Original Detected Encoding:</strong> {originalEncoding}</p>
+            <p><strong>Processed Encoding:</strong> {processedEncoding}</p>
             <p><strong>Total Lines Parsed:</strong> {fileInfo.totalLinesParsed}</p>
             <p><strong>KONTO Lines Found:</strong> {fileInfo.kontoLinesFound}</p>
             <p><strong>Valid Accounts Extracted:</strong> {fileInfo.validAccountsExtracted}</p>
             {fileInfo.error && <p className="text-red-500"><strong>Error:</strong> {fileInfo.error}</p>}
+          </CardContent>
+        </Card>
+      )}
+      {parsedAccounts && (
+        <Card className="mt-4">
+          <CardHeader>
+            <CardTitle>Parsed Accounts</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Textarea value={JSON.stringify(parsedAccounts, null, 2)} readOnly rows={10} />
+            <Button onClick={handleSaveToAccounts} className="mt-4">Save to Accounts</Button>
           </CardContent>
         </Card>
       )}
