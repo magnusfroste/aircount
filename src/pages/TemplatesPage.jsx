@@ -7,7 +7,7 @@ import { toast } from 'sonner'
 
 const TemplatesPage = () => {
   const { session } = useSupabaseAuth()
-  const { data: templates, isLoading, error } = useTemplates(session?.user?.id)
+  const { data: templates, isLoading, error } = useTemplates()
   const addTransactionMutation = useAddTransaction()
   const [selectedTemplates, setSelectedTemplates] = useState([])
 

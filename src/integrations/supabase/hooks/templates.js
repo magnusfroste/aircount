@@ -17,45 +17,14 @@ const fromSupabase = async (query) => {
 | account_number | text                     | string | true     |
 | debit          | numeric                  | number | true     |
 | credit         | numeric                  | number | true     |
-| user_id        | uuid                     | string | true     |
 | created_at     | timestamp with time zone | string | false    |
 
 */
 
-export const useTemplates = (userId) => useQuery({
-    queryKey: ['templates', userId],
-    queryFn: () => fromSupabase(supabase.from('templates').select('*').eq('user_id', userId)),
+export const useTemplates = () => useQuery({
+    queryKey: ['templates'],
+    queryFn: () => fromSupabase(supabase.from('templates').select('*')),
 });
-
-export const useAddTemplate = () => {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: (newTemplate) => fromSupabase(supabase.from('templates').insert([newTemplate])),
-        onSuccess: (_, variables) => {
-            queryClient.invalidateQueries(['templates', variables.user_id]);
-        },
-    });
-};
-
-export const useUpdateTemplate = () => {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: ({ id, user_id, ...updateData }) => fromSupabase(supabase.from('templates').update(updateData).eq('id', id).eq('user_id', user_id)),
-        onSuccess: (_, variables) => {
-            queryClient.invalidateQueries(['templates', variables.user_id]);
-        },
-    });
-};
-
-export const useDeleteTemplate = () => {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: ({ id, user_id }) => fromSupabase(supabase.from('templates').delete().eq('id', id).eq('user_id', user_id)),
-        onSuccess: (_, variables) => {
-            queryClient.invalidateQueries(['templates', variables.user_id]);
-        },
-    });
-};
 
 // Re-export the useAddTransaction hook from the transactions.js file
 export { useAddTransaction } from './transactions';
