@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { useOpeningBalances, useAddOpeningBalance, useImportOpeningBalances, useDeleteOpeningBalance } from '../integrations/supabase/hooks/openingBalances'
+import { useOpeningBalances, useAddOpeningBalance, useDeleteOpeningBalance } from '../integrations/supabase/hooks/openingBalances'
 import { useSupabaseAuth } from '../integrations/supabase/auth'
 import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -11,41 +11,12 @@ const OpeningBalancesPage = () => {
   const { session } = useSupabaseAuth()
   const { data: openingBalances, isLoading, error } = useOpeningBalances(session?.user?.id)
   const addOpeningBalanceMutation = useAddOpeningBalance()
-  const importOpeningBalancesMutation = useImportOpeningBalances()
   const deleteOpeningBalanceMutation = useDeleteOpeningBalance()
   const [newBalance, setNewBalance] = useState({ account: '', balance: 0 })
 
   const handleAddBalance = () => {
     addOpeningBalanceMutation.mutate({ ...newBalance, user_id: session.user.id })
     setNewBalance({ account: '', balance: 0 })
-  }
-
-  const handleFileUpload = async (event) => {
-    const file = event.target.files[0]
-    if (file) {
-      const reader = new FileReader()
-      reader.onload = async (e) => {
-        const content = e.target.result
-        const balances = parseOpeningBalances(content)
-        try {
-          await importOpeningBalancesMutation.mutateAsync({ balances, userId: session.user.id })
-          toast.success('Opening balances imported successfully')
-        } catch (error) {
-          toast.error(`Error importing opening balances: ${error.message}`)
-        }
-      }
-      reader.readAsText(file)
-    }
-  }
-
-  const parseOpeningBalances = (content) => {
-    const lines = content.split('\n')
-    return lines
-      .filter(line => line.startsWith('#UB'))
-      .map(line => {
-        const [, , account, balance] = line.split(' ')
-        return { account, balance: parseFloat(balance) }
-      })
   }
 
   const handleDeleteBalance = (id) => {
@@ -78,16 +49,6 @@ const OpeningBalancesPage = () => {
           onChange={(e) => setNewBalance({ ...newBalance, balance: parseFloat(e.target.value) })}
         />
         <Button onClick={handleAddBalance}>Add Balance</Button>
-        <Input
-          type="file"
-          accept=".se"
-          onChange={handleFileUpload}
-          className="hidden"
-          id="file-upload"
-        />
-        <Button onClick={() => document.getElementById('file-upload').click()}>
-          Import .se File
-        </Button>
       </div>
       <Table>
         <TableHeader>
