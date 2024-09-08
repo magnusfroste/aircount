@@ -24,8 +24,9 @@ const Navigation = () => {
   return (
     <nav className="bg-gray-800 text-white p-4">
       <div className="container mx-auto flex justify-between items-center">
-        <Link to="/" className="text-xl font-bold">Dashboard</Link>
+        <Link to="/" className="text-xl font-bold">AirAccounter</Link>
         <div className="space-x-4">
+          <Link to="/" className="hover:text-gray-300">Dashboard</Link>
           <Link to="/transactions" className="hover:text-gray-300">Transactions</Link>
           <Link to="/profit-and-loss" className="hover:text-gray-300">Profit & Loss</Link>
           <Link to="/balance-sheet" className="hover:text-gray-300">Balance Sheet</Link>
