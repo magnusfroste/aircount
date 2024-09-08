@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react'
-import { useAccounts, useAddAccount, useUpdateAccount, useDeleteAccount, useImportAccounts } from '../integrations/supabase/hooks/accounts'
+import { useAccounts, useAddAccount, useUpdateAccount, useDeleteAccount, useImportAccounts, useDeleteAllAccounts } from '../integrations/supabase/hooks/accounts'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -15,6 +15,7 @@ const Accounts = () => {
   const updateAccountMutation = useUpdateAccount()
   const deleteAccountMutation = useDeleteAccount()
   const importAccountsMutation = useImportAccounts()
+  const deleteAllAccountsMutation = useDeleteAllAccounts()
   const fileInputRef = useRef(null)
 
   const handleAddAccount = () => {
@@ -50,6 +51,19 @@ const Accounts = () => {
     }
   }
 
+  const handleDeleteAllAccounts = () => {
+    if (window.confirm('Are you sure you want to delete all accounts? This action cannot be undone.')) {
+      deleteAllAccountsMutation.mutate(session.user.id, {
+        onSuccess: () => {
+          toast.success('All accounts have been deleted')
+        },
+        onError: (error) => {
+          toast.error(`Error deleting accounts: ${error.message}`)
+        }
+      })
+    }
+  }
+
   if (isLoading) return <div>Loading...</div>
   if (error) return <div>Error: {error.message}</div>
 
@@ -82,6 +96,9 @@ const Accounts = () => {
             onChange={handleImportAccounts}
           />
         </div>
+        <Button onClick={handleDeleteAllAccounts} variant="destructive">
+          <Trash2 className="mr-2 h-4 w-4" /> Delete All Accounts
+        </Button>
       </div>
       <Table>
         <TableHeader>

@@ -60,3 +60,13 @@ export const useImportAccounts = () => {
         },
     });
 };
+
+export const useDeleteAllAccounts = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (userId) => fromSupabase(supabase.from('accounts').delete().eq('user_id', userId)),
+        onSuccess: (_, userId) => {
+            queryClient.invalidateQueries(['accounts', userId]);
+        },
+    });
+};
