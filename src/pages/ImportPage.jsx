@@ -35,8 +35,9 @@ const ImportPage = () => {
         setDecodedContent(decodedContent)
         setFinalEncoding(originalEncoding)
         
-        if (accounts.length === 0) {
-          throw new Error('No valid accounts found in the file')
+        const validAccounts = accounts.filter(acc => acc.account && acc.account_name)
+        if (validAccounts.length === 0) {
+          throw new Error('No valid accounts found in the file. Each account must have both an account number and a name.')
         }
 
         setFileInfo({
@@ -46,10 +47,11 @@ const ImportPage = () => {
           originalEncoding: detectedEncoding,
           finalEncoding: originalEncoding,
           totalLinesParsed: decodedContent.split('\n').length,
-          validAccountsExtracted: accounts.length
+          validAccountsExtracted: validAccounts.length,
+          invalidAccountsCount: accounts.length - validAccounts.length
         })
 
-        setParsedAccounts(accounts)
+        setParsedAccounts(validAccounts)
       } catch (error) {
         console.error('Error importing file:', error)
         toast.error(`Error importing file: ${error.message}`)
@@ -65,7 +67,7 @@ const ImportPage = () => {
   }
 
   const handleSaveToAccounts = async () => {
-    if (parsedAccounts) {
+    if (parsedAccounts && parsedAccounts.length > 0) {
       try {
         await importAccountsMutation.mutateAsync({ accounts: parsedAccounts, userId: session.user.id })
         toast.success(`Successfully imported ${parsedAccounts.length} accounts`)
@@ -77,6 +79,8 @@ const ImportPage = () => {
         console.error('Error saving accounts:', error)
         toast.error(`Error saving accounts: ${error.message}`)
       }
+    } else {
+      toast.error('No valid accounts to import')
     }
   }
 
@@ -129,11 +133,12 @@ const ImportPage = () => {
             <p><strong>Final Detected Encoding:</strong> {finalEncoding}</p>
             <p><strong>Total Lines Parsed:</strong> {fileInfo.totalLinesParsed}</p>
             <p><strong>Valid Accounts Extracted:</strong> {fileInfo.validAccountsExtracted}</p>
+            <p><strong>Invalid Accounts Found:</strong> {fileInfo.invalidAccountsCount}</p>
             {fileInfo.error && <p className="text-red-500"><strong>Error:</strong> {fileInfo.error}</p>}
           </CardContent>
         </Card>
       )}
-      {parsedAccounts && (
+      {parsedAccounts && parsedAccounts.length > 0 && (
         <Card className="mt-4">
           <CardHeader>
             <CardTitle>Parsed Accounts</CardTitle>
