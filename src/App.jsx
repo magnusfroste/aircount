@@ -16,6 +16,7 @@ import OpeningBalancesPage from './pages/OpeningBalancesPage';
 import ImportPage from './pages/ImportPage';
 import LandingPage from './components/LandingPage';
 import DashboardPage from './pages/DashboardPage';
+import TemplatesPage from './pages/TemplatesPage';
 
 const queryClient = new QueryClient();
 
@@ -51,6 +52,7 @@ const AppRoutes = () => {
         <Route path="/balance-sheet" element={<ProtectedRoute><BalanceSheetPage /></ProtectedRoute>} />
         <Route path="/opening-balances" element={<ProtectedRoute><OpeningBalancesPage /></ProtectedRoute>} />
         <Route path="/import" element={<ProtectedRoute><ImportPage /></ProtectedRoute>} />
+        <Route path="/templates" element={<ProtectedRoute><TemplatesPage /></ProtectedRoute>} />
       </Routes>
     </>
   );
