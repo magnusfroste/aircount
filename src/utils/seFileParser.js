@@ -1,7 +1,7 @@
 import iconv from 'iconv-lite';
 
 export const detectEncoding = (buffer) => {
-  // For this specific case, we're assuming IBM-437 encoding
+  // For this specific case, we're always using IBM-437 encoding
   return 'IBM437';
 };
 
@@ -14,6 +14,7 @@ export const parseSEFile = (fileContent) => {
   const detectedEncoding = detectEncoding(buffer);
   console.log(`Detected encoding: ${detectedEncoding}`);
 
+  // Decode the entire file content
   const decodedContent = decodeBuffer(buffer, detectedEncoding);
   console.log(`Decoded content (first 100 chars): ${decodedContent.substring(0, 100)}`);
 
