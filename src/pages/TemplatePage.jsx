@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useTemplates, useAddTemplate, useUpdateTemplate, useDeleteTemplate } from '../integrations/supabase/hooks/templates'
 import { useAccounts } from '../integrations/supabase/hooks/accounts'
 import { useSupabaseAuth } from '../integrations/supabase/auth'
@@ -18,6 +18,10 @@ const TemplatePage = () => {
   const updateTemplateMutation = useUpdateTemplate()
   const deleteTemplateMutation = useDeleteTemplate()
   const [newTemplate, setNewTemplate] = useState({ name: '', date: format(new Date(), 'yyyy-MM-dd'), account: '', debit: 0, credit: 0 })
+
+  useEffect(() => {
+    console.log('Accounts data:', accounts)
+  }, [accounts])
 
   if (templatesLoading || accountsLoading) return <div>Loading templates and accounts...</div>
   if (templatesError) return <div>Error loading templates: {templatesError.message}</div>
@@ -83,11 +87,15 @@ const TemplatePage = () => {
             <SelectValue placeholder="Select account" />
           </SelectTrigger>
           <SelectContent>
-            {accounts.map((account) => (
-              <SelectItem key={account.id} value={account.account}>
-                {account.account} - {account.account_name}
-              </SelectItem>
-            ))}
+            {accounts && accounts.length > 0 ? (
+              accounts.map((account) => (
+                <SelectItem key={account.id} value={account.account}>
+                  {account.account} - {account.account_name}
+                </SelectItem>
+              ))
+            ) : (
+              <SelectItem value="" disabled>No accounts available</SelectItem>
+            )}
           </SelectContent>
         </Select>
         <Input
@@ -117,7 +125,7 @@ const TemplatePage = () => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {templates.map((template) => (
+          {templates && templates.map((template) => (
             <TableRow key={template.id}>
               <TableCell>
                 <Checkbox />
@@ -139,7 +147,7 @@ const TemplatePage = () => {
                     <SelectValue>{template.account}</SelectValue>
                   </SelectTrigger>
                   <SelectContent>
-                    {accounts.map((account) => (
+                    {accounts && accounts.map((account) => (
                       <SelectItem key={account.id} value={account.account}>
                         {account.account} - {account.account_name}
                       </SelectItem>
