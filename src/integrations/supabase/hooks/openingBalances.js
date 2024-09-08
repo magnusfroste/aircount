@@ -35,22 +35,6 @@ export const useAddOpeningBalance = () => {
     });
 };
 
-export const useImportOpeningBalances = () => {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: async ({ balances, userId }) => {
-            const { data, error } = await supabase.from('opening_balances').insert(
-                balances.map(balance => ({ ...balance, user_id: userId }))
-            );
-            if (error) throw new Error(error.message);
-            return data;
-        },
-        onSuccess: (_, variables) => {
-            queryClient.invalidateQueries(['openingBalances', variables.userId]);
-        },
-    });
-};
-
 export const useDeleteOpeningBalance = () => {
     const queryClient = useQueryClient();
     return useMutation({
