@@ -20,10 +20,8 @@ const ImportPage = () => {
         const arrayBuffer = await file.arrayBuffer()
         const uint8Array = new Uint8Array(arrayBuffer)
         
-        // Display original content (may not be readable)
         setOriginalContent(new TextDecoder('utf-8').decode(uint8Array))
 
-        // Decode using custom IBM-437 to Unicode conversion
         const decodedText = ibm437ToUnicode(uint8Array)
         setDecodedContent(decodedText)
 
@@ -40,7 +38,8 @@ const ImportPage = () => {
     const accounts = []
     for (const line of lines) {
       if (line.startsWith('#KONTO')) {
-        const [, number, name] = line.split(' ')
+        const [, number, ...nameParts] = line.split(' ')
+        const name = nameParts.join(' ').trim()
         accounts.push({ number, name })
       }
     }
