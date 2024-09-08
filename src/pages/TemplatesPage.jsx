@@ -14,6 +14,7 @@ const TemplatesPage = () => {
   const addTransactionMutation = useAddTransaction()
   const [selectedTemplates, setSelectedTemplates] = useState([])
   const [transactionDate, setTransactionDate] = useState(format(new Date(), 'yyyy-MM-dd'))
+  const [currentVer, setCurrentVer] = useState(1)
 
   if (isLoading) return <div>Loading templates...</div>
   if (error) return <div>Error loading templates: {error.message}</div>
@@ -39,7 +40,7 @@ const TemplatesPage = () => {
         account: template.account_number,
         debit: template.debit,
         credit: template.credit,
-        ver: template.name,
+        ver: currentVer.toString(),
         user_id: session.user.id
       }))
 
@@ -52,6 +53,7 @@ const TemplatesPage = () => {
       onSuccess: () => {
         toast.success(`Added ${selectedTransactions.length} transaction(s)`)
         setSelectedTemplates([])
+        setCurrentVer(prev => prev + 1)
       },
       onError: (error) => {
         toast.error(`Error adding transactions: ${error.message}`)
