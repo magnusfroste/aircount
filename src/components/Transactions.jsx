@@ -14,7 +14,7 @@ const TransactionForm = ({ newTransaction, setNewTransaction, accounts, handleAd
   <div className="mb-4 flex space-x-2">
     <Input
       type="text"
-      placeholder="Ver"
+      placeholder="Nr"
       value={newTransaction.ver}
       onChange={(e) => setNewTransaction({ ...newTransaction, ver: e.target.value })}
     />
@@ -101,7 +101,7 @@ const Transactions = () => {
   const handleUpdateTransaction = (id) => {
     const transaction = transactions.find(t => t.id === id)
     const updatedTransaction = {
-      ver: prompt('Enter new ver', transaction.ver),
+      ver: prompt('Enter new Nr', transaction.ver),
       date: prompt('Enter new date', transaction.date),
       account: prompt('Enter new account', transaction.account),
       debit: parseFloat(prompt('Enter new debit', transaction.debit)),
@@ -146,7 +146,7 @@ const Transactions = () => {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Ver</TableHead>
+            <TableHead>Nr</TableHead>
             <TableHead>Date</TableHead>
             <TableHead>Account</TableHead>
             <TableHead>Debit</TableHead>
