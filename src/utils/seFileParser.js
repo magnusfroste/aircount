@@ -1,89 +1,67 @@
-const containsSwedishChars = (str) => {
-  return /[åäöÅÄÖ]/.test(str);
+import { Buffer } from 'buffer';
+
+const detectEncoding = (buffer) => {
+  // Check for UTF-8 BOM
+  if (buffer[0] === 0xEF && buffer[1] === 0xBB && buffer[2] === 0xBF) {
+    return 'UTF-8';
+  }
+
+  // Check for UTF-16 BOM
+  if (buffer[0] === 0xFE && buffer[1] === 0xFF) {
+    return 'UTF-16BE';
+  }
+  if (buffer[0] === 0xFF && buffer[1] === 0xFE) {
+    return 'UTF-16LE';
+  }
+
+  // Heuristic check for ISO-8859-1 or Windows-1252
+  const isLatin1 = buffer.some(byte => byte > 0x7F && byte < 0xA0);
+  if (isLatin1) {
+    return 'ISO-8859-1';
+  }
+
+  // Default to UTF-8 if no other encoding is detected
+  return 'UTF-8';
 };
 
-export const parseSEFile = (content) => {
-  const originalEncoding = detectEncoding(content);
-  console.log(`Original detected encoding: ${originalEncoding}`);
-  
-  const decodedContent = translateCharacters(content);
+const decodeBuffer = (buffer, encoding) => {
+  if (encoding === 'UTF-16BE' || encoding === 'UTF-16LE') {
+    return new TextDecoder(encoding).decode(buffer);
+  }
+  return Buffer.from(buffer).toString(encoding);
+};
+
+export const parseSEFile = (fileContent) => {
+  const buffer = new Uint8Array(fileContent);
+  const detectedEncoding = detectEncoding(buffer);
+  console.log(`Detected encoding: ${detectedEncoding}`);
+
+  const decodedContent = decodeBuffer(buffer, detectedEncoding);
   console.log(`Decoded content (first 100 chars): ${decodedContent.substring(0, 100)}`);
-  
+
   const lines = decodedContent.split('\n');
   const accounts = [];
-  let linesParsed = 0;
-  let accountsFound = 0;
 
   for (const line of lines) {
-    linesParsed++;
     if (line.startsWith('#KONTO')) {
-      accountsFound++;
       const [, account, ...nameParts] = line.split(' ');
       if (account && nameParts.length > 0) {
         const accountName = nameParts.join(' ').trim().replace(/^"|"$/g, '');
         accounts.push({ account, account_name: accountName });
-      } else {
-        console.warn(`Invalid account format at line ${linesParsed}: ${line}`);
       }
     }
   }
 
-  console.log(`Total lines parsed: ${linesParsed}`);
-  console.log(`Total #KONTO lines found: ${accountsFound}`);
+  console.log(`Total lines parsed: ${lines.length}`);
   console.log(`Valid accounts extracted: ${accounts.length}`);
 
   if (accounts.length === 0) {
-    throw new Error(`No valid accounts found in the file. 
-      Lines parsed: ${linesParsed}, 
-      #KONTO lines found: ${accountsFound}`);
+    throw new Error(`No valid accounts found in the file. Lines parsed: ${lines.length}`);
   }
 
-  const finalEncoding = detectEncoding(decodedContent);
-  console.log(`Final detected encoding: ${finalEncoding}`);
-
-  return { accounts, originalEncoding, finalEncoding, decodedContent };
-};
-
-export const detectEncoding = (content) => {
-  if (content.charCodeAt(0) === 0xFEFF) {
-    return 'UTF-8 with BOM';
-  }
-
-  if (containsSwedishChars(content)) {
-    return 'UTF-8';
-  }
-
-  const pc8Regex = /[\x80-\xFF]/;
-  if (pc8Regex.test(content)) {
-    const iso88591SpecificChars = /[\xA0-\xFF]/;
-    if (iso88591SpecificChars.test(content)) {
-      return 'ISO-8859-1';
-    }
-    return 'PC-8 (DOS Latin US)';
-  }
-
-  if (!/[^\x00-\x7F]/.test(content)) {
-    return 'ASCII';
-  }
-
-  return 'UTF-8';
-};
-
-export const translateCharacters = (content) => {
-  console.log('Translating characters using CP437 (DOS Latin US) encoding');
-  
-  try {
-    const decoder = new TextDecoder('cp437');
-    const uint8Array = new Uint8Array(content.split('').map(char => char.charCodeAt(0)));
-    const decoded = decoder.decode(uint8Array);
-    console.log(`Translation completed. Sample: ${decoded.substring(0, 50)}`);
-    return decoded;
-  } catch (error) {
-    console.error(`Error during translation: ${error.message}`);
-    return content;
-  }
+  return { accounts, decodedContent, detectedEncoding };
 };
 
 export const getAvailableEncodings = () => {
-  return ['UTF-8', 'ISO-8859-1', 'PC-8 (DOS Latin US)', 'ASCII'];
+  return ['UTF-8', 'ISO-8859-1', 'UTF-16BE', 'UTF-16LE'];
 };
