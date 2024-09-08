@@ -1,8 +1,11 @@
 import iconv from 'iconv-lite';
 
 export const parseSEFile = (content, encoding = 'CP437') => {
-  // Decode the content using the specified encoding (default to CP437)
-  const decodedContent = iconv.decode(Buffer.from(content, 'binary'), encoding);
+  // Detect the encoding if not provided
+  const detectedEncoding = encoding || detectEncoding(content);
+  
+  // Decode the content using the detected or provided encoding
+  const decodedContent = iconv.decode(Buffer.from(content, 'binary'), detectedEncoding);
   
   const lines = decodedContent.split('\n');
   const accounts = [];
@@ -34,4 +37,9 @@ export const detectEncoding = (content) => {
     }
   }
   return 'CP437'; // Default to CP437 if no encoding is detected
+};
+
+// Helper function to get available encodings
+export const getAvailableEncodings = () => {
+  return iconv.encodingExists.codes();
 };
