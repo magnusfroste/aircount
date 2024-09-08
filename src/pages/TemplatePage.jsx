@@ -89,12 +89,12 @@ const TemplatePage = () => {
           <SelectContent>
             {accounts && accounts.length > 0 ? (
               accounts.map((account) => (
-                <SelectItem key={account.id} value={account.account}>
+                <SelectItem key={account.id} value={account.account || 'default'}>
                   {account.account} - {account.account_name}
                 </SelectItem>
               ))
             ) : (
-              <SelectItem value="" disabled>No accounts available</SelectItem>
+              <SelectItem value="no-accounts">No accounts available</SelectItem>
             )}
           </SelectContent>
         </Select>
@@ -140,18 +140,22 @@ const TemplatePage = () => {
               </TableCell>
               <TableCell>
                 <Select
-                  value={template.account}
+                  value={template.account || 'default'}
                   onValueChange={(value) => handleUpdateTemplate(template.id, { account: value })}
                 >
                   <SelectTrigger>
-                    <SelectValue>{template.account}</SelectValue>
+                    <SelectValue>{template.account || 'Select account'}</SelectValue>
                   </SelectTrigger>
                   <SelectContent>
-                    {accounts && accounts.map((account) => (
-                      <SelectItem key={account.id} value={account.account}>
-                        {account.account} - {account.account_name}
-                      </SelectItem>
-                    ))}
+                    {accounts && accounts.length > 0 ? (
+                      accounts.map((account) => (
+                        <SelectItem key={account.id} value={account.account || 'default'}>
+                          {account.account} - {account.account_name}
+                        </SelectItem>
+                      ))
+                    ) : (
+                      <SelectItem value="no-accounts">No accounts available</SelectItem>
+                    )}
                   </SelectContent>
                 </Select>
               </TableCell>
