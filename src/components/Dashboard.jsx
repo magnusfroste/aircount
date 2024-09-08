@@ -15,7 +15,13 @@ const Dashboard = () => {
     if (!transactions || !accounts) return null
 
     const totalIncome = 4000 // Single transaction of 4000 SEK for 2023
-    const totalExpenses = transactions.reduce((sum, t) => sum + (t.debit > 0 ? t.debit : 0), 0)
+    const totalExpenses = transactions.reduce((sum, t) => {
+      const account = accounts.find(a => a.account === t.account)
+      if (account && (account.account.startsWith('4') || account.account.startsWith('5') || account.account.startsWith('6') || account.account.startsWith('7'))) {
+        return sum + (t.debit > 0 ? t.debit : 0)
+      }
+      return sum
+    }, 0)
     const netProfit = totalIncome - totalExpenses
     const profitMargin = totalIncome > 0 ? (netProfit / totalIncome) * 100 : 0
 
