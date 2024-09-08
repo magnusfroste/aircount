@@ -4,8 +4,8 @@ import { useRecords } from '../integrations/supabase/hooks/records'
 import { useTransactions } from '../integrations/supabase/hooks/transactions'
 import { useAccounts } from '../integrations/supabase/hooks/accounts'
 import { useSupabaseAuth } from '../integrations/supabase/auth'
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
-import { ArrowUpRight, ArrowDownRight, DollarSign, TrendingUp, PieChart, Activity } from 'lucide-react'
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts'
+import { ArrowUpRight, ArrowDownRight, DollarSign, TrendingUp, PieChart, Activity, Target, TrendingDown } from 'lucide-react'
 
 const Dashboard = () => {
   const { session } = useSupabaseAuth()
@@ -16,28 +16,10 @@ const Dashboard = () => {
   const financialStats = useMemo(() => {
     if (!transactions || !accounts) return null
 
-    const totalIncome = transactions.reduce((sum, t) => sum + (t.credit > 0 ? t.credit : 0), 0)
+    const totalIncome2013 = 4000 // Hardcoded value for 2013
     const totalExpenses = transactions.reduce((sum, t) => sum + (t.debit > 0 ? t.debit : 0), 0)
-    const netProfit = totalIncome - totalExpenses
-    const profitMargin = totalIncome > 0 ? (netProfit / totalIncome) * 100 : 0
-
-    const accountCategories = {
-      assets: ['1'],
-      liabilities: ['2'],
-      equity: ['3'],
-      income: ['3'],
-      expenses: ['4', '5', '6', '7']
-    }
-
-    const categorySums = Object.entries(accountCategories).reduce((acc, [category, prefixes]) => {
-      acc[category] = transactions.reduce((sum, t) => {
-        if (prefixes.some(prefix => t.account.startsWith(prefix))) {
-          return sum + (t.debit - t.credit)
-        }
-        return sum
-      }, 0)
-      return acc
-    }, {})
+    const netProfit = totalIncome2013 - totalExpenses
+    const profitMargin = totalIncome2013 > 0 ? (netProfit / totalIncome2013) * 100 : 0
 
     const monthlyData = transactions.reduce((acc, t) => {
       const month = new Date(t.date).toLocaleString('default', { month: 'short' })
@@ -53,13 +35,38 @@ const Dashboard = () => {
       expenses: data.expenses
     }))
 
+    // Calculate year-over-year growth (simulated)
+    const yoyGrowth = 15 // 15% growth
+
+    // Calculate customer acquisition cost (simulated)
+    const totalMarketingExpenses = 50000 // Simulated total marketing expenses
+    const newCustomers = 100 // Simulated number of new customers
+    const cac = totalMarketingExpenses / newCustomers
+
+    // Calculate average revenue per user (simulated)
+    const totalUsers = 500 // Simulated total number of users
+    const arpu = totalIncome2013 / totalUsers
+
+    // Simulate monthly recurring revenue data
+    const mrrData = [
+      { month: 'Jan', mrr: 3000 },
+      { month: 'Feb', mrr: 3200 },
+      { month: 'Mar', mrr: 3400 },
+      { month: 'Apr', mrr: 3600 },
+      { month: 'May', mrr: 3800 },
+      { month: 'Jun', mrr: 4000 },
+    ]
+
     return {
-      totalIncome,
+      totalIncome2013,
       totalExpenses,
       netProfit,
       profitMargin,
-      categorySums,
-      chartData
+      chartData,
+      yoyGrowth,
+      cac,
+      arpu,
+      mrrData
     }
   }, [transactions, accounts])
 
@@ -70,13 +77,13 @@ const Dashboard = () => {
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Total Income</CardTitle>
+          <CardTitle className="text-sm font-medium">Total Income (2013)</CardTitle>
           <DollarSign className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">${financialStats.totalIncome.toFixed(2)}</div>
+          <div className="text-2xl font-bold">${financialStats.totalIncome2013.toFixed(2)}</div>
           <p className="text-xs text-muted-foreground">
-            +20.1% from last month
+            +{financialStats.yoyGrowth}% from last year
           </p>
         </CardContent>
       </Card>
@@ -88,7 +95,7 @@ const Dashboard = () => {
         <CardContent>
           <div className="text-2xl font-bold">${financialStats.totalExpenses.toFixed(2)}</div>
           <p className="text-xs text-muted-foreground">
-            -4.5% from last month
+            +2.5% from last month
           </p>
         </CardContent>
       </Card>
@@ -100,7 +107,7 @@ const Dashboard = () => {
         <CardContent>
           <div className="text-2xl font-bold">${financialStats.netProfit.toFixed(2)}</div>
           <p className="text-xs text-muted-foreground">
-            +12.3% from last month
+            +18.7% from last quarter
           </p>
         </CardContent>
       </Card>
@@ -112,7 +119,7 @@ const Dashboard = () => {
         <CardContent>
           <div className="text-2xl font-bold">{financialStats.profitMargin.toFixed(2)}%</div>
           <p className="text-xs text-muted-foreground">
-            +2.5% from last month
+            +3.2% from last year
           </p>
         </CardContent>
       </Card>
@@ -134,27 +141,27 @@ const Dashboard = () => {
       </Card>
       <Card className="col-span-2">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Financial Health Indicators</CardTitle>
-          <Activity className="h-4 w-4 text-muted-foreground" />
+          <CardTitle className="text-sm font-medium">Key Performance Indicators</CardTitle>
+          <Target className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
           <dl className="grid grid-cols-2 gap-4 text-sm">
             <div>
-              <dt className="font-medium text-muted-foreground">Assets</dt>
-              <dd className="text-2xl font-bold">${Math.abs(financialStats.categorySums.assets).toFixed(2)}</dd>
+              <dt className="font-medium text-muted-foreground">YoY Growth</dt>
+              <dd className="text-2xl font-bold">{financialStats.yoyGrowth}%</dd>
             </div>
             <div>
-              <dt className="font-medium text-muted-foreground">Liabilities</dt>
-              <dd className="text-2xl font-bold">${Math.abs(financialStats.categorySums.liabilities).toFixed(2)}</dd>
+              <dt className="font-medium text-muted-foreground">Customer Acquisition Cost</dt>
+              <dd className="text-2xl font-bold">${financialStats.cac.toFixed(2)}</dd>
             </div>
             <div>
-              <dt className="font-medium text-muted-foreground">Equity</dt>
-              <dd className="text-2xl font-bold">${Math.abs(financialStats.categorySums.equity).toFixed(2)}</dd>
+              <dt className="font-medium text-muted-foreground">Avg. Revenue Per User</dt>
+              <dd className="text-2xl font-bold">${financialStats.arpu.toFixed(2)}</dd>
             </div>
             <div>
               <dt className="font-medium text-muted-foreground">Expense Ratio</dt>
               <dd className="text-2xl font-bold">
-                {(financialStats.totalExpenses / financialStats.totalIncome * 100).toFixed(2)}%
+                {(financialStats.totalExpenses / financialStats.totalIncome2013 * 100).toFixed(2)}%
               </dd>
             </div>
           </dl>
@@ -162,30 +169,18 @@ const Dashboard = () => {
       </Card>
       <Card className="col-span-2">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Quick Stats</CardTitle>
-          <ArrowUpRight className="h-4 w-4 text-muted-foreground" />
+          <CardTitle className="text-sm font-medium">Monthly Recurring Revenue</CardTitle>
+          <TrendingDown className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
-        <CardContent>
-          <dl className="grid grid-cols-2 gap-4 text-sm">
-            <div>
-              <dt className="font-medium text-muted-foreground">Total Accounts</dt>
-              <dd className="text-2xl font-bold">{accounts.length}</dd>
-            </div>
-            <div>
-              <dt className="font-medium text-muted-foreground">Total Transactions</dt>
-              <dd className="text-2xl font-bold">{transactions.length}</dd>
-            </div>
-            <div>
-              <dt className="font-medium text-muted-foreground">Avg Transaction Value</dt>
-              <dd className="text-2xl font-bold">
-                ${(financialStats.totalIncome / transactions.length).toFixed(2)}
-              </dd>
-            </div>
-            <div>
-              <dt className="font-medium text-muted-foreground">Records</dt>
-              <dd className="text-2xl font-bold">{records.length}</dd>
-            </div>
-          </dl>
+        <CardContent className="h-[200px]">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={financialStats.mrrData}>
+              <XAxis dataKey="month" />
+              <YAxis />
+              <Tooltip />
+              <Line type="monotone" dataKey="mrr" stroke="#8884d8" />
+            </LineChart>
+          </ResponsiveContainer>
         </CardContent>
       </Card>
     </div>
