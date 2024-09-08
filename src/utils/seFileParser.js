@@ -1,12 +1,21 @@
 import iconv from 'iconv-lite';
 
+const swedishCharMap = {
+  0x86: 'å',
+  0x84: 'ä',
+  0x94: 'ö'
+};
+
 export const detectEncoding = (buffer) => {
-  // For this specific case, we're always using IBM-437 encoding
   return 'IBM437';
 };
 
 const decodeBuffer = (buffer, encoding) => {
-  return iconv.decode(Buffer.from(buffer), encoding);
+  const decodedArray = iconv.decode(Buffer.from(buffer), encoding);
+  return decodedArray.split('').map(char => {
+    const charCode = char.charCodeAt(0);
+    return swedishCharMap[charCode] || char;
+  }).join('');
 };
 
 export const parseSEFile = (fileContent) => {
@@ -14,7 +23,6 @@ export const parseSEFile = (fileContent) => {
   const detectedEncoding = detectEncoding(buffer);
   console.log(`Detected encoding: ${detectedEncoding}`);
 
-  // Decode the entire file content
   const decodedContent = decodeBuffer(buffer, detectedEncoding);
   console.log(`Decoded content (first 100 chars): ${decodedContent.substring(0, 100)}`);
 
