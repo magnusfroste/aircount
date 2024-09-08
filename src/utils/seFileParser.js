@@ -1,13 +1,10 @@
-import iconv from 'iconv-lite';
+// Simple function to detect if a string contains Swedish characters
+const containsSwedishChars = (str) => {
+  return /[åäöÅÄÖ]/.test(str);
+};
 
-export const parseSEFile = (content, encoding = 'CP437') => {
-  // Detect the encoding if not provided
-  const detectedEncoding = encoding || detectEncoding(content);
-  
-  // Decode the content using the detected or provided encoding
-  const decodedContent = iconv.decode(Buffer.from(content, 'binary'), detectedEncoding);
-  
-  const lines = decodedContent.split('\n');
+export const parseSEFile = (content) => {
+  const lines = content.split('\n');
   const accounts = [];
   let linesParsed = 0;
   let accountsFound = 0;
@@ -39,25 +36,17 @@ export const parseSEFile = (content, encoding = 'CP437') => {
   return accounts;
 };
 
-// Helper function to detect the most likely encoding
+// Simple encoding detection based on the presence of Swedish characters
 export const detectEncoding = (content) => {
-  const encodings = ['CP437', 'ISO-8859-1', 'UTF-8', 'windows-1252'];
-  for (const encoding of encodings) {
-    try {
-      const decoded = iconv.decode(Buffer.from(content, 'binary'), encoding);
-      if (decoded.includes('å') || decoded.includes('ä') || decoded.includes('ö')) {
-        console.log(`Detected encoding: ${encoding}`);
-        return encoding;
-      }
-    } catch (error) {
-      console.error(`Error decoding with ${encoding}:`, error);
-    }
+  if (containsSwedishChars(content)) {
+    console.log('Detected encoding: UTF-8 or ISO-8859-1');
+    return 'UTF-8 or ISO-8859-1';
   }
-  console.log('No specific encoding detected, defaulting to CP437');
-  return 'CP437'; // Default to CP437 if no encoding is detected
+  console.log('No specific encoding detected, assuming UTF-8');
+  return 'UTF-8';
 };
 
-// Helper function to get available encodings
+// This function is no longer needed, but we'll keep it for compatibility
 export const getAvailableEncodings = () => {
-  return iconv.encodingExists.codes();
+  return ['UTF-8', 'ISO-8859-1'];
 };
