@@ -1,9 +1,8 @@
-import iconv from 'iconv-lite';
-
 const swedishCharMap = {
   0x86: 'å',
   0x84: 'ä',
-  0x94: 'ö'
+  0x94: 'ö',
+  0x22: 'ö' // Adding the mapping for ö="
 };
 
 export const detectEncoding = (buffer) => {
@@ -11,8 +10,9 @@ export const detectEncoding = (buffer) => {
 };
 
 const decodeBuffer = (buffer, encoding) => {
-  const decodedArray = iconv.decode(Buffer.from(buffer), encoding);
-  return decodedArray.split('').map(char => {
+  const decoder = new TextDecoder(encoding);
+  const decodedString = decoder.decode(buffer);
+  return decodedString.split('').map(char => {
     const charCode = char.charCodeAt(0);
     return swedishCharMap[charCode] || char;
   }).join('');
