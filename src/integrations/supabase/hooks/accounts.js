@@ -7,28 +7,33 @@ const fromSupabase = async (query) => {
     return data;
 };
 
-/*
-### accounts
+const fetchAllAccounts = async (userId) => {
+    let allAccounts = [];
+    let page = 0;
+    const pageSize = 1000;
+    let hasMore = true;
 
-| name         | type                     | format | required |
-|--------------|--------------------------|--------|----------|
-| id           | int8                     | number | true     |
-| account      | text                     | string | true     |
-| account_name | text                     | string | true     |
-| user_id      | uuid                     | string | true     |
-| created_at   | timestamp with time zone | string | false    |
-
-*/
-
-export const useAccounts = (userId) => useQuery({
-    queryKey: ['accounts', userId],
-    queryFn: () => fromSupabase(
-        supabase
+    while (hasMore) {
+        const { data, error } = await supabase
             .from('accounts')
             .select('*')
             .eq('user_id', userId)
             .order('account', { ascending: true })
-    ),
+            .range(page * pageSize, (page + 1) * pageSize - 1);
+
+        if (error) throw new Error(error.message);
+
+        allAccounts = [...allAccounts, ...data];
+        hasMore = data.length === pageSize;
+        page++;
+    }
+
+    return allAccounts;
+};
+
+export const useAccounts = (userId) => useQuery({
+    queryKey: ['accounts', userId],
+    queryFn: () => fetchAllAccounts(userId),
 });
 
 export const useAddAccount = () => {
