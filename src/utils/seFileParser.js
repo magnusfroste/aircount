@@ -1,3 +1,5 @@
+import iconv from 'iconv-lite';
+
 export const parseSEFile = (content) => {
   const lines = content.split('\n')
   const accounts = []
@@ -7,7 +9,7 @@ export const parseSEFile = (content) => {
       const [, account, ...nameParts] = line.split(' ')
       if (account && nameParts.length > 0) {
         const encodedName = nameParts.join(' ').replace(/^"|"$/g, '')
-        const decodedName = convertPC8ToUTF8(encodedName)
+        const decodedName = convertISO88591ToUTF8(encodedName)
         accounts.push({ account, account_name: decodedName })
       }
     }
@@ -16,12 +18,8 @@ export const parseSEFile = (content) => {
   return accounts
 }
 
-const convertPC8ToUTF8 = (text) => {
-  return text
-    .replace(/"/g, 'ä')
-    .replace(/†/g, 'å')
-    .replace(/"/g, 'ö')
-    .replace(/'/g, 'é')
-    .replace(/„/g, 'ä')
-    // Add more character conversions as needed
+const convertISO88591ToUTF8 = (text) => {
+  // Convert the text from ISO-8859-1 to UTF-8
+  const buffer = iconv.encode(text, 'ISO-8859-1')
+  return iconv.decode(buffer, 'UTF-8')
 }
