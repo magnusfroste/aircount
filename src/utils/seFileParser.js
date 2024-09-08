@@ -1,10 +1,15 @@
+import iconv from 'iconv-lite';
+
 // Simple function to detect if a string contains Swedish characters
 const containsSwedishChars = (str) => {
   return /[åäöÅÄÖ]/.test(str);
 };
 
 export const parseSEFile = (content) => {
-  const lines = content.split('\n');
+  const encoding = detectEncoding(content);
+  const decodedContent = translateCharacters(content, encoding);
+  
+  const lines = decodedContent.split('\n');
   const accounts = [];
   let linesParsed = 0;
   let accountsFound = 0;
@@ -33,7 +38,7 @@ export const parseSEFile = (content) => {
       #KONTO lines found: ${accountsFound}`);
   }
 
-  return accounts;
+  return { accounts, encoding };
 };
 
 // More comprehensive encoding detection
@@ -67,6 +72,24 @@ export const detectEncoding = (content) => {
 
   // Default to UTF-8 if no other encoding is detected
   return 'UTF-8';
+};
+
+// New function to translate characters based on detected encoding
+export const translateCharacters = (content, encoding) => {
+  if (encoding === 'UTF-8' || encoding === 'UTF-8 with BOM' || encoding === 'ASCII') {
+    return content; // No translation needed
+  }
+
+  if (encoding === 'ISO-8859-1' || encoding === 'PC-8 (DOS Latin US)') {
+    // Convert to Buffer
+    const buffer = Buffer.from(content, 'binary');
+    // Decode using iconv-lite
+    return iconv.decode(buffer, encoding);
+  }
+
+  // Default case: return original content
+  console.warn(`Unsupported encoding: ${encoding}. Returning original content.`);
+  return content;
 };
 
 // This function is no longer needed, but we'll keep it for compatibility
