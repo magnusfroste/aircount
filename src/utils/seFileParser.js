@@ -1,8 +1,8 @@
-import iconv from 'iconv-lite';
-
 export const parseSEFile = (content) => {
-  // Convert the entire content from ISO-8859-1 to UTF-8
-  const utf8Content = iconv.decode(Buffer.from(content, 'binary'), 'iso-8859-1');
+  // Decode ISO-8859-1 to UTF-8 using TextDecoder
+  const decoder = new TextDecoder('iso-8859-1');
+  const utf8Content = decoder.decode(new Uint8Array(content.split('').map(c => c.charCodeAt(0))));
+  
   const lines = utf8Content.split('\n');
   const accounts = [];
 
