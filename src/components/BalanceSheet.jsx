@@ -15,10 +15,12 @@ const BalanceSheet = () => {
   const balanceSheetData = useMemo(() => {
     if (!transactions || !accounts || !openingBalances) return null
 
-    const accountMap = accounts.reduce((acc, account) => {
-      acc[account.account] = account.account_name
-      return acc
-    }, {})
+    const accountMap = Array.isArray(accounts.data) 
+      ? accounts.data.reduce((acc, account) => {
+          acc[account.account] = account.account_name
+          return acc
+        }, {})
+      : {}
 
     const openingBalancesMap = openingBalances.reduce((acc, balance) => {
       acc[balance.account] = balance.balance
