@@ -1,16 +1,15 @@
 import React, { useState } from 'react'
 import { useTransactions, useAddTransaction, useUpdateTransaction, useDeleteTransaction, useDeleteAllTransactions } from '../integrations/supabase/hooks/transactions'
-import { useAccounts } from '../integrations/supabase/hooks/accounts'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { PlusIcon, Pencil, Trash2 } from 'lucide-react'
 import { useSupabaseAuth } from '../integrations/supabase/auth'
 import { format } from 'date-fns'
 import { toast } from 'sonner'
+import SearchableAccountSelect from './SearchableAccountSelect'
 
-const TransactionForm = ({ newTransaction, setNewTransaction, accounts, handleAddTransaction }) => (
+const TransactionForm = ({ newTransaction, setNewTransaction, handleAddTransaction }) => (
   <div className="mb-4 flex space-x-2">
     <Input
       type="text"
@@ -23,21 +22,10 @@ const TransactionForm = ({ newTransaction, setNewTransaction, accounts, handleAd
       value={newTransaction.date}
       onChange={(e) => setNewTransaction({ ...newTransaction, date: e.target.value })}
     />
-    <Select
+    <SearchableAccountSelect
       value={newTransaction.account}
-      onValueChange={(value) => setNewTransaction({ ...newTransaction, account: value })}
-    >
-      <SelectTrigger className="w-[300px]">
-        <SelectValue placeholder="Select account" />
-      </SelectTrigger>
-      <SelectContent>
-        {accounts && accounts.data ? accounts.data.map((account) => (
-          <SelectItem key={account.id} value={account.account}>
-            {account.account} - {account.account_name}
-          </SelectItem>
-        )) : null}
-      </SelectContent>
-    </Select>
+      onChange={(value) => setNewTransaction({ ...newTransaction, account: value })}
+    />
     <Input
       type="number"
       placeholder="Debit"
@@ -56,7 +44,7 @@ const TransactionForm = ({ newTransaction, setNewTransaction, accounts, handleAd
   </div>
 )
 
-const TransactionRow = ({ transaction, accounts, handleUpdateTransaction, handleDeleteTransaction }) => (
+const TransactionRow = ({ transaction, handleUpdateTransaction, handleDeleteTransaction }) => (
   <TableRow key={transaction.id}>
     <TableCell>{transaction.ver}</TableCell>
     <TableCell>{format(new Date(transaction.date), 'yyyy-MM-dd')}</TableCell>
@@ -87,7 +75,6 @@ const Transactions = () => {
   const [newTransaction, setNewTransaction] = useState({ ver: '', date: '', account: '', debit: 0, credit: 0 })
   const { session } = useSupabaseAuth()
   const { data: transactions, isLoading: transactionsLoading, error: transactionsError } = useTransactions(session.user.id)
-  const { data: accounts, isLoading: accountsLoading, error: accountsError } = useAccounts(session.user.id, 1, 1000, true) // Fetch all accounts
   const addTransactionMutation = useAddTransaction()
   const updateTransactionMutation = useUpdateTransaction()
   const deleteTransactionMutation = useDeleteTransaction()
@@ -127,9 +114,8 @@ const Transactions = () => {
     }
   }
 
-  if (transactionsLoading || accountsLoading) return <div>Loading...</div>
+  if (transactionsLoading) return <div>Loading...</div>
   if (transactionsError) return <div>Error loading transactions: {transactionsError.message}</div>
-  if (accountsError) return <div>Error loading accounts: {accountsError.message}</div>
 
   return (
     <div className="container mx-auto p-4">
@@ -137,7 +123,6 @@ const Transactions = () => {
       <TransactionForm
         newTransaction={newTransaction}
         setNewTransaction={setNewTransaction}
-        accounts={accounts}
         handleAddTransaction={handleAddTransaction}
       />
       <Button onClick={handleDeleteAllTransactions} variant="destructive" className="mb-4">
@@ -159,7 +144,6 @@ const Transactions = () => {
             <TransactionRow
               key={transaction.id}
               transaction={transaction}
-              accounts={accounts}
               handleUpdateTransaction={handleUpdateTransaction}
               handleDeleteTransaction={handleDeleteTransaction}
             />
