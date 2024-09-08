@@ -49,6 +49,55 @@ const AccountRow = ({ account, handleUpdateAccount, handleDeleteAccount }) => (
   </TableRow>
 )
 
+const PaginationControls = ({ currentPage, totalPages, setCurrentPage }) => {
+  const [inputPage, setInputPage] = useState(currentPage.toString())
+
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setCurrentPage(newPage)
+      setInputPage(newPage.toString())
+    }
+  }
+
+  const handleInputChange = (e) => {
+    setInputPage(e.target.value)
+  }
+
+  const handleInputBlur = () => {
+    const page = parseInt(inputPage, 10)
+    if (!isNaN(page)) {
+      handlePageChange(page)
+    } else {
+      setInputPage(currentPage.toString())
+    }
+  }
+
+  return (
+    <div className="flex items-center space-x-2">
+      <Button
+        onClick={() => handlePageChange(currentPage - 1)}
+        disabled={currentPage === 1}
+      >
+        <ChevronLeft className="h-4 w-4" />
+      </Button>
+      <Input
+        type="text"
+        value={inputPage}
+        onChange={handleInputChange}
+        onBlur={handleInputBlur}
+        className="w-16 text-center"
+      />
+      <span>of {totalPages}</span>
+      <Button
+        onClick={() => handlePageChange(currentPage + 1)}
+        disabled={currentPage === totalPages}
+      >
+        <ChevronRight className="h-4 w-4" />
+      </Button>
+    </div>
+  )
+}
+
 const Accounts = () => {
   const [newAccount, setNewAccount] = useState({ account: '', account_name: '' })
   const [currentPage, setCurrentPage] = useState(1)
@@ -95,10 +144,10 @@ const Accounts = () => {
     }
   }
 
-  const totalPages = accountsData ? Math.ceil(accountsData.count / pageSize) : 0
-
   if (isLoading) return <div>Loading...</div>
   if (error) return <div>Error: {error.message}</div>
+
+  const totalPages = Math.ceil(accountsData.count / pageSize)
 
   return (
     <div className="container mx-auto p-4">
@@ -131,20 +180,11 @@ const Accounts = () => {
         <div>
           Showing {(currentPage - 1) * pageSize + 1} - {Math.min(currentPage * pageSize, accountsData.count)} of {accountsData.count} accounts
         </div>
-        <div className="flex space-x-2">
-          <Button
-            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-            disabled={currentPage === 1}
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <Button
-            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-            disabled={currentPage === totalPages}
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </div>
+        <PaginationControls
+          currentPage={currentPage}
+          totalPages={totalPages}
+          setCurrentPage={setCurrentPage}
+        />
       </div>
     </div>
   )
