@@ -9,18 +9,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 const BalanceSheet = () => {
   const { session } = useSupabaseAuth()
   const { data: transactions, isLoading: transactionsLoading, error: transactionsError } = useTransactions(session?.user?.id)
-  const { data: accountsData, isLoading: accountsLoading, error: accountsError } = useAccounts(session?.user?.id, 1, 50, true)
+  const { data: accounts, isLoading: accountsLoading, error: accountsError } = useAccounts(session?.user?.id)
   const { data: openingBalances, isLoading: openingBalancesLoading, error: openingBalancesError } = useOpeningBalances(session?.user?.id)
 
   const balanceSheetData = useMemo(() => {
-    if (!transactions || !accountsData || !openingBalances) return null
+    if (!transactions || !accounts || !openingBalances) return null
 
-    const accountMap = Array.isArray(accountsData.data) 
-      ? accountsData.data.reduce((acc, account) => {
-          acc[account.account] = account.account_name
-          return acc
-        }, {})
-      : {}
+    const accountMap = accounts.reduce((acc, account) => {
+      acc[account.account] = account.account_name
+      return acc
+    }, {})
 
     const openingBalancesMap = openingBalances.reduce((acc, balance) => {
       acc[balance.account] = balance.balance
@@ -90,7 +88,7 @@ const BalanceSheet = () => {
     }
 
     return balanceSheet
-  }, [transactions, accountsData, openingBalances])
+  }, [transactions, accounts, openingBalances])
 
   if (transactionsLoading || accountsLoading || openingBalancesLoading) return <div>Loading balance sheet data...</div>
   if (transactionsError) return <div>Error loading transactions: {transactionsError.message}</div>

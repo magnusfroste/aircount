@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { useAccounts, useAddAccount, useUpdateAccount, useDeleteAccount } from '../integrations/supabase/hooks/accounts'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { PlusIcon, Pencil, Trash2, ChevronLeft, ChevronRight } from 'lucide-react'
+import { PlusIcon, Pencil, Trash2 } from 'lucide-react'
 import { useSupabaseAuth } from '../integrations/supabase/auth'
 import { toast } from 'sonner'
 
@@ -49,31 +49,10 @@ const AccountRow = ({ account, handleUpdateAccount, handleDeleteAccount }) => (
   </TableRow>
 )
 
-const PaginationControls = ({ currentPage, totalPages, setCurrentPage }) => (
-  <div className="flex items-center space-x-2">
-    <Button
-      onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-      disabled={currentPage === 1}
-    >
-      <ChevronLeft className="h-4 w-4" />
-    </Button>
-    <span>{currentPage} of {totalPages}</span>
-    <Button
-      onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-      disabled={currentPage === totalPages}
-    >
-      <ChevronRight className="h-4 w-4" />
-    </Button>
-  </div>
-)
-
 const Accounts = () => {
   const [newAccount, setNewAccount] = useState({ account: '', account_name: '' })
-  const [currentPage, setCurrentPage] = useState(1)
-  const [searchTerm, setSearchTerm] = useState('')
-  const pageSize = 50
   const { session } = useSupabaseAuth()
-  const { data: accountsData, isLoading, error } = useAccounts(session.user.id, 1, 1000000, true) // Fetch all accounts
+  const { data: accounts, isLoading, error } = useAccounts(session.user.id)
   const addAccountMutation = useAddAccount()
   const updateAccountMutation = useUpdateAccount()
   const deleteAccountMutation = useDeleteAccount()
@@ -98,7 +77,7 @@ const Accounts = () => {
   }
 
   const handleUpdateAccount = (id) => {
-    const account = accountsData.data.find(a => a.id === id)
+    const account = accounts.find(a => a.id === id)
     const updatedAccount = {
       account: prompt('Enter new account', account.account),
       account_name: prompt('Enter new account name', account.account_name)
@@ -114,14 +93,6 @@ const Accounts = () => {
     }
   }
 
-  const filteredAccounts = accountsData?.data?.filter(account =>
-    account.account.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    account.account_name.toLowerCase().includes(searchTerm.toLowerCase())
-  ) || []
-
-  const paginatedAccounts = filteredAccounts.slice((currentPage - 1) * pageSize, currentPage * pageSize)
-  const totalPages = Math.ceil(filteredAccounts.length / pageSize)
-
   if (isLoading) return <div>Loading...</div>
   if (error) return <div>Error: {error.message}</div>
 
@@ -133,15 +104,6 @@ const Accounts = () => {
         setNewAccount={setNewAccount}
         handleAddAccount={handleAddAccount}
       />
-      <div className="mb-4">
-        <Input
-          type="text"
-          placeholder="Search accounts..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="max-w-sm"
-        />
-      </div>
       <Table>
         <TableHeader>
           <TableRow>
@@ -151,7 +113,7 @@ const Accounts = () => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {paginatedAccounts.map((account) => (
+          {accounts.map((account) => (
             <AccountRow
               key={account.id}
               account={account}
@@ -161,16 +123,6 @@ const Accounts = () => {
           ))}
         </TableBody>
       </Table>
-      <div className="mt-4 flex justify-between items-center">
-        <div>
-          Showing {paginatedAccounts.length} of {filteredAccounts.length} accounts
-        </div>
-        <PaginationControls
-          currentPage={currentPage}
-          totalPages={totalPages}
-          setCurrentPage={setCurrentPage}
-        />
-      </div>
     </div>
   )
 }
