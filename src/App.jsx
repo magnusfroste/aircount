@@ -13,6 +13,7 @@ import ProfitAndLossPage from './pages/ProfitAndLossPage';
 import LedgerPage from './pages/LedgerPage';
 import BalanceSheetPage from './pages/BalanceSheetPage';
 import OpeningBalancesPage from './pages/OpeningBalancesPage';
+import ImportPage from './pages/ImportPage';
 
 const queryClient = new QueryClient();
 
@@ -46,6 +47,7 @@ const AppRoutes = () => {
         <Route path="/ledger" element={<ProtectedRoute><LedgerPage /></ProtectedRoute>} />
         <Route path="/balance-sheet" element={<ProtectedRoute><BalanceSheetPage /></ProtectedRoute>} />
         <Route path="/opening-balances" element={<ProtectedRoute><OpeningBalancesPage /></ProtectedRoute>} />
+        <Route path="/import" element={<ProtectedRoute><ImportPage /></ProtectedRoute>} />
       </Routes>
     </>
   );
