@@ -1,9 +1,9 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useAccounts, useAddAccount, useUpdateAccount, useDeleteAccount } from '../integrations/supabase/hooks/accounts'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { PlusIcon, Pencil, Trash2, ChevronLeft, ChevronRight } from 'lucide-react'
+import { PlusIcon, Pencil, Trash2, ChevronLeft, ChevronRight, Search } from 'lucide-react'
 import { useSupabaseAuth } from '../integrations/supabase/auth'
 import { toast } from 'sonner'
 
@@ -101,6 +101,7 @@ const PaginationControls = ({ currentPage, totalPages, setCurrentPage }) => {
 const Accounts = () => {
   const [newAccount, setNewAccount] = useState({ account: '', account_name: '' })
   const [currentPage, setCurrentPage] = useState(1)
+  const [searchTerm, setSearchTerm] = useState('')
   const pageSize = 50
   const { session } = useSupabaseAuth()
   const { data: accountsData, isLoading, error } = useAccounts(session.user.id, currentPage, pageSize)
@@ -144,6 +145,11 @@ const Accounts = () => {
     }
   }
 
+  const filteredAccounts = accountsData?.data?.filter(account =>
+    account.account.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    account.account_name.toLowerCase().includes(searchTerm.toLowerCase())
+  ) || []
+
   if (isLoading) return <div>Loading...</div>
   if (error) return <div>Error: {error.message}</div>
 
@@ -157,6 +163,15 @@ const Accounts = () => {
         setNewAccount={setNewAccount}
         handleAddAccount={handleAddAccount}
       />
+      <div className="mb-4">
+        <Input
+          type="text"
+          placeholder="Search accounts..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="max-w-sm"
+        />
+      </div>
       <Table>
         <TableHeader>
           <TableRow>
@@ -166,7 +181,7 @@ const Accounts = () => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {accountsData.data.map((account) => (
+          {filteredAccounts.map((account) => (
             <AccountRow
               key={account.id}
               account={account}
@@ -178,7 +193,7 @@ const Accounts = () => {
       </Table>
       <div className="mt-4 flex justify-between items-center">
         <div>
-          Showing {(currentPage - 1) * pageSize + 1} - {Math.min(currentPage * pageSize, accountsData.count)} of {accountsData.count} accounts
+          Showing {filteredAccounts.length} of {accountsData.count} accounts
         </div>
         <PaginationControls
           currentPage={currentPage}
