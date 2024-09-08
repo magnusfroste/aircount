@@ -10,8 +10,8 @@ import { toast } from 'sonner'
 
 const TemplatePage = () => {
   const { session } = useSupabaseAuth()
-  const { data: templates, isLoading, error } = useTemplates(session?.user?.id)
-  const { data: accounts } = useAccounts(session?.user?.id)
+  const { data: templates, isLoading: templatesLoading, error: templatesError } = useTemplates(session?.user?.id)
+  const { data: accounts, isLoading: accountsLoading, error: accountsError } = useAccounts(session?.user?.id)
   const addTemplateMutation = useAddTemplate()
   const deleteTemplateMutation = useDeleteTemplate()
 
@@ -59,8 +59,9 @@ const TemplatePage = () => {
     })
   }
 
-  if (isLoading) return <div>Loading templates...</div>
-  if (error) return <div>Error loading templates: {error.message}</div>
+  if (templatesLoading || accountsLoading) return <div>Loading templates and accounts...</div>
+  if (templatesError) return <div>Error loading templates: {templatesError.message}</div>
+  if (accountsError) return <div>Error loading accounts: {accountsError.message}</div>
 
   return (
     <div className="container mx-auto p-4">
@@ -129,7 +130,7 @@ const TemplatePage = () => {
               <p className="mb-2">{template.description}</p>
               {template.transactions.map((transaction, index) => (
                 <div key={index} className="mb-1">
-                  <span>{transaction.account}: </span>
+                  <span>{accounts?.find(a => a.account === transaction.account)?.account_name || transaction.account}: </span>
                   <span className="text-green-600">{transaction.debit > 0 ? transaction.debit : ''}</span>
                   <span className="text-red-600">{transaction.credit > 0 ? transaction.credit : ''}</span>
                 </div>
