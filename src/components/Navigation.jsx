@@ -34,6 +34,7 @@ const Navigation = () => {
           <Link to="/opening-balances" className="hover:text-gray-300">Opening Balances</Link>
           <Link to="/accounts" className="hover:text-gray-300">Accounts</Link>
           <Link to="/import" className="hover:text-gray-300">Import</Link>
+          <Link to="/templates" className="hover:text-gray-300">Templates</Link>
           <Button onClick={handleLogout} variant="ghost" className="text-white hover:text-gray-300">Logout</Button>
         </div>
       </div>
