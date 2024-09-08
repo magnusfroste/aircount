@@ -1,9 +1,9 @@
-import React, { useState, useRef } from 'react'
-import { useAccounts, useAddAccount, useUpdateAccount, useDeleteAccount, useImportAccounts } from '../integrations/supabase/hooks/accounts'
+import React, { useState } from 'react'
+import { useAccounts, useAddAccount, useUpdateAccount, useDeleteAccount } from '../integrations/supabase/hooks/accounts'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { PlusIcon, Pencil, Trash2, Upload } from 'lucide-react'
+import { PlusIcon, Pencil, Trash2 } from 'lucide-react'
 import { useSupabaseAuth } from '../integrations/supabase/auth'
 import { toast } from 'sonner'
 
@@ -14,8 +14,6 @@ const Accounts = () => {
   const addAccountMutation = useAddAccount()
   const updateAccountMutation = useUpdateAccount()
   const deleteAccountMutation = useDeleteAccount()
-  const importAccountsMutation = useImportAccounts()
-  const fileInputRef = useRef(null)
 
   const handleAddAccount = () => {
     addAccountMutation.mutate({ ...newAccount, user_id: session.user.id })
@@ -30,58 +28,26 @@ const Accounts = () => {
     deleteAccountMutation.mutate({ id, user_id: session.user.id })
   }
 
-  const handleImportClick = () => {
-    fileInputRef.current.click()
-  }
-
-  const handleImportAccounts = async (event) => {
-    const file = event.target.files[0]
-    if (file) {
-      try {
-        const content = await file.text()
-        const importedAccounts = JSON.parse(content)
-        await importAccountsMutation.mutateAsync({ accounts: importedAccounts, userId: session.user.id })
-        toast.success(`Successfully imported ${importedAccounts.length} accounts`)
-      } catch (error) {
-        console.error('Error importing accounts:', error)
-        toast.error(`Error importing accounts: ${error.message}`)
-      }
-      event.target.value = '' // Reset the file input
-    }
-  }
-
   if (isLoading) return <div>Loading...</div>
   if (error) return <div>Error: {error.message}</div>
 
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">Accounts</h1>
-      <div className="mb-4 flex flex-col space-y-4 md:flex-row md:space-y-0 md:space-x-4">
-        <div className="flex-grow flex space-x-2">
-          <Input
-            placeholder="Account"
-            value={newAccount.account}
-            onChange={(e) => setNewAccount({ ...newAccount, account: e.target.value })}
-          />
-          <Input
-            placeholder="Account Name"
-            value={newAccount.account_name}
-            onChange={(e) => setNewAccount({ ...newAccount, account_name: e.target.value })}
-          />
-          <Button onClick={handleAddAccount}>
-            <PlusIcon className="mr-2 h-4 w-4" /> Add Account
-          </Button>
-          <Button onClick={handleImportClick} variant="outline">
-            <Upload className="mr-2 h-4 w-4" /> Import JSON
-          </Button>
-          <Input
-            type="file"
-            ref={fileInputRef}
-            className="hidden"
-            accept=".json"
-            onChange={handleImportAccounts}
-          />
-        </div>
+      <div className="mb-4 flex space-x-2">
+        <Input
+          placeholder="Account"
+          value={newAccount.account}
+          onChange={(e) => setNewAccount({ ...newAccount, account: e.target.value })}
+        />
+        <Input
+          placeholder="Account Name"
+          value={newAccount.account_name}
+          onChange={(e) => setNewAccount({ ...newAccount, account_name: e.target.value })}
+        />
+        <Button onClick={handleAddAccount}>
+          <PlusIcon className="mr-2 h-4 w-4" /> Add Account
+        </Button>
       </div>
       <Table>
         <TableHeader>
