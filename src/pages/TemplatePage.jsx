@@ -94,7 +94,7 @@ const TemplatePage = () => {
                   <SelectValue placeholder="Select account" />
                 </SelectTrigger>
                 <SelectContent>
-                  {accounts?.map((account) => (
+                  {accounts && accounts.map((account) => (
                     <SelectItem key={account.id} value={account.account}>
                       {account.account} - {account.account_name}
                     </SelectItem>
@@ -121,7 +121,7 @@ const TemplatePage = () => {
       </Card>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {templates?.map((template) => (
+        {templates && templates.map((template) => (
           <Card key={template.id}>
             <CardHeader>
               <CardTitle>{template.name}</CardTitle>
@@ -130,7 +130,7 @@ const TemplatePage = () => {
               <p className="mb-2">{template.description}</p>
               {template.transactions.map((transaction, index) => (
                 <div key={index} className="mb-1">
-                  <span>{accounts?.find(a => a.account === transaction.account)?.account_name || transaction.account}: </span>
+                  <span>{accounts && accounts.find(a => a.account === transaction.account)?.account_name || transaction.account}: </span>
                   <span className="text-green-600">{transaction.debit > 0 ? transaction.debit : ''}</span>
                   <span className="text-red-600">{transaction.credit > 0 ? transaction.credit : ''}</span>
                 </div>
