@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button"
 import { PlusIcon, Pencil, Trash2, Upload } from 'lucide-react'
 import { useSupabaseAuth } from '../integrations/supabase/auth'
 import { toast } from 'sonner'
-import { parseSEFile } from '../utils/seFileParser'
 
 const Accounts = () => {
   const [newAccount, setNewAccount] = useState({ account: '', account_name: '' })
@@ -18,6 +17,7 @@ const Accounts = () => {
   const importAccountsMutation = useImportAccounts()
   const deleteAllAccountsMutation = useDeleteAllAccounts()
   const fileInputRef = useRef(null)
+  const jsonFileInputRef = useRef(null)
 
   const handleAddAccount = () => {
     if (!newAccount.account || !newAccount.account_name) {
@@ -44,6 +44,10 @@ const Accounts = () => {
     fileInputRef.current.click()
   }
 
+  const handleJsonImportClick = () => {
+    jsonFileInputRef.current.click()
+  }
+
   const handleImportAccounts = async (event) => {
     const file = event.target.files[0]
     if (file) {
@@ -65,6 +69,37 @@ const Accounts = () => {
       } catch (error) {
         console.error('Error importing accounts:', error)
         toast.error(`Error importing accounts: ${error.message}`)
+      }
+      event.target.value = '' // Reset the file input
+    }
+  }
+
+  const handleJsonImport = async (event) => {
+    const file = event.target.files[0]
+    if (file) {
+      try {
+        const content = await file.text()
+        const importedAccounts = JSON.parse(content)
+        
+        if (!Array.isArray(importedAccounts)) {
+          throw new Error('Invalid JSON format. Expected an array of accounts.')
+        }
+
+        const validAccounts = importedAccounts.filter(acc => acc.account && acc.account_name)
+        
+        if (validAccounts.length === 0) {
+          throw new Error('No valid accounts found in the JSON file. Each account must have both an account number and a name.')
+        }
+
+        await importAccountsMutation.mutateAsync({ accounts: validAccounts, userId: session.user.id })
+        toast.success(`Successfully imported ${validAccounts.length} accounts from JSON`)
+        
+        if (validAccounts.length !== importedAccounts.length) {
+          toast.warning(`${importedAccounts.length - validAccounts.length} accounts were skipped due to missing account number or name`)
+        }
+      } catch (error) {
+        console.error('Error importing accounts from JSON:', error)
+        toast.error(`Error importing accounts from JSON: ${error.message}`)
       }
       event.target.value = '' // Reset the file input
     }
@@ -105,14 +140,24 @@ const Accounts = () => {
             <PlusIcon className="mr-2 h-4 w-4" /> Add Account
           </Button>
           <Button onClick={handleImportClick} variant="outline">
+            <Upload className="mr-2 h-4 w-4" /> Import .SE
+          </Button>
+          <Button onClick={handleJsonImportClick} variant="outline">
             <Upload className="mr-2 h-4 w-4" /> Import JSON
           </Button>
           <Input
             type="file"
             ref={fileInputRef}
             className="hidden"
-            accept=".json,.se"
+            accept=".se"
             onChange={handleImportAccounts}
+          />
+          <Input
+            type="file"
+            ref={jsonFileInputRef}
+            className="hidden"
+            accept=".json"
+            onChange={handleJsonImport}
           />
         </div>
         <Button onClick={handleDeleteAllAccounts} variant="destructive">
