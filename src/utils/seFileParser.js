@@ -7,7 +7,7 @@ export const parseSEFile = (content) => {
       const [, account, ...nameParts] = line.split(' ')
       if (account && nameParts.length > 0) {
         const encodedName = nameParts.join(' ').replace(/^"|"$/g, '')
-        const decodedName = decodeSwedishCharacters(encodedName)
+        const decodedName = convertPC8ToUTF8(encodedName)
         accounts.push({ account, account_name: decodedName })
       }
     }
@@ -16,10 +16,12 @@ export const parseSEFile = (content) => {
   return accounts
 }
 
-const decodeSwedishCharacters = (text) => {
+const convertPC8ToUTF8 = (text) => {
   return text
     .replace(/"/g, 'ä')
     .replace(/†/g, 'å')
     .replace(/"/g, 'ö')
     .replace(/'/g, 'é')
+    .replace(/„/g, 'ä')
+    // Add more character conversions as needed
 }
