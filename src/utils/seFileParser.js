@@ -1,7 +1,8 @@
+import iconv from 'iconv-lite';
+
 export const parseSEFile = (content) => {
-  // Use TextDecoder with windows-1252 encoding (close to CP437 for our needs)
-  const decoder = new TextDecoder('windows-1252');
-  const decodedContent = decoder.decode(new Uint8Array(content));
+  // Decode the content using CP437 encoding
+  const decodedContent = iconv.decode(Buffer.from(content, 'binary'), 'CP437');
   
   const lines = decodedContent.split('\n');
   const accounts = [];
