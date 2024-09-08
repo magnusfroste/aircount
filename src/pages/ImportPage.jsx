@@ -39,7 +39,7 @@ const ImportPage = () => {
     for (const line of lines) {
       if (line.startsWith('#KONTO')) {
         const [, number, ...nameParts] = line.split(' ')
-        const name = nameParts.join(' ').trim()
+        const name = nameParts.join(' ').trim().replace(/^"|"$/g, '')
         accounts.push({ number, name })
       }
     }
