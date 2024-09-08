@@ -14,6 +14,7 @@ import LedgerPage from './pages/LedgerPage';
 import BalanceSheetPage from './pages/BalanceSheetPage';
 import OpeningBalancesPage from './pages/OpeningBalancesPage';
 import ImportPage from './pages/ImportPage';
+import LandingPage from './components/LandingPage';
 
 const queryClient = new QueryClient();
 
@@ -38,8 +39,9 @@ const AppRoutes = () => {
     <>
       {session && <Navigation />}
       <Routes>
-        <Route path="/login" element={session ? <Navigate to="/" replace /> : <Login />} />
-        <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/login" element={session ? <Navigate to="/dashboard" replace /> : <Login />} />
+        <Route path="/dashboard" element={<ProtectedRoute><Index /></ProtectedRoute>} />
         <Route path="/events" element={<ProtectedRoute><EventsPage /></ProtectedRoute>} />
         <Route path="/transactions" element={<ProtectedRoute><TransactionsPage /></ProtectedRoute>} />
         <Route path="/accounts" element={<ProtectedRoute><AccountsPage /></ProtectedRoute>} />
