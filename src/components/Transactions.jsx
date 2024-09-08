@@ -87,7 +87,7 @@ const Transactions = () => {
   const [newTransaction, setNewTransaction] = useState({ ver: '', date: '', account: '', debit: 0, credit: 0 })
   const { session } = useSupabaseAuth()
   const { data: transactions, isLoading: transactionsLoading, error: transactionsError } = useTransactions(session.user.id)
-  const { data: accounts, isLoading: accountsLoading, error: accountsError } = useAccounts(session.user.id)
+  const { data: accounts, isLoading: accountsLoading, error: accountsError } = useAccounts(session.user.id, 1, 1000, true) // Fetch all accounts
   const addTransactionMutation = useAddTransaction()
   const updateTransactionMutation = useUpdateTransaction()
   const deleteTransactionMutation = useDeleteTransaction()
