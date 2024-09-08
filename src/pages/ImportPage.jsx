@@ -6,6 +6,7 @@ import { toast } from 'sonner'
 import { ibm437ToUnicode } from '../utils/encodingUtils'
 import { useImportAccounts } from '../integrations/supabase/hooks/accounts'
 import { useImportTransactions } from '../integrations/supabase/hooks/transactions'
+import { useImportOpeningBalances } from '../integrations/supabase/hooks/openingBalances'
 import { useSupabaseAuth } from '../integrations/supabase/auth'
 
 const ImportPage = () => {
@@ -13,6 +14,7 @@ const ImportPage = () => {
   const [decodedContent, setDecodedContent] = useState('')
   const importAccountsMutation = useImportAccounts()
   const importTransactionsMutation = useImportTransactions()
+  const importOpeningBalancesMutation = useImportOpeningBalances()
   const { session } = useSupabaseAuth()
 
   const handleFileUpload = async (event) => {
@@ -75,6 +77,16 @@ const ImportPage = () => {
     return transactions
   }
 
+  const parseOpeningBalances = (content) => {
+    const lines = content.split('\n')
+    return lines
+      .filter(line => line.startsWith('#UB'))
+      .map(line => {
+        const [, , account, balance] = line.split(' ')
+        return { account, balance: parseFloat(balance) }
+      })
+  }
+
   const handleImportAccounts = async () => {
     if (!decodedContent) {
       toast.error('No decoded content to import')
@@ -117,6 +129,27 @@ const ImportPage = () => {
     }
   }
 
+  const handleImportOpeningBalances = async () => {
+    if (!decodedContent) {
+      toast.error('No decoded content to import')
+      return
+    }
+
+    const openingBalances = parseOpeningBalances(decodedContent)
+    if (openingBalances.length === 0) {
+      toast.error('No opening balances found in the decoded content')
+      return
+    }
+
+    try {
+      await importOpeningBalancesMutation.mutateAsync({ balances: openingBalances, userId: session.user.id })
+      toast.success(`Successfully imported ${openingBalances.length} opening balances`)
+    } catch (error) {
+      console.error('Error importing opening balances:', error)
+      toast.error(`Error importing opening balances: ${error.message}`)
+    }
+  }
+
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">Import .SE File</h1>
@@ -132,6 +165,9 @@ const ImportPage = () => {
         </Button>
         <Button onClick={handleImportTransactions}>
           Import Transactions
+        </Button>
+        <Button onClick={handleImportOpeningBalances}>
+          Import Opening Balances
         </Button>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
