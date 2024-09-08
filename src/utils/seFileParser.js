@@ -1,32 +1,20 @@
+import iconv from 'iconv-lite'
+
 export const parseSEFile = (content) => {
-  const lines = content.split('\n')
-  const transactions = []
-  let currentTransaction = null
-  let currentVer = null
+  // Convert PC-8 (DOS Latin US) to UTF-8
+  const buffer = Buffer.from(content, 'binary')
+  const utf8Content = iconv.decode(buffer, 'cp437')
+
+  const lines = utf8Content.split('\n')
+  const accounts = []
 
   for (const line of lines) {
-    if (line.startsWith('#VER')) {
-      if (currentTransaction) {
-        transactions.push(...currentTransaction)
-      }
-      const verMatch = line.match(/#VER\s+"[^"]+"\s+(\d+)/)
-      currentVer = verMatch ? verMatch[1] : null
-      currentTransaction = []
-    } else if (line.startsWith('#TRANS') && currentTransaction !== null) {
-      const [, account, , amount, date] = line.split(' ')
-      currentTransaction.push({
-        date,
-        account,
-        debit: parseFloat(amount) > 0 ? Math.abs(parseFloat(amount)) : 0,
-        credit: parseFloat(amount) < 0 ? Math.abs(parseFloat(amount)) : 0,
-        ver: currentVer
-      })
+    if (line.startsWith('#KONTO')) {
+      const [, account, name] = line.split(' ')
+      const cleanedName = name.replace(/^"|"$/g, '').replace(/"/g, 'ö').replace(/†/g, 'å').replace(/"/g, 'ä')
+      accounts.push({ account, account_name: cleanedName })
     }
   }
 
-  if (currentTransaction) {
-    transactions.push(...currentTransaction)
-  }
-
-  return transactions
+  return accounts
 }
