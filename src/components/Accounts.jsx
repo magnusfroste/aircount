@@ -51,8 +51,9 @@ const AccountRow = ({ account, handleUpdateAccount, handleDeleteAccount }) => (
 
 const Accounts = () => {
   const [newAccount, setNewAccount] = useState({ account: '', account_name: '' })
+  const [searchTerm, setSearchTerm] = useState('')
   const { session } = useSupabaseAuth()
-  const { data: accounts, isLoading, error } = useAccounts(session.user.id)
+  const { data: accounts, isLoading, error } = useAccounts(session?.user?.id)
   const addAccountMutation = useAddAccount()
   const updateAccountMutation = useUpdateAccount()
   const deleteAccountMutation = useDeleteAccount()
@@ -93,8 +94,13 @@ const Accounts = () => {
     }
   }
 
-  if (isLoading) return <div>Loading...</div>
-  if (error) return <div>Error: {error.message}</div>
+  const filteredAccounts = accounts?.filter(account =>
+    account.account.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    account.account_name.toLowerCase().includes(searchTerm.toLowerCase())
+  ) || []
+
+  if (isLoading) return <div>Loading accounts...</div>
+  if (error) return <div>Error loading accounts: {error.message}</div>
 
   return (
     <div className="container mx-auto p-4">
@@ -103,6 +109,13 @@ const Accounts = () => {
         newAccount={newAccount}
         setNewAccount={setNewAccount}
         handleAddAccount={handleAddAccount}
+      />
+      <Input
+        type="text"
+        placeholder="Search accounts..."
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        className="mb-4"
       />
       <Table>
         <TableHeader>
@@ -113,7 +126,7 @@ const Accounts = () => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {accounts.map((account) => (
+          {filteredAccounts.map((account) => (
             <AccountRow
               key={account.id}
               account={account}
@@ -123,6 +136,9 @@ const Accounts = () => {
           ))}
         </TableBody>
       </Table>
+      <div className="mt-4">
+        Total Accounts: {filteredAccounts.length}
+      </div>
     </div>
   )
 }
