@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { toast } from 'sonner'
+import { ibm437ToUnicode } from '../utils/encodingUtils'
 
 const ImportPage = () => {
   const [originalContent, setOriginalContent] = useState('')
@@ -18,9 +19,8 @@ const ImportPage = () => {
         // Display original content (may not be readable)
         setOriginalContent(new TextDecoder('utf-8').decode(uint8Array))
 
-        // Decode using IBM-437 encoding
-        const ibm437Decoder = new TextDecoder('ibm437')
-        const decodedText = ibm437Decoder.decode(uint8Array)
+        // Decode using custom IBM-437 to Unicode conversion
+        const decodedText = ibm437ToUnicode(uint8Array)
         setDecodedContent(decodedText)
 
         toast.success('File uploaded and decoded successfully')
