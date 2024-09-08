@@ -39,7 +39,7 @@ const TemplatesPage = () => {
         account: template.account_number,
         debit: template.debit,
         credit: template.credit,
-        ver: template.name,
+        ver: template.id.toString(), // Use the template's id as a string for the 'ver' field
         user_id: session.user.id
       }))
 
