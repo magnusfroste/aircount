@@ -20,6 +20,6 @@ export const parseSEFile = (content) => {
 
 const convertISO88591ToUTF8 = (text) => {
   // Convert the text from ISO-8859-1 to UTF-8
-  const buffer = iconv.encode(text, 'ISO-8859-1')
-  return iconv.decode(buffer, 'UTF-8')
+  const buffer = Buffer.from(text, 'binary')
+  return iconv.decode(buffer, 'ISO-8859-1')
 }
