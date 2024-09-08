@@ -16,10 +16,10 @@ const Dashboard = () => {
   const financialStats = useMemo(() => {
     if (!transactions || !accounts) return null
 
-    const totalIncome2013 = 4000 // Hardcoded value for 2013
+    const totalIncome = transactions.reduce((sum, t) => sum + (t.credit > 0 ? t.credit : 0), 0)
     const totalExpenses = transactions.reduce((sum, t) => sum + (t.debit > 0 ? t.debit : 0), 0)
-    const netProfit = totalIncome2013 - totalExpenses
-    const profitMargin = totalIncome2013 > 0 ? (netProfit / totalIncome2013) * 100 : 0
+    const netProfit = totalIncome - totalExpenses
+    const profitMargin = totalIncome > 0 ? (netProfit / totalIncome) * 100 : 0
 
     const monthlyData = transactions.reduce((acc, t) => {
       const month = new Date(t.date).toLocaleString('default', { month: 'short' })
@@ -45,7 +45,7 @@ const Dashboard = () => {
 
     // Calculate average revenue per user (simulated)
     const totalUsers = 500 // Simulated total number of users
-    const arpu = totalIncome2013 / totalUsers
+    const arpu = totalIncome / totalUsers
 
     // Simulate monthly recurring revenue data
     const mrrData = [
@@ -58,7 +58,7 @@ const Dashboard = () => {
     ]
 
     return {
-      totalIncome2013,
+      totalIncome,
       totalExpenses,
       netProfit,
       profitMargin,
@@ -77,11 +77,11 @@ const Dashboard = () => {
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Total Income (2013)</CardTitle>
+          <CardTitle className="text-sm font-medium">Total Income</CardTitle>
           <DollarSign className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">${financialStats.totalIncome2013.toFixed(2)}</div>
+          <div className="text-2xl font-bold">${financialStats.totalIncome.toFixed(2)}</div>
           <p className="text-xs text-muted-foreground">
             +{financialStats.yoyGrowth}% from last year
           </p>
@@ -161,7 +161,7 @@ const Dashboard = () => {
             <div>
               <dt className="font-medium text-muted-foreground">Expense Ratio</dt>
               <dd className="text-2xl font-bold">
-                {(financialStats.totalExpenses / financialStats.totalIncome2013 * 100).toFixed(2)}%
+                {(financialStats.totalExpenses / financialStats.totalIncome * 100).toFixed(2)}%
               </dd>
             </div>
           </dl>
