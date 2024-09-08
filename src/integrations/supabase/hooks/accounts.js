@@ -7,6 +7,19 @@ const fromSupabase = async (query) => {
     return data;
 };
 
+/*
+### accounts
+
+| name         | type                     | format | required |
+|--------------|--------------------------|--------|----------|
+| id           | int8                     | number | true     |
+| account      | text                     | string | true     |
+| account_name | text                     | string | true     |
+| user_id      | uuid                     | string | true     |
+| created_at   | timestamp with time zone | string | false    |
+
+*/
+
 export const useAccounts = (userId) => useQuery({
     queryKey: ['accounts', userId],
     queryFn: () => fromSupabase(supabase.from('accounts').select('*').eq('user_id', userId)),
@@ -47,8 +60,8 @@ export const useImportAccounts = () => {
     return useMutation({
         mutationFn: async ({ accounts, userId }) => {
             const formattedAccounts = accounts.map(account => ({
-                account: account.account,
-                account_name: account.account_name,
+                account: account.number,
+                account_name: account.name,
                 user_id: userId
             }));
             const { data, error } = await supabase.from('accounts').insert(formattedAccounts);
@@ -57,16 +70,6 @@ export const useImportAccounts = () => {
         },
         onSuccess: (_, variables) => {
             queryClient.invalidateQueries(['accounts', variables.userId]);
-        },
-    });
-};
-
-export const useDeleteAllAccounts = () => {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: (userId) => fromSupabase(supabase.from('accounts').delete().eq('user_id', userId)),
-        onSuccess: (_, userId) => {
-            queryClient.invalidateQueries(['accounts', userId]);
         },
     });
 };
