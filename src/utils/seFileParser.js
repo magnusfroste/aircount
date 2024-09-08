@@ -1,5 +1,3 @@
-import iconv from 'iconv-lite';
-
 const containsSwedishChars = (str) => {
   return /[åäöÅÄÖ]/.test(str);
 };
@@ -75,8 +73,9 @@ export const translateCharacters = (content) => {
   console.log('Translating characters using CP437 (DOS Latin US) encoding');
   
   try {
-    const buffer = Buffer.from(content, 'binary');
-    const decoded = iconv.decode(buffer, 'CP437');
+    const decoder = new TextDecoder('cp437');
+    const uint8Array = new Uint8Array(content.split('').map(char => char.charCodeAt(0)));
+    const decoded = decoder.decode(uint8Array);
     console.log(`Translation completed. Sample: ${decoded.substring(0, 50)}`);
     return decoded;
   } catch (error) {
