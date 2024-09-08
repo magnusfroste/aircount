@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { PlusIcon, Pencil, Trash2, Upload } from 'lucide-react'
 import { useSupabaseAuth } from '../integrations/supabase/auth'
 import { toast } from 'sonner'
+import { parseSEFile } from '../utils/seFileParser'
 
 const Accounts = () => {
   const [newAccount, setNewAccount] = useState({ account: '', account_name: '' })
@@ -19,11 +20,19 @@ const Accounts = () => {
   const fileInputRef = useRef(null)
 
   const handleAddAccount = () => {
+    if (!newAccount.account || !newAccount.account_name) {
+      toast.error('Account number and name are required')
+      return
+    }
     addAccountMutation.mutate({ ...newAccount, user_id: session.user.id })
     setNewAccount({ account: '', account_name: '' })
   }
 
   const handleUpdateAccount = (id, updateData) => {
+    if (!updateData.account || !updateData.account_name) {
+      toast.error('Account number and name are required')
+      return
+    }
     updateAccountMutation.mutate({ id, user_id: session.user.id, ...updateData })
   }
 
@@ -40,9 +49,19 @@ const Accounts = () => {
     if (file) {
       try {
         const content = await file.text()
-        const importedAccounts = JSON.parse(content)
-        await importAccountsMutation.mutateAsync({ accounts: importedAccounts, userId: session.user.id })
-        toast.success(`Successfully imported ${importedAccounts.length} accounts`)
+        const importedAccounts = parseSEFile(content).accounts
+        const validAccounts = importedAccounts.filter(acc => acc.account && acc.account_name)
+        
+        if (validAccounts.length === 0) {
+          throw new Error('No valid accounts found in the file. Each account must have both an account number and a name.')
+        }
+
+        await importAccountsMutation.mutateAsync({ accounts: validAccounts, userId: session.user.id })
+        toast.success(`Successfully imported ${validAccounts.length} accounts`)
+        
+        if (validAccounts.length !== importedAccounts.length) {
+          toast.warning(`${importedAccounts.length - validAccounts.length} accounts were skipped due to missing account number or name`)
+        }
       } catch (error) {
         console.error('Error importing accounts:', error)
         toast.error(`Error importing accounts: ${error.message}`)
@@ -92,7 +111,7 @@ const Accounts = () => {
             type="file"
             ref={fileInputRef}
             className="hidden"
-            accept=".json"
+            accept=".json,.se"
             onChange={handleImportAccounts}
           />
         </div>
@@ -125,6 +144,8 @@ const Accounts = () => {
                     }
                     if (updatedAccount.account && updatedAccount.account_name) {
                       handleUpdateAccount(account.id, updatedAccount)
+                    } else {
+                      toast.error('Account number and name are required')
                     }
                   }}
                 >
