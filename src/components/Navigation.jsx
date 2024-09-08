@@ -28,8 +28,8 @@ const Navigation = () => {
         <div className="space-x-4">
           <Link to="/transactions" className="hover:text-gray-300">Transactions</Link>
           <Link to="/profit-and-loss" className="hover:text-gray-300">Profit & Loss</Link>
-          <Link to="/ledger" className="hover:text-gray-300">Ledger</Link>
           <Link to="/balance-sheet" className="hover:text-gray-300">Balance Sheet</Link>
+          <Link to="/ledger" className="hover:text-gray-300">Ledger</Link>
           <Link to="/opening-balances" className="hover:text-gray-300">Opening Balances</Link>
           <Link to="/accounts" className="hover:text-gray-300">Accounts</Link>
           <Link to="/import" className="hover:text-gray-300">Import</Link>
