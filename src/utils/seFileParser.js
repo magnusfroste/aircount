@@ -1,6 +1,6 @@
 export const parseSEFile = (content) => {
-  // Decode ISO-8859-1 to UTF-8 using TextDecoder
-  const decoder = new TextDecoder('iso-8859-1');
+  // Use windows-1252 encoding which is compatible with Swedish characters
+  const decoder = new TextDecoder('windows-1252');
   const utf8Content = decoder.decode(new Uint8Array(content.split('').map(c => c.charCodeAt(0))));
   
   const lines = utf8Content.split('\n');
