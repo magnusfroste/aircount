@@ -11,10 +11,12 @@ import { format } from 'date-fns'
 const Ledger = () => {
   const { session } = useSupabaseAuth()
   const { data: transactions, isLoading: transactionsLoading } = useTransactions(session?.user?.id)
-  const { data: accounts, isLoading: accountsLoading } = useAccounts(session?.user?.id)
+  const { data: accountsData, isLoading: accountsLoading } = useAccounts(session?.user?.id, 1, 50, true)
   const [selectedAccount, setSelectedAccount] = useState('')
 
   if (transactionsLoading || accountsLoading) return <div>Loading ledger data...</div>
+
+  const accounts = accountsData?.data || []
 
   const ledgerData = transactions.reduce((acc, transaction) => {
     if (!acc[transaction.account]) {
@@ -47,7 +49,7 @@ const Ledger = () => {
       {Object.entries(filteredLedgerData).map(([account, transactions]) => (
         <Card key={account} className="mb-6">
           <CardHeader>
-            <CardTitle>{account} - {accounts.find(a => a.account === account)?.account_name}</CardTitle>
+            <CardTitle>{account} - {accounts.find(a => a.account === account)?.account_name || 'Unknown Account'}</CardTitle>
           </CardHeader>
           <CardContent>
             <Table>
