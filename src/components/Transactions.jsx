@@ -31,11 +31,11 @@ const TransactionForm = ({ newTransaction, setNewTransaction, accounts, handleAd
         <SelectValue placeholder="Select account" />
       </SelectTrigger>
       <SelectContent>
-        {accounts.map((account) => (
+        {accounts && accounts.data ? accounts.data.map((account) => (
           <SelectItem key={account.id} value={account.account}>
             {account.account} - {account.account_name}
           </SelectItem>
-        ))}
+        )) : null}
       </SelectContent>
     </Select>
     <Input
