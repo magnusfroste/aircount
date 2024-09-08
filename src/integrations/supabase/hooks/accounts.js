@@ -22,7 +22,13 @@ const fromSupabase = async (query) => {
 
 export const useAccounts = (userId) => useQuery({
     queryKey: ['accounts', userId],
-    queryFn: () => fromSupabase(supabase.from('accounts').select('*').eq('user_id', userId)),
+    queryFn: () => fromSupabase(
+        supabase
+            .from('accounts')
+            .select('*')
+            .eq('user_id', userId)
+            .order('account', { ascending: true })
+    ),
 });
 
 export const useAddAccount = () => {
