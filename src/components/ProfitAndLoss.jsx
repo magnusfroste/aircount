@@ -11,9 +11,9 @@ const ProfitAndLoss = () => {
   const { data: accounts, isLoading: accountsLoading, error: accountsError } = useAccounts(session?.user?.id)
 
   const plStatement = useMemo(() => {
-    if (!transactions || !accounts) return null
+    if (!transactions || !accounts || !Array.isArray(accounts.data)) return null
 
-    const accountMap = accounts.reduce((acc, account) => {
+    const accountMap = accounts.data.reduce((acc, account) => {
       acc[account.account] = account.account_name
       return acc
     }, {})
