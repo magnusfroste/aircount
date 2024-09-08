@@ -2,7 +2,7 @@ import React, { useRef, useState } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { toast } from 'sonner'
-import { parseSEFile } from '../utils/seFileParser'
+import { parseSEFile, detectEncoding } from '../utils/seFileParser'
 import { useImportAccounts } from '../integrations/supabase/hooks/accounts'
 import { useSupabaseAuth } from '../integrations/supabase/auth'
 
@@ -18,7 +18,10 @@ const ImportPage = () => {
       setIsImporting(true)
       try {
         const content = await file.text()
-        const parsedContent = parseSEFile(content)
+        console.log(`File content length: ${content.length} characters`);
+        const detectedEncoding = detectEncoding(content);
+        console.log(`Detected encoding: ${detectedEncoding}`);
+        const parsedContent = parseSEFile(content, detectedEncoding)
         
         if (parsedContent.length === 0) {
           throw new Error('No valid accounts found in the file')
