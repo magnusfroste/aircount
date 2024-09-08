@@ -8,7 +8,7 @@ export const parseSEFile = (content) => {
   const originalEncoding = detectEncoding(content);
   console.log(`Original detected encoding: ${originalEncoding}`);
   
-  const decodedContent = translateCharacters(content, originalEncoding);
+  const decodedContent = translateCharacters(content);
   console.log(`Decoded content (first 100 chars): ${decodedContent.substring(0, 100)}`);
   
   const lines = decodedContent.split('\n');
@@ -71,28 +71,18 @@ export const detectEncoding = (content) => {
   return 'UTF-8';
 };
 
-export const translateCharacters = (content, encoding) => {
-  console.log(`Translating characters from ${encoding}`);
+export const translateCharacters = (content) => {
+  console.log('Translating characters using CP437 (DOS Latin US) encoding');
   
-  if (encoding === 'UTF-8' || encoding === 'UTF-8 with BOM' || encoding === 'ASCII') {
-    console.log('No translation needed');
+  try {
+    const buffer = Buffer.from(content, 'binary');
+    const decoded = iconv.decode(buffer, 'CP437');
+    console.log(`Translation completed. Sample: ${decoded.substring(0, 50)}`);
+    return decoded;
+  } catch (error) {
+    console.error(`Error during translation: ${error.message}`);
     return content;
   }
-
-  if (encoding === 'ISO-8859-1' || encoding === 'PC-8 (DOS Latin US)') {
-    try {
-      const buffer = Buffer.from(content, 'binary');
-      const decoded = iconv.decode(buffer, encoding);
-      console.log(`Translation completed. Sample: ${decoded.substring(0, 50)}`);
-      return decoded;
-    } catch (error) {
-      console.error(`Error during translation: ${error.message}`);
-      return content;
-    }
-  }
-
-  console.warn(`Unsupported encoding: ${encoding}. Returning original content.`);
-  return content;
 };
 
 export const getAvailableEncodings = () => {
