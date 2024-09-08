@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { useSupabaseAuth } from '../integrations/supabase/auth'
 import { supabase } from '../lib/supabase'
 import { Input } from "@/components/ui/input"
@@ -18,9 +18,7 @@ const SearchableAccountSelect = ({ value, onChange }) => {
         .from('accounts')
         .select('account, account_name')
         .eq('user_id', session.user.id)
-        .ilike('account', `%${searchTerm}%`)
         .order('account', { ascending: true })
-        .limit(50)
 
       if (error) {
         console.error('Error fetching accounts:', error)
@@ -31,7 +29,14 @@ const SearchableAccountSelect = ({ value, onChange }) => {
     }
 
     fetchAccounts()
-  }, [searchTerm, session.user.id])
+  }, [session.user.id])
+
+  const filteredAccounts = useMemo(() => {
+    return accounts.filter(account => 
+      account.account.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      account.account_name.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+  }, [accounts, searchTerm])
 
   return (
     <div className="relative">
@@ -46,7 +51,7 @@ const SearchableAccountSelect = ({ value, onChange }) => {
         <div className="mt-2">Loading...</div>
       ) : (
         <ScrollArea className="h-[200px] w-full border rounded-md mt-2">
-          {accounts.map((account) => (
+          {filteredAccounts.slice(0, 100).map((account) => (
             <Button
               key={account.account}
               variant={value === account.account ? 'secondary' : 'ghost'}
@@ -56,6 +61,11 @@ const SearchableAccountSelect = ({ value, onChange }) => {
               {account.account} - {account.account_name}
             </Button>
           ))}
+          {filteredAccounts.length > 100 && (
+            <div className="p-2 text-sm text-gray-500">
+              Showing 100 of {filteredAccounts.length} results. Please refine your search.
+            </div>
+          )}
         </ScrollArea>
       )}
     </div>
