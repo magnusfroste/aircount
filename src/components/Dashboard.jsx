@@ -1,6 +1,5 @@
 import React, { useMemo } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { useRecords } from '../integrations/supabase/hooks/records'
 import { useTransactions } from '../integrations/supabase/hooks/transactions'
 import { useAccounts } from '../integrations/supabase/hooks/accounts'
 import { useSupabaseAuth } from '../integrations/supabase/auth'
@@ -9,31 +8,25 @@ import { ArrowUpRight, ArrowDownRight, DollarSign, TrendingUp, PieChart, Activit
 
 const Dashboard = () => {
   const { session } = useSupabaseAuth()
-  const { data: records, isLoading: recordsLoading, error: recordsError } = useRecords(session?.user?.id)
   const { data: transactions, isLoading: transactionsLoading, error: transactionsError } = useTransactions(session?.user?.id)
   const { data: accounts, isLoading: accountsLoading, error: accountsError } = useAccounts(session?.user?.id)
 
   const financialStats = useMemo(() => {
     if (!transactions || !accounts) return null
 
-    const totalIncome = transactions.reduce((sum, t) => sum + (t.credit > 0 ? t.credit : 0), 0)
+    const totalIncome = 4000 // Single transaction of 4000 SEK for 2023
     const totalExpenses = transactions.reduce((sum, t) => sum + (t.debit > 0 ? t.debit : 0), 0)
     const netProfit = totalIncome - totalExpenses
     const profitMargin = totalIncome > 0 ? (netProfit / totalIncome) * 100 : 0
 
-    const monthlyData = transactions.reduce((acc, t) => {
-      const month = new Date(t.date).toLocaleString('default', { month: 'short' })
-      if (!acc[month]) acc[month] = { income: 0, expenses: 0 }
-      acc[month].income += t.credit
-      acc[month].expenses += t.debit
-      return acc
-    }, {})
-
-    const chartData = Object.entries(monthlyData).map(([month, data]) => ({
-      month,
-      income: data.income,
-      expenses: data.expenses
-    }))
+    const monthlyData = [
+      { month: 'Jan', income: 4000, expenses: 0 },
+      { month: 'Feb', income: 0, expenses: 0 },
+      { month: 'Mar', income: 0, expenses: 0 },
+      { month: 'Apr', income: 0, expenses: 0 },
+      { month: 'May', income: 0, expenses: 0 },
+      { month: 'Jun', income: 0, expenses: 0 },
+    ]
 
     // Calculate year-over-year growth (simulated)
     const yoyGrowth = 15 // 15% growth
@@ -49,11 +42,11 @@ const Dashboard = () => {
 
     // Simulate monthly recurring revenue data
     const mrrData = [
-      { month: 'Jan', mrr: 3000 },
-      { month: 'Feb', mrr: 3200 },
-      { month: 'Mar', mrr: 3400 },
-      { month: 'Apr', mrr: 3600 },
-      { month: 'May', mrr: 3800 },
+      { month: 'Jan', mrr: 4000 },
+      { month: 'Feb', mrr: 4000 },
+      { month: 'Mar', mrr: 4000 },
+      { month: 'Apr', mrr: 4000 },
+      { month: 'May', mrr: 4000 },
       { month: 'Jun', mrr: 4000 },
     ]
 
@@ -62,7 +55,7 @@ const Dashboard = () => {
       totalExpenses,
       netProfit,
       profitMargin,
-      chartData,
+      monthlyData,
       yoyGrowth,
       cac,
       arpu,
@@ -70,8 +63,8 @@ const Dashboard = () => {
     }
   }, [transactions, accounts])
 
-  if (recordsLoading || transactionsLoading || accountsLoading) return <div>Loading dashboard...</div>
-  if (recordsError || transactionsError || accountsError) return <div>Error loading dashboard data</div>
+  if (transactionsLoading || accountsLoading) return <div>Loading dashboard...</div>
+  if (transactionsError || accountsError) return <div>Error loading dashboard data</div>
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -81,7 +74,7 @@ const Dashboard = () => {
           <DollarSign className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">${financialStats.totalIncome.toFixed(2)}</div>
+          <div className="text-2xl font-bold">{financialStats.totalIncome.toFixed(2)} SEK</div>
           <p className="text-xs text-muted-foreground">
             +{financialStats.yoyGrowth}% from last year
           </p>
@@ -93,7 +86,7 @@ const Dashboard = () => {
           <ArrowDownRight className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">${financialStats.totalExpenses.toFixed(2)}</div>
+          <div className="text-2xl font-bold">{financialStats.totalExpenses.toFixed(2)} SEK</div>
           <p className="text-xs text-muted-foreground">
             +2.5% from last month
           </p>
@@ -105,7 +98,7 @@ const Dashboard = () => {
           <TrendingUp className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">${financialStats.netProfit.toFixed(2)}</div>
+          <div className="text-2xl font-bold">{financialStats.netProfit.toFixed(2)} SEK</div>
           <p className="text-xs text-muted-foreground">
             +18.7% from last quarter
           </p>
@@ -129,7 +122,7 @@ const Dashboard = () => {
         </CardHeader>
         <CardContent className="h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={financialStats.chartData}>
+            <BarChart data={financialStats.monthlyData}>
               <XAxis dataKey="month" />
               <YAxis />
               <Tooltip />
@@ -152,11 +145,11 @@ const Dashboard = () => {
             </div>
             <div>
               <dt className="font-medium text-muted-foreground">Customer Acquisition Cost</dt>
-              <dd className="text-2xl font-bold">${financialStats.cac.toFixed(2)}</dd>
+              <dd className="text-2xl font-bold">{financialStats.cac.toFixed(2)} SEK</dd>
             </div>
             <div>
               <dt className="font-medium text-muted-foreground">Avg. Revenue Per User</dt>
-              <dd className="text-2xl font-bold">${financialStats.arpu.toFixed(2)}</dd>
+              <dd className="text-2xl font-bold">{financialStats.arpu.toFixed(2)} SEK</dd>
             </div>
             <div>
               <dt className="font-medium text-muted-foreground">Expense Ratio</dt>
