@@ -1,6 +1,5 @@
 import iconv from 'iconv-lite';
 
-// Simple function to detect if a string contains Swedish characters
 const containsSwedishChars = (str) => {
   return /[åäöÅÄÖ]/.test(str);
 };
@@ -38,26 +37,20 @@ export const parseSEFile = (content) => {
       #KONTO lines found: ${accountsFound}`);
   }
 
-  return { accounts, encoding };
+  return { accounts, encoding, decodedContent };
 };
 
-// More comprehensive encoding detection
 export const detectEncoding = (content) => {
-  // Check for BOM (Byte Order Mark)
   if (content.charCodeAt(0) === 0xFEFF) {
     return 'UTF-8 with BOM';
   }
 
-  // Check for Swedish characters
   if (containsSwedishChars(content)) {
     return 'UTF-8';
   }
 
-  // Check for PC-8 (DOS Latin US) or ISO-8859-1 specific characters
   const pc8Regex = /[\x80-\xFF]/;
   if (pc8Regex.test(content)) {
-    // Further distinguish between PC-8 and ISO-8859-1
-    // This is a simplified check and may not be 100% accurate
     const iso88591SpecificChars = /[\xA0-\xFF]/;
     if (iso88591SpecificChars.test(content)) {
       return 'ISO-8859-1';
@@ -65,34 +58,27 @@ export const detectEncoding = (content) => {
     return 'PC-8 (DOS Latin US)';
   }
 
-  // If no special characters are found, it's likely ASCII
   if (!/[^\x00-\x7F]/.test(content)) {
     return 'ASCII';
   }
 
-  // Default to UTF-8 if no other encoding is detected
   return 'UTF-8';
 };
 
-// New function to translate characters based on detected encoding
 export const translateCharacters = (content, encoding) => {
   if (encoding === 'UTF-8' || encoding === 'UTF-8 with BOM' || encoding === 'ASCII') {
-    return content; // No translation needed
+    return content;
   }
 
   if (encoding === 'ISO-8859-1' || encoding === 'PC-8 (DOS Latin US)') {
-    // Convert to Buffer
     const buffer = Buffer.from(content, 'binary');
-    // Decode using iconv-lite
     return iconv.decode(buffer, encoding);
   }
 
-  // Default case: return original content
   console.warn(`Unsupported encoding: ${encoding}. Returning original content.`);
   return content;
 };
 
-// This function is no longer needed, but we'll keep it for compatibility
 export const getAvailableEncodings = () => {
   return ['UTF-8', 'ISO-8859-1', 'PC-8 (DOS Latin US)', 'ASCII'];
 };
