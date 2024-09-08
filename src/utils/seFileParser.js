@@ -1,5 +1,3 @@
-import { Buffer } from 'buffer';
-
 export const detectEncoding = (buffer) => {
   // Check for UTF-8 BOM
   if (buffer[0] === 0xEF && buffer[1] === 0xBB && buffer[2] === 0xBF) {
@@ -28,7 +26,7 @@ const decodeBuffer = (buffer, encoding) => {
   if (encoding === 'UTF-16BE' || encoding === 'UTF-16LE') {
     return new TextDecoder(encoding).decode(buffer);
   }
-  return Buffer.from(buffer).toString(encoding);
+  return new TextDecoder(encoding).decode(buffer);
 };
 
 export const parseSEFile = (fileContent) => {
