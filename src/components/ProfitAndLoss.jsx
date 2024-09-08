@@ -8,12 +8,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 const ProfitAndLoss = () => {
   const { session } = useSupabaseAuth()
   const { data: transactions, isLoading: transactionsLoading, error: transactionsError } = useTransactions(session?.user?.id)
-  const { data: accounts, isLoading: accountsLoading, error: accountsError } = useAccounts(session?.user?.id)
+  const { data: accountsData, isLoading: accountsLoading, error: accountsError } = useAccounts(session?.user?.id, 1, 50, true)
 
   const plStatement = useMemo(() => {
-    if (!transactions || !accounts || !Array.isArray(accounts.data)) return null
+    if (!transactions || !accountsData || !Array.isArray(accountsData.data)) return null
 
-    const accountMap = accounts.data.reduce((acc, account) => {
+    const accountMap = accountsData.data.reduce((acc, account) => {
       acc[account.account] = account.account_name
       return acc
     }, {})
@@ -53,7 +53,7 @@ const ProfitAndLoss = () => {
     plData.find(item => item.category === 'Net Income').sum = netIncome
 
     return { plData, totalIncome, totalCosts, financialIncome, taxes, netIncome }
-  }, [transactions, accounts])
+  }, [transactions, accountsData])
 
   if (transactionsLoading || accountsLoading) return <div>Loading P&L statement...</div>
   if (transactionsError) return <div>Error loading transactions: {transactionsError.message}</div>

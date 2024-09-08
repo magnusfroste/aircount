@@ -7,31 +7,27 @@ const fromSupabase = async (query) => {
     return data;
 };
 
-/*
-### accounts
-
-| name         | type                     | format | required |
-|--------------|--------------------------|--------|----------|
-| id           | int8                     | number | true     |
-| account      | text                     | string | true     |
-| account_name | text                     | string | true     |
-| user_id      | uuid                     | string | true     |
-| created_at   | timestamp with time zone | string | false    |
-
-*/
-
-export const useAccounts = (userId, page = 1, pageSize = 50) => useQuery({
-    queryKey: ['accounts', userId, page, pageSize],
+export const useAccounts = (userId, page = 1, pageSize = 50, fetchAll = false) => useQuery({
+    queryKey: ['accounts', userId, page, pageSize, fetchAll],
     queryFn: async () => {
-        const start = (page - 1) * pageSize;
-        const end = start + pageSize - 1;
-        const { data, error, count } = await supabase
-            .from('accounts')
-            .select('*', { count: 'exact' })
-            .eq('user_id', userId)
-            .range(start, end);
-        if (error) throw new Error(error.message);
-        return { data, count };
+        if (fetchAll) {
+            const { data, error, count } = await supabase
+                .from('accounts')
+                .select('*', { count: 'exact' })
+                .eq('user_id', userId);
+            if (error) throw new Error(error.message);
+            return { data, count };
+        } else {
+            const start = (page - 1) * pageSize;
+            const end = start + pageSize - 1;
+            const { data, error, count } = await supabase
+                .from('accounts')
+                .select('*', { count: 'exact' })
+                .eq('user_id', userId)
+                .range(start, end);
+            if (error) throw new Error(error.message);
+            return { data, count };
+        }
     },
 });
 
