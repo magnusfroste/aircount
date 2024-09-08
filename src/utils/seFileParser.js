@@ -5,9 +5,11 @@ export const parseSEFile = (content) => {
   for (const line of lines) {
     if (line.startsWith('#KONTO')) {
       const [, account, ...nameParts] = line.split(' ')
-      const encodedName = nameParts.join(' ').replace(/^"|"$/g, '')
-      const decodedName = decodeSwedishCharacters(encodedName)
-      accounts.push({ account, account_name: decodedName })
+      if (account && nameParts.length > 0) {
+        const encodedName = nameParts.join(' ').replace(/^"|"$/g, '')
+        const decodedName = decodeSwedishCharacters(encodedName)
+        accounts.push({ account, account_name: decodedName })
+      }
     }
   }
 

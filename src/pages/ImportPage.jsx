@@ -1,4 +1,4 @@
-import React, { useRef } from 'react'
+import React, { useRef, useState } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { toast } from 'sonner'
@@ -10,20 +10,35 @@ const ImportPage = () => {
   const fileInputRef = useRef(null)
   const { session } = useSupabaseAuth()
   const importAccountsMutation = useImportAccounts()
+  const [isImporting, setIsImporting] = useState(false)
 
   const handleFileUpload = async (event) => {
     const file = event.target.files[0]
     if (file) {
+      setIsImporting(true)
       try {
         const content = await file.text()
         const parsedContent = parseSEFile(content)
-        await importAccountsMutation.mutateAsync({ accounts: parsedContent, userId: session.user.id })
-        toast.success('File imported successfully')
+        
+        if (parsedContent.length === 0) {
+          throw new Error('No valid accounts found in the file')
+        }
+
+        const validAccounts = parsedContent.filter(account => account.account && account.account_name)
+        
+        if (validAccounts.length === 0) {
+          throw new Error('No valid accounts found after filtering')
+        }
+
+        await importAccountsMutation.mutateAsync({ accounts: validAccounts, userId: session.user.id })
+        toast.success(`Successfully imported ${validAccounts.length} accounts`)
       } catch (error) {
         console.error('Error importing file:', error)
         toast.error(`Error importing file: ${error.message}`)
+      } finally {
+        setIsImporting(false)
+        event.target.value = '' // Reset the file input
       }
-      event.target.value = '' // Reset the file input
     }
   }
 
@@ -37,9 +52,10 @@ const ImportPage = () => {
           className="hidden"
           accept=".se"
           onChange={handleFileUpload}
+          disabled={isImporting}
         />
-        <Button onClick={() => fileInputRef.current.click()}>
-          Import .SE File
+        <Button onClick={() => fileInputRef.current.click()} disabled={isImporting}>
+          {isImporting ? 'Importing...' : 'Import .SE File'}
         </Button>
       </div>
     </div>
