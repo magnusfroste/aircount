@@ -3,7 +3,7 @@ import { useAccounts, useAddAccount, useUpdateAccount, useDeleteAccount } from '
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { PlusIcon, Pencil, Trash2, ChevronLeft, ChevronRight, Search } from 'lucide-react'
+import { PlusIcon, Pencil, Trash2, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useSupabaseAuth } from '../integrations/supabase/auth'
 import { toast } from 'sonner'
 
