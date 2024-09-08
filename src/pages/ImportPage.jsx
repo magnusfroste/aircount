@@ -27,20 +27,13 @@ const ImportPage = () => {
       try {
         const arrayBuffer = await file.arrayBuffer()
         const uint8Array = new Uint8Array(arrayBuffer)
-        const decoder = new TextDecoder('utf-8', { fatal: true })
-        let content
-        try {
-          content = decoder.decode(uint8Array)
-        } catch (error) {
-          const fallbackDecoder = new TextDecoder('iso-8859-1')
-          content = fallbackDecoder.decode(uint8Array)
-        }
-        setOriginalContent(content)
+        const detectedEncoding = detectEncoding(uint8Array)
+        setOriginalEncoding(detectedEncoding)
         
-        const { accounts, originalEncoding, finalEncoding, decodedContent } = parseSEFile(content)
-        setOriginalEncoding(originalEncoding)
-        setFinalEncoding(finalEncoding)
+        const { accounts, decodedContent, originalEncoding } = parseSEFile(uint8Array)
+        setOriginalContent(new TextDecoder('utf-8').decode(uint8Array))
         setDecodedContent(decodedContent)
+        setFinalEncoding(originalEncoding)
         
         if (accounts.length === 0) {
           throw new Error('No valid accounts found in the file')
@@ -49,10 +42,10 @@ const ImportPage = () => {
         setFileInfo({
           name: file.name,
           size: file.size,
-          contentLength: content.length,
-          originalEncoding,
-          finalEncoding,
-          totalLinesParsed: content.split('\n').length,
+          contentLength: decodedContent.length,
+          originalEncoding: detectedEncoding,
+          finalEncoding: originalEncoding,
+          totalLinesParsed: decodedContent.split('\n').length,
           validAccountsExtracted: accounts.length
         })
 

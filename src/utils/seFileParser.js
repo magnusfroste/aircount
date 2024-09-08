@@ -1,6 +1,6 @@
 import { Buffer } from 'buffer';
 
-const detectEncoding = (buffer) => {
+export const detectEncoding = (buffer) => {
   // Check for UTF-8 BOM
   if (buffer[0] === 0xEF && buffer[1] === 0xBB && buffer[2] === 0xBF) {
     return 'UTF-8';
@@ -59,7 +59,7 @@ export const parseSEFile = (fileContent) => {
     throw new Error(`No valid accounts found in the file. Lines parsed: ${lines.length}`);
   }
 
-  return { accounts, decodedContent, detectedEncoding };
+  return { accounts, decodedContent, originalEncoding: detectedEncoding };
 };
 
 export const getAvailableEncodings = () => {
