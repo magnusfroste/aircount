@@ -130,7 +130,23 @@ const TemplatePage = () => {
                   onChange={(e) => handleUpdateTemplate(template.id, { date: e.target.value })}
                 />
               </TableCell>
-              <TableCell>{template.account}</TableCell>
+              <TableCell>
+                <Select
+                  value={template.account}
+                  onValueChange={(value) => handleUpdateTemplate(template.id, { account: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue>{template.account}</SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {accounts.map((account) => (
+                      <SelectItem key={account.id} value={account.account}>
+                        {account.account} - {account.account_name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </TableCell>
               <TableCell>
                 <Input
                   type="number"
