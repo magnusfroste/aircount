@@ -3,7 +3,7 @@ import { useAccounts, useAddAccount, useUpdateAccount, useDeleteAccount } from '
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { PlusIcon, Pencil, Trash2 } from 'lucide-react'
+import { PlusIcon, Pencil, Trash2, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useSupabaseAuth } from '../integrations/supabase/auth'
 import { toast } from 'sonner'
 
@@ -51,8 +51,10 @@ const AccountRow = ({ account, handleUpdateAccount, handleDeleteAccount }) => (
 
 const Accounts = () => {
   const [newAccount, setNewAccount] = useState({ account: '', account_name: '' })
+  const [currentPage, setCurrentPage] = useState(1)
+  const pageSize = 50
   const { session } = useSupabaseAuth()
-  const { data: accounts, isLoading, error } = useAccounts(session.user.id)
+  const { data: accountsData, isLoading, error } = useAccounts(session.user.id, currentPage, pageSize)
   const addAccountMutation = useAddAccount()
   const updateAccountMutation = useUpdateAccount()
   const deleteAccountMutation = useDeleteAccount()
@@ -77,7 +79,7 @@ const Accounts = () => {
   }
 
   const handleUpdateAccount = (id) => {
-    const account = accounts.find(a => a.id === id)
+    const account = accountsData.data.find(a => a.id === id)
     const updatedAccount = {
       account: prompt('Enter new account', account.account),
       account_name: prompt('Enter new account name', account.account_name)
@@ -92,6 +94,8 @@ const Accounts = () => {
       deleteAccountMutation.mutate({ id, user_id: session.user.id })
     }
   }
+
+  const totalPages = accountsData ? Math.ceil(accountsData.count / pageSize) : 0
 
   if (isLoading) return <div>Loading...</div>
   if (error) return <div>Error: {error.message}</div>
@@ -113,7 +117,7 @@ const Accounts = () => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {accounts.map((account) => (
+          {accountsData.data.map((account) => (
             <AccountRow
               key={account.id}
               account={account}
@@ -123,6 +127,25 @@ const Accounts = () => {
           ))}
         </TableBody>
       </Table>
+      <div className="mt-4 flex justify-between items-center">
+        <div>
+          Showing {(currentPage - 1) * pageSize + 1} - {Math.min(currentPage * pageSize, accountsData.count)} of {accountsData.count} accounts
+        </div>
+        <div className="flex space-x-2">
+          <Button
+            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1}
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <Button
+            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+            disabled={currentPage === totalPages}
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
     </div>
   )
 }

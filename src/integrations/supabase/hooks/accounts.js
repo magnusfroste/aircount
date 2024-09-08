@@ -20,9 +20,19 @@ const fromSupabase = async (query) => {
 
 */
 
-export const useAccounts = (userId) => useQuery({
-    queryKey: ['accounts', userId],
-    queryFn: () => fromSupabase(supabase.from('accounts').select('*').eq('user_id', userId)),
+export const useAccounts = (userId, page = 1, pageSize = 50) => useQuery({
+    queryKey: ['accounts', userId, page, pageSize],
+    queryFn: async () => {
+        const start = (page - 1) * pageSize;
+        const end = start + pageSize - 1;
+        const { data, error, count } = await supabase
+            .from('accounts')
+            .select('*', { count: 'exact' })
+            .eq('user_id', userId)
+            .range(start, end);
+        if (error) throw new Error(error.message);
+        return { data, count };
+    },
 });
 
 export const useAddAccount = () => {
