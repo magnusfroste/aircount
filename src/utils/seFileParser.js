@@ -5,8 +5,11 @@ const containsSwedishChars = (str) => {
 };
 
 export const parseSEFile = (content) => {
-  const encoding = detectEncoding(content);
-  const decodedContent = translateCharacters(content, encoding);
+  const originalEncoding = detectEncoding(content);
+  console.log(`Original detected encoding: ${originalEncoding}`);
+  
+  const decodedContent = translateCharacters(content, originalEncoding);
+  console.log(`Decoded content (first 100 chars): ${decodedContent.substring(0, 100)}`);
   
   const lines = decodedContent.split('\n');
   const accounts = [];
@@ -37,7 +40,10 @@ export const parseSEFile = (content) => {
       #KONTO lines found: ${accountsFound}`);
   }
 
-  return { accounts, encoding, decodedContent };
+  const finalEncoding = detectEncoding(decodedContent);
+  console.log(`Final detected encoding: ${finalEncoding}`);
+
+  return { accounts, originalEncoding, finalEncoding, decodedContent };
 };
 
 export const detectEncoding = (content) => {
@@ -66,13 +72,23 @@ export const detectEncoding = (content) => {
 };
 
 export const translateCharacters = (content, encoding) => {
+  console.log(`Translating characters from ${encoding}`);
+  
   if (encoding === 'UTF-8' || encoding === 'UTF-8 with BOM' || encoding === 'ASCII') {
+    console.log('No translation needed');
     return content;
   }
 
   if (encoding === 'ISO-8859-1' || encoding === 'PC-8 (DOS Latin US)') {
-    const buffer = Buffer.from(content, 'binary');
-    return iconv.decode(buffer, encoding);
+    try {
+      const buffer = Buffer.from(content, 'binary');
+      const decoded = iconv.decode(buffer, encoding);
+      console.log(`Translation completed. Sample: ${decoded.substring(0, 50)}`);
+      return decoded;
+    } catch (error) {
+      console.error(`Error during translation: ${error.message}`);
+      return content;
+    }
   }
 
   console.warn(`Unsupported encoding: ${encoding}. Returning original content.`);

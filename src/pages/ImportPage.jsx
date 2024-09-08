@@ -15,9 +15,10 @@ const ImportPage = () => {
   const [isImporting, setIsImporting] = useState(false)
   const [fileInfo, setFileInfo] = useState(null)
   const [parsedAccounts, setParsedAccounts] = useState(null)
-  const [fileContent, setFileContent] = useState('')
+  const [originalContent, setOriginalContent] = useState('')
+  const [decodedContent, setDecodedContent] = useState('')
   const [originalEncoding, setOriginalEncoding] = useState('')
-  const [processedEncoding, setProcessedEncoding] = useState('')
+  const [finalEncoding, setFinalEncoding] = useState('')
 
   const handleFileUpload = async (event) => {
     const file = event.target.files[0]
@@ -27,45 +28,35 @@ const ImportPage = () => {
         const arrayBuffer = await file.arrayBuffer()
         const uint8Array = new Uint8Array(arrayBuffer)
         const decoder = new TextDecoder('utf-8', { fatal: true })
-        let decodedContent
+        let content
         try {
-          decodedContent = decoder.decode(uint8Array)
+          content = decoder.decode(uint8Array)
         } catch (error) {
-          // If UTF-8 decoding fails, use ISO-8859-1
           const fallbackDecoder = new TextDecoder('iso-8859-1')
-          decodedContent = fallbackDecoder.decode(uint8Array)
+          content = fallbackDecoder.decode(uint8Array)
         }
-        setFileContent(decodedContent)
-        const contentLength = decodedContent.length
-        const detectedEncoding = detectEncoding(decodedContent)
-        setOriginalEncoding(detectedEncoding)
-        console.log(`File content length: ${contentLength} characters`)
-        console.log(`Detected encoding: ${detectedEncoding}`)
+        setOriginalContent(content)
         
-        const parsedContent = parseSEFile(decodedContent)
-        setProcessedEncoding(detectEncoding(JSON.stringify(parsedContent)))
+        const { accounts, originalEncoding, finalEncoding, decodedContent } = parseSEFile(content)
+        setOriginalEncoding(originalEncoding)
+        setFinalEncoding(finalEncoding)
+        setDecodedContent(decodedContent)
         
-        if (parsedContent.length === 0) {
+        if (accounts.length === 0) {
           throw new Error('No valid accounts found in the file')
-        }
-
-        const validAccounts = parsedContent.filter(account => account.account && account.account_name)
-        
-        if (validAccounts.length === 0) {
-          throw new Error('No valid accounts found after filtering')
         }
 
         setFileInfo({
           name: file.name,
           size: file.size,
-          contentLength,
-          detectedEncoding,
-          totalLinesParsed: parsedContent.totalLinesParsed,
-          kontoLinesFound: parsedContent.kontoLinesFound,
-          validAccountsExtracted: validAccounts.length
+          contentLength: content.length,
+          originalEncoding,
+          finalEncoding,
+          totalLinesParsed: content.split('\n').length,
+          validAccountsExtracted: accounts.length
         })
 
-        setParsedAccounts(validAccounts)
+        setParsedAccounts(accounts)
       } catch (error) {
         console.error('Error importing file:', error)
         toast.error(`Error importing file: ${error.message}`)
@@ -75,7 +66,7 @@ const ImportPage = () => {
         })
       } finally {
         setIsImporting(false)
-        event.target.value = '' // Reset the file input
+        event.target.value = ''
       }
     }
   }
@@ -86,7 +77,8 @@ const ImportPage = () => {
         await importAccountsMutation.mutateAsync({ accounts: parsedAccounts, userId: session.user.id })
         toast.success(`Successfully imported ${parsedAccounts.length} accounts`)
         setParsedAccounts(null)
-        setFileContent('')
+        setOriginalContent('')
+        setDecodedContent('')
         setFileInfo(null)
       } catch (error) {
         console.error('Error saving accounts:', error)
@@ -111,13 +103,23 @@ const ImportPage = () => {
           {isImporting ? 'Importing...' : 'Import .SE File'}
         </Button>
       </div>
-      {fileContent && (
+      {originalContent && (
         <Card className="mt-4">
           <CardHeader>
-            <CardTitle>File Content</CardTitle>
+            <CardTitle>Original File Content</CardTitle>
           </CardHeader>
           <CardContent>
-            <Textarea value={fileContent} readOnly rows={10} />
+            <Textarea value={originalContent} readOnly rows={10} />
+          </CardContent>
+        </Card>
+      )}
+      {decodedContent && (
+        <Card className="mt-4">
+          <CardHeader>
+            <CardTitle>Decoded File Content</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Textarea value={decodedContent} readOnly rows={10} />
           </CardContent>
         </Card>
       )}
@@ -131,9 +133,8 @@ const ImportPage = () => {
             <p><strong>File Size:</strong> {fileInfo.size} bytes</p>
             <p><strong>Content Length:</strong> {fileInfo.contentLength} characters</p>
             <p><strong>Original Detected Encoding:</strong> {originalEncoding}</p>
-            <p><strong>Processed Encoding:</strong> {processedEncoding}</p>
+            <p><strong>Final Detected Encoding:</strong> {finalEncoding}</p>
             <p><strong>Total Lines Parsed:</strong> {fileInfo.totalLinesParsed}</p>
-            <p><strong>KONTO Lines Found:</strong> {fileInfo.kontoLinesFound}</p>
             <p><strong>Valid Accounts Extracted:</strong> {fileInfo.validAccountsExtracted}</p>
             {fileInfo.error && <p className="text-red-500"><strong>Error:</strong> {fileInfo.error}</p>}
           </CardContent>
