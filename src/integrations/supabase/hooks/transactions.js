@@ -31,9 +31,13 @@ export const useTransactions = (userId) => useQuery({
 export const useAddTransaction = () => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: (newTransaction) => fromSupabase(supabase.from('transactions').insert([newTransaction])),
+        mutationFn: async (newTransactions) => {
+            const { data, error } = await supabase.from('transactions').insert(newTransactions);
+            if (error) throw error;
+            return data;
+        },
         onSuccess: (_, variables) => {
-            queryClient.invalidateQueries(['transactions', variables.user_id]);
+            queryClient.invalidateQueries(['transactions', variables[0].user_id]);
         },
     });
 };

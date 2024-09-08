@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
-import { useTemplates, useAddTransaction } from '../integrations/supabase/hooks/templates'
+import { useTemplates } from '../integrations/supabase/hooks/templates'
+import { useAddTransaction } from '../integrations/supabase/hooks/transactions'
 import { useSupabaseAuth } from '../integrations/supabase/auth'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
