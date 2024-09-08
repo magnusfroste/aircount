@@ -1,15 +1,22 @@
 import React, { useMemo } from 'react'
 import { useTransactions } from '../integrations/supabase/hooks/transactions'
+import { useAccounts } from '../integrations/supabase/hooks/accounts'
 import { useSupabaseAuth } from '../integrations/supabase/auth'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 const ProfitAndLoss = () => {
   const { session } = useSupabaseAuth()
-  const { data: transactions, isLoading, error } = useTransactions(session?.user?.id)
+  const { data: transactions, isLoading: transactionsLoading, error: transactionsError } = useTransactions(session?.user?.id)
+  const { data: accounts, isLoading: accountsLoading, error: accountsError } = useAccounts(session?.user?.id)
 
   const plStatement = useMemo(() => {
-    if (!transactions) return null
+    if (!transactions || !accounts) return null
+
+    const accountMap = accounts.reduce((acc, account) => {
+      acc[account.account] = account.account_name
+      return acc
+    }, {})
 
     const accountSums = transactions.reduce((acc, transaction) => {
       const account = transaction.account
@@ -31,7 +38,7 @@ const ProfitAndLoss = () => {
         .filter(([account, sum]) => 
           prefixes.some(prefix => account.startsWith(prefix)) && sum !== 0
         )
-        .map(([account, sum]) => ({ account, sum }))
+        .map(([account, sum]) => ({ account, accountName: accountMap[account] || 'Unknown', sum }))
       
       const sum = accounts.reduce((acc, { sum }) => acc + sum, 0)
       return { category, sum, accounts }
@@ -46,10 +53,11 @@ const ProfitAndLoss = () => {
     plData.find(item => item.category === 'Net Income').sum = netIncome
 
     return { plData, totalIncome, totalCosts, financialIncome, taxes, netIncome }
-  }, [transactions])
+  }, [transactions, accounts])
 
-  if (isLoading) return <div>Loading P&L statement...</div>
-  if (error) return <div>Error loading P&L statement: {error.message}</div>
+  if (transactionsLoading || accountsLoading) return <div>Loading P&L statement...</div>
+  if (transactionsError) return <div>Error loading transactions: {transactionsError.message}</div>
+  if (accountsError) return <div>Error loading accounts: {accountsError.message}</div>
   if (!plStatement) return <div>No data available for P&L statement</div>
 
   return (
@@ -63,6 +71,8 @@ const ProfitAndLoss = () => {
             <TableHeader>
               <TableRow>
                 <TableHead>Category</TableHead>
+                <TableHead>Account</TableHead>
+                <TableHead>Account Name</TableHead>
                 <TableHead className="text-right">Amount (SEK)</TableHead>
               </TableRow>
             </TableHeader>
@@ -71,11 +81,15 @@ const ProfitAndLoss = () => {
                 <React.Fragment key={category}>
                   <TableRow className="font-medium">
                     <TableCell>{category}</TableCell>
+                    <TableCell></TableCell>
+                    <TableCell></TableCell>
                     <TableCell className="text-right">{sum.toFixed(2)}</TableCell>
                   </TableRow>
-                  {accounts.map(({ account, sum }) => (
+                  {accounts.map(({ account, accountName, sum }) => (
                     <TableRow key={account}>
-                      <TableCell className="pl-8">{account}</TableCell>
+                      <TableCell className="pl-8"></TableCell>
+                      <TableCell>{account}</TableCell>
+                      <TableCell>{accountName}</TableCell>
                       <TableCell className="text-right">{sum.toFixed(2)}</TableCell>
                     </TableRow>
                   ))}
