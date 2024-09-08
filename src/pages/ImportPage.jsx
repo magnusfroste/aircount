@@ -80,7 +80,7 @@ const ImportPage = () => {
   const parseOpeningBalances = (content) => {
     const lines = content.split('\n')
     return lines
-      .filter(line => line.startsWith('#UB'))
+      .filter(line => line.startsWith('#IB 0'))
       .map(line => {
         const [, , account, balance] = line.split(' ')
         return { account, balance: parseFloat(balance) }
