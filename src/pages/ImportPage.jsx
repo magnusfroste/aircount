@@ -24,15 +24,16 @@ const ImportPage = () => {
     if (file) {
       setIsImporting(true)
       try {
-        const content = await file.arrayBuffer()
+        const arrayBuffer = await file.arrayBuffer()
+        const uint8Array = new Uint8Array(arrayBuffer)
         const decoder = new TextDecoder('utf-8', { fatal: true })
         let decodedContent
         try {
-          decodedContent = decoder.decode(content)
+          decodedContent = decoder.decode(uint8Array)
         } catch (error) {
-          // If UTF-8 decoding fails, try ISO-8859-1
+          // If UTF-8 decoding fails, use ISO-8859-1
           const fallbackDecoder = new TextDecoder('iso-8859-1')
-          decodedContent = fallbackDecoder.decode(content)
+          decodedContent = fallbackDecoder.decode(uint8Array)
         }
         setFileContent(decodedContent)
         const contentLength = decodedContent.length
