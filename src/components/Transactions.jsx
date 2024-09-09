@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 import { useTransactions, useAddTransaction, useDeleteTransaction, useDeleteAllTransactions } from '../integrations/supabase/hooks/transactions'
 import { useAccounts } from '../integrations/supabase/hooks/accounts'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -56,11 +56,11 @@ const TransactionForm = ({ newTransaction, setNewTransaction, accounts, handleAd
   </div>
 )
 
-const TransactionRow = ({ transaction, handleDeleteTransaction }) => (
+const TransactionRow = ({ transaction, handleDeleteTransaction, accountName }) => (
   <TableRow key={transaction.id}>
     <TableCell>{transaction.ver}</TableCell>
     <TableCell>{format(new Date(transaction.date), 'yyyy-MM-dd')}</TableCell>
-    <TableCell>{transaction.account}</TableCell>
+    <TableCell>{transaction.account} - {accountName}</TableCell>
     <TableCell>{transaction.debit}</TableCell>
     <TableCell>{transaction.credit}</TableCell>
     <TableCell>
@@ -83,6 +83,14 @@ const Transactions = () => {
   const addTransactionMutation = useAddTransaction()
   const deleteTransactionMutation = useDeleteTransaction()
   const deleteAllTransactionsMutation = useDeleteAllTransactions()
+
+  const accountMap = useMemo(() => {
+    if (!accounts) return {}
+    return accounts.reduce((acc, account) => {
+      acc[account.account] = account.account_name
+      return acc
+    }, {})
+  }, [accounts])
 
   const handleAddTransaction = () => {
     addTransactionMutation.mutate({ ...newTransaction, user_id: session.user.id })
@@ -139,6 +147,7 @@ const Transactions = () => {
               key={transaction.id}
               transaction={transaction}
               handleDeleteTransaction={handleDeleteTransaction}
+              accountName={accountMap[transaction.account] || 'Unknown Account'}
             />
           ))}
         </TableBody>
