@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { useTemplates } from '../integrations/supabase/hooks/templates'
 import { useAddTransaction } from '../integrations/supabase/hooks/transactions'
 import { useSupabaseAuth } from '../integrations/supabase/auth'
+import { useAccounts } from '../integrations/supabase/hooks/accounts'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -10,14 +11,21 @@ import { format } from 'date-fns'
 
 const TemplatesPage = () => {
   const { session } = useSupabaseAuth()
-  const { data: templates, isLoading, error } = useTemplates()
+  const { data: templates, isLoading: templatesLoading, error: templatesError } = useTemplates()
+  const { data: accounts, isLoading: accountsLoading, error: accountsError } = useAccounts(session?.user?.id)
   const addTransactionMutation = useAddTransaction()
   const [selectedTemplates, setSelectedTemplates] = useState([])
   const [transactionDate, setTransactionDate] = useState(format(new Date(), 'yyyy-MM-dd'))
   const [currentVer, setCurrentVer] = useState(1)
 
-  if (isLoading) return <div>Loading templates...</div>
-  if (error) return <div>Error loading templates: {error.message}</div>
+  if (templatesLoading || accountsLoading) return <div>Loading templates and accounts...</div>
+  if (templatesError) return <div>Error loading templates: {templatesError.message}</div>
+  if (accountsError) return <div>Error loading accounts: {accountsError.message}</div>
+
+  const getAccountName = (accountNumber) => {
+    const account = accounts.find(acc => acc.account === accountNumber)
+    return account ? account.account_name : 'Unknown Account'
+  }
 
   const handleTemplateSelect = (templateId) => {
     setSelectedTemplates(prev => 
@@ -77,7 +85,7 @@ const TemplatesPage = () => {
           <TableRow>
             <TableHead>Select</TableHead>
             <TableHead>Name</TableHead>
-            <TableHead>Account Number</TableHead>
+            <TableHead>Account</TableHead>
             <TableHead>Debit</TableHead>
             <TableHead>Credit</TableHead>
           </TableRow>
@@ -93,7 +101,7 @@ const TemplatesPage = () => {
                 />
               </TableCell>
               <TableCell>{template.name}</TableCell>
-              <TableCell>{template.account_number}</TableCell>
+              <TableCell>{template.account_number} - {getAccountName(template.account_number)}</TableCell>
               <TableCell>{template.debit}</TableCell>
               <TableCell>{template.credit}</TableCell>
             </TableRow>
