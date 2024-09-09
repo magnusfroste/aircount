@@ -27,6 +27,7 @@ const Navigation = () => {
         <Link to="/" className="text-xl font-bold">AirAccounter</Link>
         <div className="space-x-4">
           <Link to="/dashboard" className="hover:text-gray-300">Dashboard</Link>
+          <Link to="/templates" className="hover:text-gray-300">Templates</Link>
           <Link to="/transactions" className="hover:text-gray-300">Transactions</Link>
           <Link to="/profit-and-loss" className="hover:text-gray-300">Profit & Loss</Link>
           <Link to="/balance-sheet" className="hover:text-gray-300">Balance Sheet</Link>
@@ -34,7 +35,7 @@ const Navigation = () => {
           <Link to="/opening-balances" className="hover:text-gray-300">Opening Balances</Link>
           <Link to="/accounts" className="hover:text-gray-300">Accounts</Link>
           <Link to="/import" className="hover:text-gray-300">Import</Link>
-          <Link to="/templates" className="hover:text-gray-300">Templates</Link>
+         
           <Link to="/profile" className="hover:text-gray-300">Profile</Link>
           <Button onClick={handleLogout} variant="ghost" className="text-white hover:text-gray-300">Logout</Button>
         </div>
