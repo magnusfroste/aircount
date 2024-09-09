@@ -1,11 +1,11 @@
 import React, { useState } from 'react'
-import { useTransactions, useAddTransaction, useUpdateTransaction, useDeleteTransaction, useDeleteAllTransactions } from '../integrations/supabase/hooks/transactions'
+import { useTransactions, useAddTransaction, useDeleteTransaction, useDeleteAllTransactions } from '../integrations/supabase/hooks/transactions'
 import { useAccounts } from '../integrations/supabase/hooks/accounts'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { PlusIcon, Pencil, Trash2 } from 'lucide-react'
+import { PlusIcon, Trash2 } from 'lucide-react'
 import { useSupabaseAuth } from '../integrations/supabase/auth'
 import { format } from 'date-fns'
 import { toast } from 'sonner'
@@ -56,7 +56,7 @@ const TransactionForm = ({ newTransaction, setNewTransaction, accounts, handleAd
   </div>
 )
 
-const TransactionRow = ({ transaction, accounts, handleUpdateTransaction, handleDeleteTransaction }) => (
+const TransactionRow = ({ transaction, handleDeleteTransaction }) => (
   <TableRow key={transaction.id}>
     <TableCell>{transaction.ver}</TableCell>
     <TableCell>{format(new Date(transaction.date), 'yyyy-MM-dd')}</TableCell>
@@ -64,14 +64,6 @@ const TransactionRow = ({ transaction, accounts, handleUpdateTransaction, handle
     <TableCell>{transaction.debit}</TableCell>
     <TableCell>{transaction.credit}</TableCell>
     <TableCell>
-      <Button
-        variant="outline"
-        size="sm"
-        className="mr-2"
-        onClick={() => handleUpdateTransaction(transaction.id)}
-      >
-        <Pencil className="h-4 w-4" />
-      </Button>
       <Button
         variant="outline"
         size="sm"
@@ -89,25 +81,12 @@ const Transactions = () => {
   const { data: transactions, isLoading: transactionsLoading, error: transactionsError } = useTransactions(session.user.id)
   const { data: accounts, isLoading: accountsLoading, error: accountsError } = useAccounts(session.user.id)
   const addTransactionMutation = useAddTransaction()
-  const updateTransactionMutation = useUpdateTransaction()
   const deleteTransactionMutation = useDeleteTransaction()
   const deleteAllTransactionsMutation = useDeleteAllTransactions()
 
   const handleAddTransaction = () => {
     addTransactionMutation.mutate({ ...newTransaction, user_id: session.user.id })
     setNewTransaction({ ver: '', date: '', account: '', debit: 0, credit: 0 })
-  }
-
-  const handleUpdateTransaction = (id) => {
-    const transaction = transactions.find(t => t.id === id)
-    const updatedTransaction = {
-      ver: prompt('Enter new Nr', transaction.ver),
-      date: prompt('Enter new date', transaction.date),
-      account: prompt('Enter new account', transaction.account),
-      debit: parseFloat(prompt('Enter new debit', transaction.debit)),
-      credit: parseFloat(prompt('Enter new credit', transaction.credit))
-    }
-    updateTransactionMutation.mutate({ id, user_id: session.user.id, ...updatedTransaction })
   }
 
   const handleDeleteTransaction = (id) => {
@@ -159,8 +138,6 @@ const Transactions = () => {
             <TransactionRow
               key={transaction.id}
               transaction={transaction}
-              accounts={accounts}
-              handleUpdateTransaction={handleUpdateTransaction}
               handleDeleteTransaction={handleDeleteTransaction}
             />
           ))}
