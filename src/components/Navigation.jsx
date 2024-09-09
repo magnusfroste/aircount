@@ -35,6 +35,7 @@ const Navigation = () => {
           <Link to="/accounts" className="hover:text-gray-300">Accounts</Link>
           <Link to="/import" className="hover:text-gray-300">Import</Link>
           <Link to="/templates" className="hover:text-gray-300">Templates</Link>
+          <Link to="/profile" className="hover:text-gray-300">Profile</Link>
           <Button onClick={handleLogout} variant="ghost" className="text-white hover:text-gray-300">Logout</Button>
         </div>
       </div>
