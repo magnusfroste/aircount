@@ -3,6 +3,7 @@ import { useTemplates } from '../integrations/supabase/hooks/templates'
 import { useAddTransaction } from '../integrations/supabase/hooks/transactions'
 import { useSupabaseAuth } from '../integrations/supabase/auth'
 import { useAccounts } from '../integrations/supabase/hooks/accounts'
+import { useTransactions } from '../integrations/supabase/hooks/transactions'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -10,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { toast } from 'sonner'
 import { format } from 'date-fns'
 
-const SelectedTransactions = ({ selectedTemplates, templates, accounts, transactionDate, onAddTransactions, editedTransactions, setEditedTransactions }) => {
+const SelectedTransactions = ({ selectedTemplates, templates, accounts, transactionDate, onAddTransactions, editedTransactions, setEditedTransactions, accountBalances }) => {
   const selectedTransactionTemplates = templates.filter(template => selectedTemplates.includes(template.id))
 
   const handleEdit = (id, field, value) => {
@@ -57,6 +58,7 @@ const SelectedTransactions = ({ selectedTemplates, templates, accounts, transact
               <TableRow>
                 <TableHead>Name</TableHead>
                 <TableHead>Account</TableHead>
+                <TableHead>Current Balance</TableHead>
                 <TableHead>Debit</TableHead>
                 <TableHead>Credit</TableHead>
               </TableRow>
@@ -66,6 +68,7 @@ const SelectedTransactions = ({ selectedTemplates, templates, accounts, transact
                 <TableRow key={template.id}>
                   <TableCell>{template.name}</TableCell>
                   <TableCell>{template.account_number} - {accounts.find(acc => acc.account === template.account_number)?.account_name || 'Unknown Account'}</TableCell>
+                  <TableCell>{accountBalances[template.account_number]?.toFixed(2) || '0.00'}</TableCell>
                   <TableCell>
                     <Input
                       type="number"
@@ -85,12 +88,12 @@ const SelectedTransactions = ({ selectedTemplates, templates, accounts, transact
                 </TableRow>
               ))}
               <TableRow className="font-bold">
-                <TableCell colSpan={2}>Total</TableCell>
+                <TableCell colSpan={3}>Total</TableCell>
                 <TableCell>{sums.debit.toFixed(2)}</TableCell>
                 <TableCell>{sums.credit.toFixed(2)}</TableCell>
               </TableRow>
               <TableRow className={difference === 0 ? "text-green-600" : "text-red-600"}>
-                <TableCell colSpan={3}>Difference (Debit - Credit)</TableCell>
+                <TableCell colSpan={4}>Difference (Debit - Credit)</TableCell>
                 <TableCell>{difference.toFixed(2)}</TableCell>
               </TableRow>
             </TableBody>
@@ -151,6 +154,7 @@ const TemplatesPage = () => {
   const { session } = useSupabaseAuth()
   const { data: templates, isLoading: templatesLoading, error: templatesError } = useTemplates()
   const { data: accounts, isLoading: accountsLoading, error: accountsError } = useAccounts(session?.user?.id)
+  const { data: transactions, isLoading: transactionsLoading, error: transactionsError } = useTransactions(session?.user?.id)
   const addTransactionMutation = useAddTransaction()
   const [selectedTemplates, setSelectedTemplates] = useState([])
   const [transactionDate, setTransactionDate] = useState(format(new Date(), 'yyyy-MM-dd'))
@@ -158,9 +162,16 @@ const TemplatesPage = () => {
   const [editedTransactions, setEditedTransactions] = useState({})
   const [searchTerm, setSearchTerm] = useState('')
 
-  if (templatesLoading || accountsLoading) return <div>Loading templates and accounts...</div>
-  if (templatesError) return <div>Error loading templates: {templatesError.message}</div>
-  if (accountsError) return <div>Error loading accounts: {accountsError.message}</div>
+  const accountBalances = useMemo(() => {
+    if (!transactions) return {}
+    return transactions.reduce((acc, transaction) => {
+      acc[transaction.account] = (acc[transaction.account] || 0) + transaction.debit - transaction.credit
+      return acc
+    }, {})
+  }, [transactions])
+
+  if (templatesLoading || accountsLoading || transactionsLoading) return <div>Loading data...</div>
+  if (templatesError || accountsError || transactionsError) return <div>Error loading data</div>
 
   const handleTemplateSelect = (templateId) => {
     setSelectedTemplates(prev => 
@@ -217,6 +228,7 @@ const TemplatesPage = () => {
         onAddTransactions={handleAddSelectedTransactions}
         editedTransactions={editedTransactions}
         setEditedTransactions={setEditedTransactions}
+        accountBalances={accountBalances}
       />
 
       <div className="mb-4">
