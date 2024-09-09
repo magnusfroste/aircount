@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 import { useTemplates } from '../integrations/supabase/hooks/templates'
 import { useAddTransaction } from '../integrations/supabase/hooks/transactions'
 import { useSupabaseAuth } from '../integrations/supabase/auth'
@@ -20,6 +20,17 @@ const SelectedTransactions = ({ selectedTemplates, templates, accounts, transact
       [id]: { ...prev[id], [field]: parseFloat(value) || 0 }
     }))
   }
+
+  const sums = useMemo(() => {
+    return selectedTransactionTemplates.reduce((acc, template) => {
+      const editedTransaction = editedTransactions[template.id] || {}
+      acc.debit += editedTransaction.debit ?? template.debit
+      acc.credit += editedTransaction.credit ?? template.credit
+      return acc
+    }, { debit: 0, credit: 0 })
+  }, [selectedTransactionTemplates, editedTransactions])
+
+  const difference = sums.debit - sums.credit
 
   return (
     <Card className="mb-6">
@@ -74,6 +85,15 @@ const SelectedTransactions = ({ selectedTemplates, templates, accounts, transact
                   </TableCell>
                 </TableRow>
               ))}
+              <TableRow className="font-bold">
+                <TableCell colSpan={2}>Total</TableCell>
+                <TableCell>{sums.debit.toFixed(2)}</TableCell>
+                <TableCell>{sums.credit.toFixed(2)}</TableCell>
+              </TableRow>
+              <TableRow className={difference === 0 ? "text-green-600" : "text-red-600"}>
+                <TableCell colSpan={3}>Difference (Debit - Credit)</TableCell>
+                <TableCell>{difference.toFixed(2)}</TableCell>
+              </TableRow>
             </TableBody>
           </Table>
         ) : (
