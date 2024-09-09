@@ -10,9 +10,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { toast } from 'sonner'
 import { format } from 'date-fns'
 
-const SelectedTransactions = ({ selectedTemplates, templates, accounts, transactionDate, onAddTransactions }) => {
+const SelectedTransactions = ({ selectedTemplates, templates, accounts, transactionDate, onAddTransactions, editedTransactions, setEditedTransactions }) => {
   const selectedTransactionTemplates = templates.filter(template => selectedTemplates.includes(template.id))
-  const [editedTransactions, setEditedTransactions] = useState({})
 
   const handleEdit = (id, field, value) => {
     setEditedTransactions(prev => ({
@@ -104,6 +103,50 @@ const SelectedTransactions = ({ selectedTemplates, templates, accounts, transact
   )
 }
 
+const AvailableTemplates = ({ templates, accounts, selectedTemplates, handleTemplateSelect, searchTerm }) => {
+  const filteredTemplates = templates.filter(template => 
+    template.name.toLowerCase().includes(searchTerm.toLowerCase())
+  )
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Available Templates</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Select</TableHead>
+              <TableHead>Name</TableHead>
+              <TableHead>Account</TableHead>
+              <TableHead>Debit</TableHead>
+              <TableHead>Credit</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filteredTemplates.map((template) => (
+              <TableRow key={template.id}>
+                <TableCell>
+                  <input
+                    type="checkbox"
+                    checked={selectedTemplates.includes(template.id)}
+                    onChange={() => handleTemplateSelect(template.id)}
+                  />
+                </TableCell>
+                <TableCell>{template.name}</TableCell>
+                <TableCell>{template.account_number} - {accounts.find(acc => acc.account === template.account_number)?.account_name || 'Unknown Account'}</TableCell>
+                <TableCell>{template.debit}</TableCell>
+                <TableCell>{template.credit}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </CardContent>
+    </Card>
+  )
+}
+
 const TemplatesPage = () => {
   const { session } = useSupabaseAuth()
   const { data: templates, isLoading: templatesLoading, error: templatesError } = useTemplates()
@@ -112,6 +155,8 @@ const TemplatesPage = () => {
   const [selectedTemplates, setSelectedTemplates] = useState([])
   const [transactionDate, setTransactionDate] = useState(format(new Date(), 'yyyy-MM-dd'))
   const [currentVer, setCurrentVer] = useState(1)
+  const [editedTransactions, setEditedTransactions] = useState({})
+  const [searchTerm, setSearchTerm] = useState('')
 
   if (templatesLoading || accountsLoading) return <div>Loading templates and accounts...</div>
   if (templatesError) return <div>Error loading templates: {templatesError.message}</div>
@@ -152,6 +197,7 @@ const TemplatesPage = () => {
         toast.success(`Added ${selectedTransactions.length} transaction(s)`)
         setSelectedTemplates([])
         setCurrentVer(prev => prev + 1)
+        setEditedTransactions({})
       },
       onError: (error) => {
         toast.error(`Error adding transactions: ${error.message}`)
@@ -169,43 +215,26 @@ const TemplatesPage = () => {
         accounts={accounts}
         transactionDate={transactionDate}
         onAddTransactions={handleAddSelectedTransactions}
+        editedTransactions={editedTransactions}
+        setEditedTransactions={setEditedTransactions}
       />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Available Templates</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Select</TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead>Account</TableHead>
-                <TableHead>Debit</TableHead>
-                <TableHead>Credit</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {templates.map((template) => (
-                <TableRow key={template.id}>
-                  <TableCell>
-                    <input
-                      type="checkbox"
-                      checked={selectedTemplates.includes(template.id)}
-                      onChange={() => handleTemplateSelect(template.id)}
-                    />
-                  </TableCell>
-                  <TableCell>{template.name}</TableCell>
-                  <TableCell>{template.account_number} - {accounts.find(acc => acc.account === template.account_number)?.account_name || 'Unknown Account'}</TableCell>
-                  <TableCell>{template.debit}</TableCell>
-                  <TableCell>{template.credit}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+      <div className="mb-4">
+        <Input
+          type="text"
+          placeholder="Search templates..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+      </div>
+
+      <AvailableTemplates 
+        templates={templates}
+        accounts={accounts}
+        selectedTemplates={selectedTemplates}
+        handleTemplateSelect={handleTemplateSelect}
+        searchTerm={searchTerm}
+      />
     </div>
   )
 }
