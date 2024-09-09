@@ -5,8 +5,6 @@ import { useAccounts } from '../integrations/supabase/hooks/accounts'
 import { useSupabaseAuth } from '../integrations/supabase/auth'
 import FinancialOverview from './dashboard/FinancialOverview'
 import MonthlyChart from './dashboard/MonthlyChart'
-import KPICards from './dashboard/KPICards'
-import MRRChart from './dashboard/MRRChart'
 
 const Dashboard = () => {
   const { session } = useSupabaseAuth()
@@ -17,11 +15,16 @@ const Dashboard = () => {
   if (transactionsError || accountsError) return <div>Error loading dashboard data</div>
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+    <div className="grid gap-4 md:grid-cols-2">
       <FinancialOverview transactions={transactions} accounts={accounts} />
-      <MonthlyChart transactions={transactions} accounts={accounts} />
-      <KPICards transactions={transactions} />
-      <MRRChart />
+      <Card className="md:col-span-2">
+        <CardHeader>
+          <CardTitle>Monthly Overview</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <MonthlyChart transactions={transactions} accounts={accounts} />
+        </CardContent>
+      </Card>
     </div>
   )
 }
