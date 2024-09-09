@@ -20,7 +20,7 @@ const ProfitAndLoss = () => {
 
     const accountSums = transactions.reduce((acc, transaction) => {
       const account = transaction.account
-      const amount = transaction.debit - transaction.credit
+      const amount = transaction.credit - transaction.debit // Inverted calculation
       acc[account] = (acc[account] || 0) + amount
       return acc
     }, {})
