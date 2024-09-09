@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useTransactions } from '../integrations/supabase/hooks/transactions'
 import { useAccounts } from '../integrations/supabase/hooks/accounts'
+import { useOpeningBalances } from '../integrations/supabase/hooks/openingBalances'
 import { useSupabaseAuth } from '../integrations/supabase/auth'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Input } from "@/components/ui/input"
@@ -12,9 +13,10 @@ const Ledger = () => {
   const { session } = useSupabaseAuth()
   const { data: transactions, isLoading: transactionsLoading } = useTransactions(session?.user?.id)
   const { data: accounts, isLoading: accountsLoading } = useAccounts(session?.user?.id)
+  const { data: openingBalances, isLoading: openingBalancesLoading } = useOpeningBalances(session?.user?.id)
   const [selectedAccount, setSelectedAccount] = useState('')
 
-  if (transactionsLoading || accountsLoading) return <div>Loading ledger data...</div>
+  if (transactionsLoading || accountsLoading || openingBalancesLoading) return <div>Loading ledger data...</div>
 
   const ledgerData = transactions.reduce((acc, transaction) => {
     if (!acc[transaction.account]) {
@@ -24,10 +26,16 @@ const Ledger = () => {
     return acc
   }, {})
 
-  const accountBalance = (accountTransactions) => {
+  const getOpeningBalance = (account) => {
+    const openingBalance = openingBalances.find(balance => balance.account === account)
+    return openingBalance ? openingBalance.balance : 0
+  }
+
+  const accountBalance = (accountTransactions, account) => {
+    const openingBalance = getOpeningBalance(account)
     return accountTransactions.reduce((balance, transaction) => {
       return balance + transaction.debit - transaction.credit
-    }, 0)
+    }, openingBalance)
   }
 
   const filteredLedgerData = selectedAccount ? { [selectedAccount]: ledgerData[selectedAccount] } : ledgerData
@@ -61,8 +69,14 @@ const Ledger = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
+                {getOpeningBalance(account) !== 0 && (
+                  <TableRow>
+                    <TableCell colSpan={4}>Opening Balance</TableCell>
+                    <TableCell className="text-right">{getOpeningBalance(account).toFixed(2)}</TableCell>
+                  </TableRow>
+                )}
                 {transactions.map((transaction, index) => {
-                  const runningBalance = accountBalance(transactions.slice(0, index + 1))
+                  const runningBalance = accountBalance(transactions.slice(0, index + 1), account)
                   return (
                     <TableRow key={transaction.id}>
                       <TableCell>{format(new Date(transaction.date), 'yyyy-MM-dd')}</TableCell>
@@ -76,7 +90,7 @@ const Ledger = () => {
               </TableBody>
             </Table>
             <div className="mt-4 text-right font-bold">
-              Total Balance: {accountBalance(transactions).toFixed(2)}
+              Total Balance: {accountBalance(transactions, account).toFixed(2)}
             </div>
           </CardContent>
         </Card>
