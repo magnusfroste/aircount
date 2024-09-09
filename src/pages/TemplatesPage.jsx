@@ -12,6 +12,14 @@ import { format } from 'date-fns'
 
 const SelectedTransactions = ({ selectedTemplates, templates, accounts, transactionDate, onAddTransactions }) => {
   const selectedTransactionTemplates = templates.filter(template => selectedTemplates.includes(template.id))
+  const [editedTransactions, setEditedTransactions] = useState({})
+
+  const handleEdit = (id, field, value) => {
+    setEditedTransactions(prev => ({
+      ...prev,
+      [id]: { ...prev[id], [field]: parseFloat(value) || 0 }
+    }))
+  }
 
   return (
     <Card className="mb-6">
@@ -27,7 +35,7 @@ const SelectedTransactions = ({ selectedTemplates, templates, accounts, transact
             className="w-48"
           />
           <Button 
-            onClick={() => onAddTransactions(transactionDate)}
+            onClick={() => onAddTransactions(transactionDate, editedTransactions)}
             disabled={selectedTemplates.length === 0}
           >
             Add Selected Transactions
@@ -48,8 +56,22 @@ const SelectedTransactions = ({ selectedTemplates, templates, accounts, transact
                 <TableRow key={template.id}>
                   <TableCell>{template.name}</TableCell>
                   <TableCell>{template.account_number} - {accounts.find(acc => acc.account === template.account_number)?.account_name || 'Unknown Account'}</TableCell>
-                  <TableCell>{template.debit}</TableCell>
-                  <TableCell>{template.credit}</TableCell>
+                  <TableCell>
+                    <Input
+                      type="number"
+                      value={editedTransactions[template.id]?.debit ?? template.debit}
+                      onChange={(e) => handleEdit(template.id, 'debit', e.target.value)}
+                      className="w-24"
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <Input
+                      type="number"
+                      value={editedTransactions[template.id]?.credit ?? template.credit}
+                      onChange={(e) => handleEdit(template.id, 'credit', e.target.value)}
+                      className="w-24"
+                    />
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -83,7 +105,7 @@ const TemplatesPage = () => {
     )
   }
 
-  const handleAddSelectedTransactions = (date) => {
+  const handleAddSelectedTransactions = (date, editedTransactions) => {
     if (!date) {
       toast.error('Please select a date for the transactions')
       return
@@ -94,8 +116,8 @@ const TemplatesPage = () => {
       .map(template => ({
         date: date,
         account: template.account_number,
-        debit: template.debit,
-        credit: template.credit,
+        debit: editedTransactions[template.id]?.debit ?? template.debit,
+        credit: editedTransactions[template.id]?.credit ?? template.credit,
         ver: currentVer.toString(),
         user_id: session.user.id
       }))
