@@ -1,16 +1,10 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_PROJECT_URL;
-const supabaseKey = import.meta.env.VITE_SUPABASE_API_KEY;
+const supabaseUrl = import.meta.env.VITE_SUPABASE_PROJECT_URL || 'https://your-project-url.supabase.co';
+const supabaseKey = import.meta.env.VITE_SUPABASE_API_KEY || 'your-anon-key';
 
-if (!supabaseUrl) {
-  console.error('VITE_SUPABASE_PROJECT_URL is not set in the environment variables.');
-  throw new Error('Supabase URL is missing. Please check your environment configuration.');
-}
-
-if (!supabaseKey) {
-  console.error('VITE_SUPABASE_API_KEY is not set in the environment variables.');
-  throw new Error('Supabase API key is missing. Please check your environment configuration.');
+if (supabaseUrl === 'https://your-project-url.supabase.co' || supabaseKey === 'your-anon-key') {
+  console.warn('Using default Supabase URL or API key. Please set the correct values in your environment variables.');
 }
 
 export const supabase = createClient(supabaseUrl, supabaseKey);
