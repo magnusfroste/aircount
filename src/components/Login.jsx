@@ -2,14 +2,15 @@ import React from 'react'
 import { Auth } from '@supabase/auth-ui-react'
 import { ThemeSupa } from '@supabase/auth-ui-shared'
 import { useSupabaseAuth } from '../integrations/supabase/auth'
-import { Navigate } from 'react-router-dom'
+import { Navigate, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 
 const Login = () => {
   const { session } = useSupabaseAuth()
+  const navigate = useNavigate()
 
   if (session) {
-    return <Navigate to="/" replace />
+    return <Navigate to="/dashboard" replace />
   }
 
   return (
@@ -21,6 +22,10 @@ const Login = () => {
           appearance={{ theme: ThemeSupa }}
           theme="default"
           providers={[]}
+          redirectTo={`${window.location.origin}/dashboard`}
+          onSuccess={() => {
+            navigate('/dashboard')
+          }}
         />
       </div>
     </div>
