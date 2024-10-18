@@ -6,7 +6,7 @@ import { SupabaseAuthProvider, useSupabaseAuth } from './integrations/supabase/a
 import Login from './components/Login';
 import Index from './pages/Index';
 import EventsPage from './pages/EventsPage';
-import Navigation from './components/Navigation';
+import Header from './components/Header';
 import TransactionsPage from './pages/TransactionsPage';
 import AccountsPage from './pages/AccountsPage';
 import ProfitAndLossPage from './pages/ProfitAndLossPage';
@@ -36,14 +36,12 @@ const ProtectedRoute = ({ children }) => {
 };
 
 const AppRoutes = () => {
-  const { session } = useSupabaseAuth();
-
   return (
     <>
-      {session && <Navigation />}
+      <Header />
       <Routes>
         <Route path="/" element={<LandingPage />} />
-        <Route path="/login" element={session ? <Navigate to="/dashboard" replace /> : <Login />} />
+        <Route path="/login" element={<Login />} />
         <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
         <Route path="/events" element={<ProtectedRoute><EventsPage /></ProtectedRoute>} />
         <Route path="/transactions" element={<ProtectedRoute><TransactionsPage /></ProtectedRoute>} />
