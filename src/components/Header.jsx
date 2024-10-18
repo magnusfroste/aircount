@@ -19,6 +19,10 @@ const Header = () => {
     }
   }
 
+  const handleSignIn = () => {
+    navigate('/login')
+  }
+
   return (
     <header className="bg-white shadow-md">
       <div className="container mx-auto px-4 py-4 flex justify-between items-center">
@@ -57,7 +61,7 @@ const Header = () => {
           {session ? (
             <Button onClick={handleSignOut}>Sign Out</Button>
           ) : (
-            <Link to="/" className="text-blue-600 hover:text-blue-800">Sign In</Link>
+            <Button onClick={handleSignIn} className="text-blue-600 hover:text-blue-800">Sign In</Button>
           )}
         </div>
       </div>
