@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { toast } from 'sonner'
 import { format } from 'date-fns'
+import Header from '../components/Header'
 
 const SelectedTransactions = ({ selectedTemplates, templates, accounts, transactionDate, onAddTransactions, editedTransactions, setEditedTransactions, accountBalances }) => {
   const selectedTransactionTemplates = templates.filter(template => selectedTemplates.includes(template.id))
@@ -217,9 +218,10 @@ const TemplatesPage = () => {
   }
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Transaction Templates</h1>
-      
+    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
+      <Header />
+      <div className="container mx-auto p-4">
+        <h1 className="text-2xl font-bold mb-4">Transaction Templates</h1>
       <SelectedTransactions 
         selectedTemplates={selectedTemplates}
         templates={templates}
@@ -247,6 +249,7 @@ const TemplatesPage = () => {
         handleTemplateSelect={handleTemplateSelect}
         searchTerm={searchTerm}
       />
+      </div>
     </div>
   )
 }
