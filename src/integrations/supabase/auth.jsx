@@ -27,30 +27,24 @@ export const SupabaseAuthProviderInner = ({ children }) => {
       setLoading(false);
     };
 
-    getSession();
-
-    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session);
       queryClient.invalidateQueries('user');
-      setLoading(false);
     });
+
+    getSession();
 
     return () => {
       authListener.subscription.unsubscribe();
+      setLoading(false);
     };
   }, [queryClient]);
 
   const logout = async () => {
-    setLoading(true);
-    try {
-      await supabase.auth.signOut();
-      setSession(null);
-      queryClient.invalidateQueries('user');
-    } catch (error) {
-      console.error('Error during logout:', error);
-    } finally {
-      setLoading(false);
-    }
+    await supabase.auth.signOut();
+    setSession(null);
+    queryClient.invalidateQueries('user');
+    setLoading(false);
   };
 
   return (

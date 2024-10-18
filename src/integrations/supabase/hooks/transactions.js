@@ -23,18 +23,15 @@ const fromSupabase = async (query) => {
 
 */
 
-export const useTransactions = (userId, sortOrder = 'desc', fiscalYear) => useQuery({
-    queryKey: ['transactions', userId, sortOrder, fiscalYear],
+export const useTransactions = (userId, sortOrder = 'desc') => useQuery({
+    queryKey: ['transactions', userId, sortOrder],
     queryFn: () => fromSupabase(
         supabase
             .from('transactions')
             .select('*')
             .eq('user_id', userId)
-            .gte('date', `${fiscalYear}-01-01`)
-            .lt('date', `${parseInt(fiscalYear) + 1}-01-01`)
             .order('ver', { ascending: sortOrder === 'asc' })
     ),
-    enabled: !!userId && !!fiscalYear,
 });
 
 export const useAddTransaction = () => {

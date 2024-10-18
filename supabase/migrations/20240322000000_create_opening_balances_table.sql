@@ -8,7 +8,6 @@ BEGIN
           account TEXT NOT NULL,
           balance NUMERIC NOT NULL,
           user_id UUID NOT NULL,
-          fiscal_year INT NOT NULL,
           created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
         );
 
@@ -36,14 +35,5 @@ BEGIN
 
         -- Create an index on the account column for faster account-based queries
         CREATE INDEX idx_opening_balances_account ON opening_balances(account);
-
-        -- Create an index on the fiscal_year column for faster year-based queries
-        CREATE INDEX idx_opening_balances_fiscal_year ON opening_balances(fiscal_year);
-    ELSE
-        -- Add the fiscal_year column if it doesn't exist
-        IF NOT EXISTS (SELECT FROM information_schema.columns WHERE table_name = 'opening_balances' AND column_name = 'fiscal_year') THEN
-            ALTER TABLE opening_balances ADD COLUMN fiscal_year INT NOT NULL DEFAULT 2024;
-            CREATE INDEX idx_opening_balances_fiscal_year ON opening_balances(fiscal_year);
-        END IF;
     END IF;
 END $$;

@@ -1,50 +1,71 @@
-import React from 'react'
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
-import { SupabaseAuthProvider } from './integrations/supabase/auth'
-import { FiscalYearProvider } from './contexts/FiscalYearContext'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import Header from './components/Header'
-import LandingPage from './components/LandingPage'
-import DashboardPage from './pages/DashboardPage'
-import TransactionsPage from './pages/TransactionsPage'
-import AccountsPage from './pages/AccountsPage'
-import BalanceSheetPage from './pages/BalanceSheetPage'
-import ProfitAndLossPage from './pages/ProfitAndLossPage'
-import TemplatesPage from './pages/TemplatesPage'
-import ImportPage from './pages/ImportPage'
-import YearManagementPage from './pages/YearManagementPage'
-import OpeningBalancesPage from './pages/OpeningBalancesPage'
-import Login from './components/Login'
+import { Toaster } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { SupabaseAuthProvider, useSupabaseAuth } from './integrations/supabase/auth';
+import Login from './components/Login';
+import EventsPage from './pages/EventsPage';
+import TransactionsPage from './pages/TransactionsPage';
+import AccountsPage from './pages/AccountsPage';
+import ProfitAndLossPage from './pages/ProfitAndLossPage';
+import LedgerPage from './pages/LedgerPage';
+import BalanceSheetPage from './pages/BalanceSheetPage';
+import OpeningBalancesPage from './pages/OpeningBalancesPage';
+import ImportPage from './pages/ImportPage';
+import LandingPage from './components/LandingPage';
+import DashboardPage from './pages/DashboardPage';
+import TemplatesPage from './pages/TemplatesPage';
+import ProfilePage from './pages/ProfilePage';
 
-const queryClient = new QueryClient()
+const queryClient = new QueryClient();
 
-function App() {
+const ProtectedRoute = ({ children }) => {
+  const { session, loading } = useSupabaseAuth();
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!session) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return children;
+};
+
+const AppRoutes = () => {
+  const { session } = useSupabaseAuth();
+
   return (
-    <QueryClientProvider client={queryClient}>
-      <SupabaseAuthProvider>
-        <FiscalYearProvider>
-          <Router>
-            <div className="min-h-screen bg-gray-100">
-              <Header />
-              <Routes>
-                <Route path="/" element={<LandingPage />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/dashboard" element={<DashboardPage />} />
-                <Route path="/transactions" element={<TransactionsPage />} />
-                <Route path="/accounts" element={<AccountsPage />} />
-                <Route path="/balance-sheet" element={<BalanceSheetPage />} />
-                <Route path="/profit-and-loss" element={<ProfitAndLossPage />} />
-                <Route path="/templates" element={<TemplatesPage />} />
-                <Route path="/import" element={<ImportPage />} />
-                <Route path="/year-management" element={<YearManagementPage />} />
-                <Route path="/opening-balances" element={<OpeningBalancesPage />} />
-              </Routes>
-            </div>
-          </Router>
-        </FiscalYearProvider>
-      </SupabaseAuthProvider>
-    </QueryClientProvider>
-  )
-}
+    <Routes>
+      <Route path="/" element={<LandingPage />} />
+      <Route path="/login" element={session ? <Navigate to="/dashboard" replace /> : <Login />} />
+      <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+      <Route path="/events" element={<ProtectedRoute><EventsPage /></ProtectedRoute>} />
+      <Route path="/transactions" element={<ProtectedRoute><TransactionsPage /></ProtectedRoute>} />
+      <Route path="/accounts" element={<ProtectedRoute><AccountsPage /></ProtectedRoute>} />
+      <Route path="/profit-and-loss" element={<ProtectedRoute><ProfitAndLossPage /></ProtectedRoute>} />
+      <Route path="/ledger" element={<ProtectedRoute><LedgerPage /></ProtectedRoute>} />
+      <Route path="/balance-sheet" element={<ProtectedRoute><BalanceSheetPage /></ProtectedRoute>} />
+      <Route path="/opening-balances" element={<ProtectedRoute><OpeningBalancesPage /></ProtectedRoute>} />
+      <Route path="/import" element={<ProtectedRoute><ImportPage /></ProtectedRoute>} />
+      <Route path="/templates" element={<ProtectedRoute><TemplatesPage /></ProtectedRoute>} />
+      <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+    </Routes>
+  );
+};
 
-export default App
+const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <SupabaseAuthProvider>
+      <TooltipProvider>
+        <Toaster />
+        <BrowserRouter>
+          <AppRoutes />
+        </BrowserRouter>
+      </TooltipProvider>
+    </SupabaseAuthProvider>
+  </QueryClientProvider>
+);
+
+export default App;

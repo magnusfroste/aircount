@@ -1,64 +1,21 @@
-import {
-  LayoutDashboard,
-  CreditCard,
-  Receipt,
-  Package,
-  Users,
-  Settings,
-  FileText,
-  BarChart2,
-  Calendar,
-} from 'lucide-react'
+import { HomeIcon, CalendarIcon } from "lucide-react";
+import Index from "./pages/Index.jsx";
+import EventsPage from "./pages/EventsPage.jsx";
 
+/**
+ * Central place for defining the navigation items. Used for navigation components and routing.
+ */
 export const navItems = [
   {
-    title: 'Dashboard',
-    href: '/dashboard',
-    icon: LayoutDashboard,
+    title: "Home",
+    to: "/",
+    icon: <HomeIcon className="h-4 w-4" />,
+    page: <Index />,
   },
   {
-    title: 'Transactions',
-    href: '/transactions',
-    icon: CreditCard,
+    title: "Events",
+    to: "/events",
+    icon: <CalendarIcon className="h-4 w-4" />,
+    page: <EventsPage />,
   },
-  {
-    title: 'Accounts',
-    href: '/accounts',
-    icon: Users,
-  },
-  {
-    title: 'Templates',
-    href: '/templates',
-    icon: FileText,
-  },
-  {
-    title: 'Balance Sheet',
-    href: '/balance-sheet',
-    icon: BarChart2,
-  },
-  {
-    title: 'Profit and Loss',
-    href: '/profit-and-loss',
-    icon: Receipt,
-  },
-  {
-    title: 'Ledger',
-    href: '/ledger',
-    icon: Package,
-  },
-  {
-    title: 'Opening Balances',
-    href: '/opening-balances',
-    icon: CreditCard,
-  },
-  {
-    title: 'Year Management',
-    href: '/year-management',
-    icon: Calendar,
-  },
-  {
-    title: 'Settings',
-    href: '/settings',
-    icon: Settings,
-  },
-]
+];

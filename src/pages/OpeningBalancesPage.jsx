@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import Header from '../components/Header'
 import { useSupabaseAuth } from '../integrations/supabase/auth'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -8,12 +9,10 @@ import { toast } from 'sonner'
 import { useOpeningBalances, useAddOpeningBalance, useDeleteOpeningBalance } from '../integrations/supabase/hooks/openingBalances'
 import { useAccounts } from '../integrations/supabase/hooks/accounts'
 import { formatNumber } from '../utils/numberFormatting'
-import { useFiscalYear } from '../contexts/FiscalYearContext'
 
 const OpeningBalancesPage = () => {
   const { session } = useSupabaseAuth()
-  const { selectedYear } = useFiscalYear()
-  const { data: openingBalances, isLoading, error } = useOpeningBalances(session?.user?.id, selectedYear)
+  const { data: openingBalances, isLoading, error } = useOpeningBalances(session?.user?.id)
   const { data: accounts } = useAccounts(session?.user?.id)
   const addOpeningBalanceMutation = useAddOpeningBalance()
   const deleteOpeningBalanceMutation = useDeleteOpeningBalance()
@@ -24,8 +23,7 @@ const OpeningBalancesPage = () => {
     try {
       await addOpeningBalanceMutation.mutateAsync({
         ...newBalance,
-        user_id: session.user.id,
-        fiscal_year: selectedYear
+        user_id: session.user.id
       })
       toast.success('Balance added successfully')
       setNewBalance({ account: '', balance: 0 })
@@ -60,7 +58,6 @@ const OpeningBalancesPage = () => {
   const sumPositive = groupedBalances?.positive.reduce((sum, balance) => sum + balance.balance, 0) || 0
   const sumNegative = groupedBalances?.negative.reduce((sum, balance) => sum + Math.abs(balance.balance), 0) || 0
 
-
   if (isLoading) return <div>Loading opening balances...</div>
   if (error) return <div>Error loading opening balances: {error.message}</div>
 
@@ -94,8 +91,8 @@ const OpeningBalancesPage = () => {
             ))}
             <TableRow className="font-bold">
               <TableCell colSpan={2}>Total</TableCell>
-              <TableCell>{title === 'Positive Balances (Debit)' ? formatNumber(sumPositive) : '0.00'}</TableCell>
-              <TableCell>{title === 'Negative Balances (Credit)' ? formatNumber(sumNegative) : '0.00'}</TableCell>
+              <TableCell>{formatNumber(sumPositive)}</TableCell>
+              <TableCell>{formatNumber(sumNegative)}</TableCell>
               <TableCell></TableCell>
             </TableRow>
           </TableBody>
@@ -106,9 +103,10 @@ const OpeningBalancesPage = () => {
 
   return (
     <div className="min-h-screen bg-white">
+      <Header />
       <div className="container mx-auto p-4">
         <div className="bg-gradient-to-b from-blue-50 to-white rounded-lg shadow-md p-6">
-          <h1 className="text-2xl font-bold mb-4">Opening Balances for Fiscal Year {selectedYear}</h1>
+          <h1 className="text-2xl font-bold mb-4">Opening Balances</h1>
           <Card className="mb-6">
             <CardHeader>
               <CardTitle>Add Opening Balance</CardTitle>

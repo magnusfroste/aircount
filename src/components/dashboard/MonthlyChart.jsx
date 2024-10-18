@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 
-const MonthlyChart = ({ transactions = [], accounts = [] }) => {
+const MonthlyChart = ({ transactions, accounts }) => {
   const monthlyData = useMemo(() => {
     const data = Array(12).fill().map((_, i) => ({
       month: new Date(0, i).toLocaleString('default', { month: 'short' }),

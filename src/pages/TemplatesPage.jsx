@@ -6,9 +6,9 @@ import { useAccounts } from '../integrations/supabase/hooks/accounts'
 import { useTransactions } from '../integrations/supabase/hooks/transactions'
 import { Input } from "@/components/ui/input"
 import { format } from 'date-fns'
+import Header from '../components/Header'
 import SelectedTransactions from '../components/templates/SelectedTransactions'
 import AvailableTemplates from '../components/templates/AvailableTemplates'
-import { toast } from 'sonner'
 
 const TemplatesPage = () => {
   const { session } = useSupabaseAuth()
@@ -78,8 +78,8 @@ const TemplatesPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
+      <Header />
       <div className="container mx-auto p-4">
-        <h1 className="text-2xl font-bold mb-6">Templates</h1>
         <SelectedTransactions 
           selectedTemplates={selectedTemplates}
           templates={templates}

@@ -1,75 +1,138 @@
-import React from 'react';
-import { useTransactions } from '../integrations/supabase/hooks/transactions';
-import { useAccounts } from '../integrations/supabase/hooks/accounts';
-import { useSupabaseAuth } from '../integrations/supabase/auth';
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Loader2 } from "lucide-react";
-import { useProfitAndLossData } from '../utils/profitAndLossCalculations';
-import ProfitAndLossStatement from './ProfitAndLossStatement';
-import { useFiscalYear } from '../contexts/FiscalYearContext';
+import React, { useMemo } from 'react'
+import { useTransactions } from '../integrations/supabase/hooks/transactions'
+import { useAccounts } from '../integrations/supabase/hooks/accounts'
+import { useSupabaseAuth } from '../integrations/supabase/auth'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { formatNumber } from '../utils/numberFormatting'
 
 const ProfitAndLoss = () => {
-  const { session } = useSupabaseAuth();
-  const { selectedYear } = useFiscalYear();
-  const { data: transactions, isLoading: transactionsLoading, error: transactionsError } = useTransactions(session?.user?.id, 'desc', selectedYear);
-  const { data: accounts, isLoading: accountsLoading, error: accountsError } = useAccounts(session?.user?.id);
+  const { session } = useSupabaseAuth()
+  const { data: transactions, isLoading: transactionsLoading, error: transactionsError } = useTransactions(session?.user?.id)
+  const { data: accounts, isLoading: accountsLoading, error: accountsError } = useAccounts(session?.user?.id)
 
-  const plStatement = useProfitAndLossData(transactions, accounts);
+  const plStatement = useMemo(() => {
+    if (!transactions || !accounts) return null
 
-  if (!session) {
-    return (
-      <Alert variant="destructive">
-        <AlertTitle>Authentication Error</AlertTitle>
-        <AlertDescription>
-          You must be logged in to view the Profit and Loss statement.
-        </AlertDescription>
-      </Alert>
-    );
-  }
+    const accountMap = accounts.reduce((acc, account) => {
+      acc[account.account] = account.account_name
+      return acc
+    }, {})
 
-  if (!selectedYear) {
-    return (
-      <Alert variant="destructive">
-        <AlertTitle>Fiscal Year Not Selected</AlertTitle>
-        <AlertDescription>
-          Please select a fiscal year to view the Profit and Loss statement.
-        </AlertDescription>
-      </Alert>
-    );
-  }
+    const accountSums = transactions.reduce((acc, transaction) => {
+      const account = transaction.account
+      const amount = transaction.credit - transaction.debit // Inverted calculation
+      acc[account] = (acc[account] || 0) + amount
+      return acc
+    }, {})
 
-  if (transactionsLoading || accountsLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin" />
-        <span className="ml-2">Loading Profit and Loss data...</span>
-      </div>
-    );
-  }
+    const categories = {
+      'Income': ['3', '30', '31', '32', '33', '34', '35', '36', '37', '38', '39'],
+      'Costs': ['4', '5', '6', '7'],
+      'Financial Income': ['8314'],
+      'Taxes': ['8910'],
+      'Net Income': []
+    }
 
-  if (transactionsError || accountsError) {
-    return (
-      <Alert variant="destructive">
-        <AlertTitle>Error Loading Data</AlertTitle>
-        <AlertDescription>
-          {transactionsError?.message || accountsError?.message}
-        </AlertDescription>
-      </Alert>
-    );
-  }
+    const plData = Object.entries(categories).map(([category, prefixes]) => {
+      const accounts = Object.entries(accountSums)
+        .filter(([account, sum]) => 
+          prefixes.some(prefix => account.startsWith(prefix)) && sum !== 0
+        )
+        .map(([account, sum]) => ({ account, accountName: accountMap[account] || 'Unknown', sum }))
+      
+      const sum = accounts.reduce((acc, { sum }) => acc + sum, 0)
+      return { category, sum, accounts }
+    })
 
-  if (!transactions?.length || !accounts?.length || !plStatement) {
-    return (
-      <Alert>
-        <AlertTitle>No Data Available</AlertTitle>
-        <AlertDescription>
-          There is no data available for the Profit and Loss statement. Please ensure you have transactions and accounts for the selected fiscal year ({selectedYear}).
-        </AlertDescription>
-      </Alert>
-    );
-  }
+    const totalIncome = plData.find(item => item.category === 'Income')?.sum || 0
+    const totalCosts = plData.find(item => item.category === 'Costs')?.sum || 0
+    const financialIncome = plData.find(item => item.category === 'Financial Income')?.sum || 0
+    const taxes = plData.find(item => item.category === 'Taxes')?.sum || 0
+    const netIncome = totalIncome + totalCosts + financialIncome + taxes
 
-  return <ProfitAndLossStatement plStatement={plStatement} />;
-};
+    plData.find(item => item.category === 'Net Income').sum = netIncome
 
-export default ProfitAndLoss;
+    return { plData, totalIncome, totalCosts, financialIncome, taxes, netIncome }
+  }, [transactions, accounts])
+
+  if (transactionsLoading || accountsLoading) return <div>Loading P&L statement...</div>
+  if (transactionsError) return <div>Error loading transactions: {transactionsError.message}</div>
+  if (accountsError) return <div>Error loading accounts: {accountsError.message}</div>
+  if (!plStatement) return <div>No data available for P&L statement</div>
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Profit and Loss Statement</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Category</TableHead>
+                <TableHead>Account</TableHead>
+                <TableHead>Account Name</TableHead>
+                <TableHead className="text-right">Amount (SEK)</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {plStatement.plData.map(({ category, sum, accounts }) => (
+                <React.Fragment key={category}>
+                  <TableRow className="font-medium">
+                    <TableCell>{category}</TableCell>
+                    <TableCell></TableCell>
+                    <TableCell></TableCell>
+                    <TableCell className="text-right">{formatNumber(sum.toFixed(2))}</TableCell>
+                  </TableRow>
+                  {accounts.map(({ account, accountName, sum }) => (
+                    <TableRow key={account}>
+                      <TableCell className="pl-8"></TableCell>
+                      <TableCell>{account}</TableCell>
+                      <TableCell>{accountName}</TableCell>
+                      <TableCell className="text-right">{formatNumber(sum.toFixed(2))}</TableCell>
+                    </TableRow>
+                  ))}
+                </React.Fragment>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle>Summary</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableBody>
+              <TableRow>
+                <TableCell>Total Income</TableCell>
+                <TableCell className="text-right">{formatNumber(plStatement.totalIncome.toFixed(2))}</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell>Total Costs</TableCell>
+                <TableCell className="text-right">{formatNumber(plStatement.totalCosts.toFixed(2))}</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell>Financial Income</TableCell>
+                <TableCell className="text-right">{formatNumber(plStatement.financialIncome.toFixed(2))}</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell>Taxes</TableCell>
+                <TableCell className="text-right">{formatNumber(plStatement.taxes.toFixed(2))}</TableCell>
+              </TableRow>
+              <TableRow className="font-bold">
+                <TableCell>Net Income</TableCell>
+                <TableCell className="text-right">{formatNumber(plStatement.netIncome.toFixed(2))}</TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
+export default ProfitAndLoss

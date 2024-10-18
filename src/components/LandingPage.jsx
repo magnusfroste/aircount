@@ -2,10 +2,13 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import { Button } from "@/components/ui/button"
 import { ArrowRight, CheckCircle, DollarSign, Smile, PieChart } from 'lucide-react'
+import Header from './Header'
 
 const LandingPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
+      <Header />
+
       <main className="container mx-auto px-6 py-12">
         <section className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Welcome to Aircount</h2>
