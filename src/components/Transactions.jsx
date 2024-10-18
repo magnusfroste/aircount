@@ -17,8 +17,12 @@ const Transactions = () => {
   const [sortOrder, setSortOrder] = useState('desc')
   const { session } = useSupabaseAuth()
   const { selectedYear } = useFiscalYear()
-  const { data: transactions, isLoading: transactionsLoading, error: transactionsError } = useTransactions(session.user.id, sortOrder, selectedYear)
-  const { data: accounts, isLoading: accountsLoading, error: accountsError } = useAccounts(session.user.id)
+  
+  // Add a null check for session and user
+  const userId = session?.user?.id
+
+  const { data: transactions, isLoading: transactionsLoading, error: transactionsError } = useTransactions(userId, sortOrder, selectedYear)
+  const { data: accounts, isLoading: accountsLoading, error: accountsError } = useAccounts(userId)
   const addTransactionMutation = useAddTransaction()
   const deleteTransactionMutation = useDeleteTransaction()
   const deleteAllTransactionsMutation = useDeleteAllTransactions()
@@ -53,17 +57,29 @@ const Transactions = () => {
   }, [transactions, sortOrder])
 
   const handleAddTransaction = () => {
-    addTransactionMutation.mutate({ ...newTransaction, user_id: session.user.id })
+    if (!userId) {
+      toast.error('User not authenticated')
+      return
+    }
+    addTransactionMutation.mutate({ ...newTransaction, user_id: userId })
     setNewTransaction({ ver: '', date: '', account: '', debit: 0, credit: 0 })
   }
 
   const handleDeleteTransaction = (id) => {
-    deleteTransactionMutation.mutate({ id, user_id: session.user.id })
+    if (!userId) {
+      toast.error('User not authenticated')
+      return
+    }
+    deleteTransactionMutation.mutate({ id, user_id: userId })
   }
 
   const handleDeleteAllTransactions = () => {
+    if (!userId) {
+      toast.error('User not authenticated')
+      return
+    }
     if (window.confirm('Are you sure you want to delete all transactions? This action cannot be undone.')) {
-      deleteAllTransactionsMutation.mutate(session.user.id, {
+      deleteAllTransactionsMutation.mutate(userId, {
         onSuccess: () => {
           toast.success('All transactions have been deleted')
         },
@@ -76,6 +92,10 @@ const Transactions = () => {
 
   const toggleSortOrder = () => {
     setSortOrder(prevOrder => prevOrder === 'desc' ? 'asc' : 'desc')
+  }
+
+  if (!userId) {
+    return <div>Please sign in to view transactions.</div>
   }
 
   if (transactionsLoading || accountsLoading) return <div>Loading...</div>
