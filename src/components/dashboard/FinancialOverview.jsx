@@ -2,7 +2,7 @@ import React, { useMemo } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { DollarSign, ArrowDownRight, TrendingUp, PieChart } from 'lucide-react'
 
-const FinancialOverview = ({ transactions, accounts }) => {
+const FinancialOverview = ({ transactions = [], accounts = [] }) => {
   const financialStats = useMemo(() => {
     const totalIncome = transactions.reduce((sum, t) => {
       const account = accounts.find(a => a.account === t.account)
