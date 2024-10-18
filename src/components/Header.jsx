@@ -26,7 +26,7 @@ const Header = () => {
     <header className="bg-white shadow-sm">
       <div className="container mx-auto py-4 px-6 flex justify-between items-center">
         <Link to="/" className="text-2xl font-bold text-blue-600">Aircount</Link>
-        <nav className="hidden md:flex space-x-4">
+        <nav className="hidden md:flex items-center space-x-4">
           {session ? (
             <>
               <Link to="/dashboard" className="text-gray-600 hover:text-blue-600 transition-colors">Dashboard</Link>
