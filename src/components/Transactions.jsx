@@ -9,7 +9,6 @@ import { PlusIcon, Trash2 } from 'lucide-react'
 import { useSupabaseAuth } from '../integrations/supabase/auth'
 import { format } from 'date-fns'
 import { toast } from 'sonner'
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 const TransactionForm = ({ newTransaction, setNewTransaction, accounts, handleAddTransaction }) => (
   <div className="mb-4 flex space-x-2">
@@ -120,53 +119,39 @@ const Transactions = () => {
   if (accountsError) return <div>Error loading accounts: {accountsError.message}</div>
 
   return (
-    <div className="container mx-auto p-4 bg-white">
+    <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">Transactions</h1>
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle>Add New Transaction</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <TransactionForm
-            newTransaction={newTransaction}
-            setNewTransaction={setNewTransaction}
-            accounts={accounts}
-            handleAddTransaction={handleAddTransaction}
-          />
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader className="flex justify-between items-center">
-          <CardTitle>Transaction List</CardTitle>
-          <Button onClick={handleDeleteAllTransactions} variant="destructive">
-            <Trash2 className="mr-2 h-4 w-4" /> Delete All
-          </Button>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Nr</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Account</TableHead>
-                <TableHead>Debit</TableHead>
-                <TableHead>Credit</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {transactions.map((transaction) => (
-                <TransactionRow
-                  key={transaction.id}
-                  transaction={transaction}
-                  handleDeleteTransaction={handleDeleteTransaction}
-                  accountName={accountMap[transaction.account] || 'Unknown Account'}
-                />
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+      <TransactionForm
+        newTransaction={newTransaction}
+        setNewTransaction={setNewTransaction}
+        accounts={accounts}
+        handleAddTransaction={handleAddTransaction}
+      />
+      <Button onClick={handleDeleteAllTransactions} variant="destructive" className="mb-4">
+        <Trash2 className="mr-2 h-4 w-4" /> Delete All
+      </Button>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Nr</TableHead>
+            <TableHead>Date</TableHead>
+            <TableHead>Account</TableHead>
+            <TableHead>Debit</TableHead>
+            <TableHead>Credit</TableHead>
+            <TableHead>Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {transactions.map((transaction) => (
+            <TransactionRow
+              key={transaction.id}
+              transaction={transaction}
+              handleDeleteTransaction={handleDeleteTransaction}
+              accountName={accountMap[transaction.account] || 'Unknown Account'}
+            />
+          ))}
+        </TableBody>
+      </Table>
     </div>
   )
 }
