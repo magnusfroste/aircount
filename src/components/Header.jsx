@@ -32,7 +32,7 @@ const Header = () => {
           </ul>
         </nav>
         <div className="flex items-center space-x-4">
-          {fiscalYears.length > 0 && (
+          {fiscalYears && fiscalYears.length > 0 && (
             <Select value={selectedYear} onValueChange={setSelectedYear}>
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Select Fiscal Year" />
