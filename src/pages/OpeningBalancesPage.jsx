@@ -91,8 +91,8 @@ const OpeningBalancesPage = () => {
             ))}
             <TableRow className="font-bold">
               <TableCell colSpan={2}>Total</TableCell>
-              <TableCell>{formatNumber(title === 'Positive Balances' ? sumPositive : 0)}</TableCell>
-              <TableCell>{formatNumber(title === 'Negative Balances' ? sumNegative : 0)}</TableCell>
+              <TableCell>{formatNumber(sumPositive)}</TableCell>
+              <TableCell>{formatNumber(sumNegative)}</TableCell>
               <TableCell></TableCell>
             </TableRow>
           </TableBody>
