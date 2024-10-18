@@ -5,9 +5,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { PlusIcon, Trash2 } from 'lucide-react'
 import { useSupabaseAuth } from '../integrations/supabase/auth'
-import { format } from 'date-fns'
+import { format, parseISO } from 'date-fns'
 import { toast } from 'sonner'
 
 const TransactionForm = ({ newTransaction, setNewTransaction, accounts, handleAddTransaction }) => (
@@ -59,8 +60,7 @@ const TransactionForm = ({ newTransaction, setNewTransaction, accounts, handleAd
 const TransactionRow = ({ transaction, handleDeleteTransaction, accountName }) => (
   <TableRow key={transaction.id}>
     <TableCell>{transaction.ver}</TableCell>
-    <TableCell>{format(new Date(transaction.date), 'yyyy-MM-dd')}</TableCell>
-    <TableCell>{transaction.account} - {accountName}</TableCell>
+    <TableCell>{accountName}</TableCell>
     <TableCell>{transaction.debit}</TableCell>
     <TableCell>{transaction.credit}</TableCell>
     <TableCell>
@@ -91,6 +91,18 @@ const Transactions = () => {
       return acc
     }, {})
   }, [accounts])
+
+  const groupedTransactions = useMemo(() => {
+    if (!transactions) return {}
+    return transactions.reduce((acc, transaction) => {
+      const date = format(parseISO(transaction.date), 'yyyy-MM-dd')
+      if (!acc[date]) {
+        acc[date] = []
+      }
+      acc[date].push(transaction)
+      return acc
+    }, {})
+  }, [transactions])
 
   const handleAddTransaction = () => {
     addTransactionMutation.mutate({ ...newTransaction, user_id: session.user.id })
@@ -130,28 +142,38 @@ const Transactions = () => {
       <Button onClick={handleDeleteAllTransactions} variant="destructive" className="mb-4">
         <Trash2 className="mr-2 h-4 w-4" /> Delete All
       </Button>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Nr</TableHead>
-            <TableHead>Date</TableHead>
-            <TableHead>Account</TableHead>
-            <TableHead>Debit</TableHead>
-            <TableHead>Credit</TableHead>
-            <TableHead>Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {transactions.map((transaction) => (
-            <TransactionRow
-              key={transaction.id}
-              transaction={transaction}
-              handleDeleteTransaction={handleDeleteTransaction}
-              accountName={accountMap[transaction.account] || 'Unknown Account'}
-            />
-          ))}
-        </TableBody>
-      </Table>
+      <div className="space-y-6">
+        {Object.entries(groupedTransactions).map(([date, dateTransactions]) => (
+          <Card key={date}>
+            <CardHeader>
+              <CardTitle>{format(parseISO(date), 'MMMM d, yyyy')}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Nr</TableHead>
+                    <TableHead>Account</TableHead>
+                    <TableHead>Debit</TableHead>
+                    <TableHead>Credit</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {dateTransactions.map((transaction) => (
+                    <TransactionRow
+                      key={transaction.id}
+                      transaction={transaction}
+                      handleDeleteTransaction={handleDeleteTransaction}
+                      accountName={accountMap[transaction.account] || 'Unknown Account'}
+                    />
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
     </div>
   )
 }
