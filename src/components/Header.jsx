@@ -6,13 +6,17 @@ import { useFiscalYear } from '../contexts/FiscalYearContext'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 const Header = () => {
-  const { session, signOut } = useSupabaseAuth()
+  const { session, logout } = useSupabaseAuth()
   const navigate = useNavigate()
   const { fiscalYears, selectedYear, setSelectedYear } = useFiscalYear()
 
   const handleSignOut = async () => {
-    await signOut()
-    navigate('/')
+    try {
+      await logout()
+      navigate('/')
+    } catch (error) {
+      console.error('Error signing out:', error)
+    }
   }
 
   return (
