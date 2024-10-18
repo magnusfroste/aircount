@@ -56,7 +56,7 @@ const OpeningBalancesPage = () => {
   }, { positive: [], negative: [] })
 
   const sumPositive = groupedBalances?.positive.reduce((sum, balance) => sum + balance.balance, 0) || 0
-  const sumNegative = groupedBalances?.negative.reduce((sum, balance) => sum + balance.balance, 0) || 0
+  const sumNegative = groupedBalances?.negative.reduce((sum, balance) => sum + Math.abs(balance.balance), 0) || 0
 
   if (isLoading) return <div>Loading opening balances...</div>
   if (error) return <div>Error loading opening balances: {error.message}</div>
@@ -72,7 +72,8 @@ const OpeningBalancesPage = () => {
             <TableRow>
               <TableHead>Account Number</TableHead>
               <TableHead>Account Name</TableHead>
-              <TableHead>Balance</TableHead>
+              <TableHead>Debit</TableHead>
+              <TableHead>Credit</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -81,7 +82,8 @@ const OpeningBalancesPage = () => {
               <TableRow key={balance.id}>
                 <TableCell>{balance.account}</TableCell>
                 <TableCell>{getAccountName(balance.account)}</TableCell>
-                <TableCell>{formatNumber(balance.balance)}</TableCell>
+                <TableCell>{balance.balance >= 0 ? formatNumber(balance.balance) : '0.00'}</TableCell>
+                <TableCell>{balance.balance < 0 ? formatNumber(Math.abs(balance.balance)) : '0.00'}</TableCell>
                 <TableCell>
                   <Button variant="destructive" onClick={() => handleDeleteBalance(balance.id)}>Delete</Button>
                 </TableCell>
@@ -89,7 +91,8 @@ const OpeningBalancesPage = () => {
             ))}
             <TableRow className="font-bold">
               <TableCell colSpan={2}>Total</TableCell>
-              <TableCell>{formatNumber(title === 'Positive Balances' ? sumPositive : sumNegative)}</TableCell>
+              <TableCell>{formatNumber(title === 'Positive Balances' ? sumPositive : 0)}</TableCell>
+              <TableCell>{formatNumber(title === 'Negative Balances' ? sumNegative : 0)}</TableCell>
               <TableCell></TableCell>
             </TableRow>
           </TableBody>
@@ -125,7 +128,7 @@ const OpeningBalancesPage = () => {
                 </select>
                 <Input
                   type="number"
-                  placeholder="Balance"
+                  placeholder="Balance (use negative for credit)"
                   value={newBalance.balance}
                   onChange={(e) => setNewBalance({ ...newBalance, balance: parseFloat(e.target.value) })}
                   required
@@ -135,8 +138,8 @@ const OpeningBalancesPage = () => {
             </CardContent>
           </Card>
 
-          {renderBalanceTable(groupedBalances?.positive || [], 'Positive Balances')}
-          {renderBalanceTable(groupedBalances?.negative || [], 'Negative Balances')}
+          {renderBalanceTable(groupedBalances?.positive || [], 'Positive Balances (Debit)')}
+          {renderBalanceTable(groupedBalances?.negative || [], 'Negative Balances (Credit)')}
         </div>
       </div>
     </div>
