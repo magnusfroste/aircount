@@ -28,6 +28,18 @@ const Transactions = () => {
     }, {})
   }, [accounts])
 
+  const groupedTransactions = useMemo(() => {
+    if (!transactions) return {}
+    return transactions.reduce((acc, transaction) => {
+      const ver = transaction.ver || 'Unspecified'
+      if (!acc[ver]) {
+        acc[ver] = []
+      }
+      acc[ver].push(transaction)
+      return acc
+    }, {})
+  }, [transactions])
+
   const handleAddTransaction = () => {
     addTransactionMutation.mutate({ ...newTransaction, user_id: session.user.id })
     setNewTransaction({ ver: '', date: '', account: '', debit: 0, credit: 0 })
@@ -77,10 +89,10 @@ const Transactions = () => {
         </Button>
       </div>
       <div className="space-y-6">
-        {transactions.map((transaction) => (
-          <Card key={transaction.id}>
+        {Object.entries(groupedTransactions).map(([ver, verTransactions]) => (
+          <Card key={ver}>
             <CardHeader>
-              <CardTitle>Transaction Number: {transaction.ver}</CardTitle>
+              <CardTitle>Transaction Number: {ver}</CardTitle>
             </CardHeader>
             <CardContent>
               <Table>
@@ -94,11 +106,14 @@ const Transactions = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  <TransactionRow
-                    transaction={transaction}
-                    handleDeleteTransaction={handleDeleteTransaction}
-                    accountName={accountMap[transaction.account] || 'Unknown Account'}
-                  />
+                  {verTransactions.map((transaction) => (
+                    <TransactionRow
+                      key={transaction.id}
+                      transaction={transaction}
+                      handleDeleteTransaction={handleDeleteTransaction}
+                      accountName={accountMap[transaction.account] || 'Unknown Account'}
+                    />
+                  ))}
                 </TableBody>
               </Table>
             </CardContent>
