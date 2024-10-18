@@ -16,27 +16,25 @@ const OpeningBalancesPage = () => {
   const { data: accounts, isLoading: accountsLoading, error: accountsError } = useAccounts(session?.user?.id)
   const addOpeningBalanceMutation = useAddOpeningBalance()
   const deleteOpeningBalanceMutation = useDeleteOpeningBalance()
-  const [newBalance, setNewBalance] = useState({ account: '', balance: 0 })
+  const [newBalance, setNewBalance] = useState({ account: '', debit: 0, credit: 0 })
 
   const groupedBalances = useMemo(() => {
-    if (!openingBalances) return { positive: [], negative: [] }
-    return openingBalances.reduce((acc, balance) => {
-      if (balance.balance >= 0) {
-        acc.positive.push(balance)
-      } else {
-        acc.negative.push(balance)
-      }
-      return acc
-    }, { positive: [], negative: [] })
+    if (!openingBalances) return []
+    return openingBalances.map(balance => ({
+      ...balance,
+      debit: balance.balance > 0 ? balance.balance : 0,
+      credit: balance.balance < 0 ? -balance.balance : 0
+    }))
   }, [openingBalances])
 
   const handleAddBalance = () => {
-    if (!newBalance.account || !newBalance.balance) {
-      toast.error('Please select an account and enter a balance')
+    if (!newBalance.account || (newBalance.debit === 0 && newBalance.credit === 0)) {
+      toast.error('Please select an account and enter a debit or credit amount')
       return
     }
-    addOpeningBalanceMutation.mutate({ ...newBalance, user_id: session.user.id })
-    setNewBalance({ account: '', balance: 0 })
+    const balance = newBalance.debit - newBalance.credit
+    addOpeningBalanceMutation.mutate({ account: newBalance.account, balance, user_id: session.user.id })
+    setNewBalance({ account: '', debit: 0, credit: 0 })
   }
 
   const handleDeleteBalance = (id) => {
@@ -56,7 +54,8 @@ const OpeningBalancesPage = () => {
         <TableRow>
           <TableHead>Account</TableHead>
           <TableHead>Account Name</TableHead>
-          <TableHead>Balance</TableHead>
+          <TableHead>Debit</TableHead>
+          <TableHead>Credit</TableHead>
           <TableHead>Actions</TableHead>
         </TableRow>
       </TableHeader>
@@ -67,7 +66,8 @@ const OpeningBalancesPage = () => {
             <TableRow key={balance.id}>
               <TableCell>{balance.account}</TableCell>
               <TableCell>{account ? account.account_name : 'Unknown'}</TableCell>
-              <TableCell>{balance.balance.toFixed(2)}</TableCell>
+              <TableCell>{balance.debit.toFixed(2)}</TableCell>
+              <TableCell>{balance.credit.toFixed(2)}</TableCell>
               <TableCell>
                 <Button
                   variant="ghost"
@@ -109,30 +109,26 @@ const OpeningBalancesPage = () => {
         </Select>
         <Input
           type="number"
-          placeholder="Balance"
-          value={newBalance.balance}
-          onChange={(e) => setNewBalance({ ...newBalance, balance: parseFloat(e.target.value) })}
+          placeholder="Debit"
+          value={newBalance.debit}
+          onChange={(e) => setNewBalance({ ...newBalance, debit: parseFloat(e.target.value) || 0 })}
+        />
+        <Input
+          type="number"
+          placeholder="Credit"
+          value={newBalance.credit}
+          onChange={(e) => setNewBalance({ ...newBalance, credit: parseFloat(e.target.value) || 0 })}
         />
         <Button onClick={handleAddBalance}>Add Balance</Button>
       </div>
-      <div className="space-y-4">
-        <Card>
-          <CardHeader>
-            <CardTitle>Positive Balances</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {renderBalanceTable(groupedBalances.positive)}
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Negative Balances</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {renderBalanceTable(groupedBalances.negative)}
-          </CardContent>
-        </Card>
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Opening Balances</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {renderBalanceTable(groupedBalances)}
+        </CardContent>
+      </Card>
     </div>
   )
 }
