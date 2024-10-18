@@ -120,6 +120,42 @@ const Transactions = () => {
     })
   }, [groupedTransactions])
 
+  const handleAddTransaction = () => {
+    addTransactionMutation.mutate({ ...newTransaction, user_id: session.user.id }, {
+      onSuccess: () => {
+        toast.success('Transaction added successfully')
+        setNewTransaction({ ver: '', date: '', account: '', debit: 0, credit: 0 })
+      },
+      onError: (error) => {
+        toast.error(`Error adding transaction: ${error.message}`)
+      }
+    })
+  }
+
+  const handleDeleteTransaction = (id) => {
+    deleteTransactionMutation.mutate({ id, user_id: session.user.id }, {
+      onSuccess: () => {
+        toast.success('Transaction deleted successfully')
+      },
+      onError: (error) => {
+        toast.error(`Error deleting transaction: ${error.message}`)
+      }
+    })
+  }
+
+  const handleDeleteAllTransactions = () => {
+    if (window.confirm('Are you sure you want to delete all transactions? This action cannot be undone.')) {
+      deleteAllTransactionsMutation.mutate(session.user.id, {
+        onSuccess: () => {
+          toast.success('All transactions have been deleted')
+        },
+        onError: (error) => {
+          toast.error(`Error deleting transactions: ${error.message}`)
+        }
+      })
+    }
+  }
+
   if (transactionsLoading || accountsLoading) return <div>Loading...</div>
   if (transactionsError) return <div>Error loading transactions: {transactionsError.message}</div>
   if (accountsError) return <div>Error loading accounts: {accountsError.message}</div>
