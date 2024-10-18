@@ -44,8 +44,8 @@ const Transactions = () => {
         if (a[0] === 'Unspecified') return sortOrder === 'desc' ? 1 : -1
         if (b[0] === 'Unspecified') return sortOrder === 'desc' ? -1 : 1
         return sortOrder === 'desc'
-          ? parseInt(b[0]) - parseInt(a[0])
-          : parseInt(a[0]) - parseInt(b[0])
+          ? b[0].localeCompare(a[0], undefined, { numeric: true, sensitivity: 'base' })
+          : a[0].localeCompare(b[0], undefined, { numeric: true, sensitivity: 'base' })
       })
     )
   }, [transactions, sortOrder])
