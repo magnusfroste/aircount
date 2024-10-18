@@ -8,6 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { toast } from 'sonner'
 import { useOpeningBalances, useAddOpeningBalance, useDeleteOpeningBalance } from '../integrations/supabase/hooks/openingBalances'
 import { useAccounts } from '../integrations/supabase/hooks/accounts'
+import { formatNumber } from '../utils/numberFormatting'
 
 const OpeningBalancesPage = () => {
   const { session } = useSupabaseAuth()
@@ -38,6 +39,11 @@ const OpeningBalancesPage = () => {
     } catch (error) {
       toast.error(`Error deleting balance: ${error.message}`)
     }
+  }
+
+  const getAccountName = (accountNumber) => {
+    const account = accounts?.find(acc => acc.account === accountNumber)
+    return account ? account.account_name : 'Unknown Account'
   }
 
   if (isLoading) return <div>Loading opening balances...</div>
@@ -86,7 +92,8 @@ const OpeningBalancesPage = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Account</TableHead>
+                  <TableHead>Account Number</TableHead>
+                  <TableHead>Account Name</TableHead>
                   <TableHead>Balance</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
@@ -95,7 +102,8 @@ const OpeningBalancesPage = () => {
                 {openingBalances?.map((balance) => (
                   <TableRow key={balance.id}>
                     <TableCell>{balance.account}</TableCell>
-                    <TableCell>{balance.balance}</TableCell>
+                    <TableCell>{getAccountName(balance.account)}</TableCell>
+                    <TableCell>{formatNumber(balance.balance)}</TableCell>
                     <TableCell>
                       <Button variant="destructive" onClick={() => handleDeleteBalance(balance.id)}>Delete</Button>
                     </TableCell>
