@@ -14,7 +14,7 @@ const Transactions = () => {
   const [newTransaction, setNewTransaction] = useState({ ver: '', date: '', account: '', debit: 0, credit: 0 })
   const [sortOrder, setSortOrder] = useState('desc')
   const { session } = useSupabaseAuth()
-  const { data: transactions, isLoading: transactionsLoading, error: transactionsError } = useTransactions(session.user.id)
+  const { data: transactions, isLoading: transactionsLoading, error: transactionsError } = useTransactions(session.user.id, sortOrder)
   const { data: accounts, isLoading: accountsLoading, error: accountsError } = useAccounts(session.user.id)
   const addTransactionMutation = useAddTransaction()
   const deleteTransactionMutation = useDeleteTransaction()
@@ -27,28 +27,6 @@ const Transactions = () => {
       return acc
     }, {})
   }, [accounts])
-
-  const groupedTransactions = useMemo(() => {
-    if (!transactions) return {}
-    const grouped = transactions.reduce((acc, transaction) => {
-      const ver = transaction.ver || 'Unspecified'
-      if (!acc[ver]) {
-        acc[ver] = []
-      }
-      acc[ver].push(transaction)
-      return acc
-    }, {})
-
-    return Object.fromEntries(
-      Object.entries(grouped).sort((a, b) => {
-        if (a[0] === 'Unspecified') return sortOrder === 'desc' ? 1 : -1
-        if (b[0] === 'Unspecified') return sortOrder === 'desc' ? -1 : 1
-        return sortOrder === 'desc'
-          ? b[0].localeCompare(a[0], undefined, { numeric: true, sensitivity: 'base' })
-          : a[0].localeCompare(b[0], undefined, { numeric: true, sensitivity: 'base' })
-      })
-    )
-  }, [transactions, sortOrder])
 
   const handleAddTransaction = () => {
     addTransactionMutation.mutate({ ...newTransaction, user_id: session.user.id })
@@ -99,10 +77,10 @@ const Transactions = () => {
         </Button>
       </div>
       <div className="space-y-6">
-        {Object.entries(groupedTransactions).map(([ver, verTransactions]) => (
-          <Card key={ver}>
+        {transactions.map((transaction) => (
+          <Card key={transaction.id}>
             <CardHeader>
-              <CardTitle>Transaction Number: {ver}</CardTitle>
+              <CardTitle>Transaction Number: {transaction.ver}</CardTitle>
             </CardHeader>
             <CardContent>
               <Table>
@@ -116,14 +94,11 @@ const Transactions = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {verTransactions.map((transaction) => (
-                    <TransactionRow
-                      key={transaction.id}
-                      transaction={transaction}
-                      handleDeleteTransaction={handleDeleteTransaction}
-                      accountName={accountMap[transaction.account] || 'Unknown Account'}
-                    />
-                  ))}
+                  <TransactionRow
+                    transaction={transaction}
+                    handleDeleteTransaction={handleDeleteTransaction}
+                    accountName={accountMap[transaction.account] || 'Unknown Account'}
+                  />
                 </TableBody>
               </Table>
             </CardContent>
