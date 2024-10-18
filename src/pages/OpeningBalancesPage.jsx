@@ -9,10 +9,12 @@ import { toast } from 'sonner'
 import { useOpeningBalances, useAddOpeningBalance, useDeleteOpeningBalance } from '../integrations/supabase/hooks/openingBalances'
 import { useAccounts } from '../integrations/supabase/hooks/accounts'
 import { formatNumber } from '../utils/numberFormatting'
+import { useFiscalYear } from '../contexts/FiscalYearContext'
 
 const OpeningBalancesPage = () => {
   const { session } = useSupabaseAuth()
-  const { data: openingBalances, isLoading, error } = useOpeningBalances(session?.user?.id)
+  const { selectedYear } = useFiscalYear()
+  const { data: openingBalances, isLoading, error } = useOpeningBalances(session?.user?.id, selectedYear)
   const { data: accounts } = useAccounts(session?.user?.id)
   const addOpeningBalanceMutation = useAddOpeningBalance()
   const deleteOpeningBalanceMutation = useDeleteOpeningBalance()
@@ -23,7 +25,8 @@ const OpeningBalancesPage = () => {
     try {
       await addOpeningBalanceMutation.mutateAsync({
         ...newBalance,
-        user_id: session.user.id
+        user_id: session.user.id,
+        fiscal_year: selectedYear
       })
       toast.success('Balance added successfully')
       setNewBalance({ account: '', balance: 0 })
@@ -106,7 +109,7 @@ const OpeningBalancesPage = () => {
       <Header />
       <div className="container mx-auto p-4">
         <div className="bg-gradient-to-b from-blue-50 to-white rounded-lg shadow-md p-6">
-          <h1 className="text-2xl font-bold mb-4">Opening Balances</h1>
+          <h1 className="text-2xl font-bold mb-4">Opening Balances for Fiscal Year {selectedYear}</h1>
           <Card className="mb-6">
             <CardHeader>
               <CardTitle>Add Opening Balance</CardTitle>

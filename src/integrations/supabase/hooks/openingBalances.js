@@ -10,19 +10,26 @@ const fromSupabase = async (query) => {
 /*
 ### opening_balances
 
-| name       | type                     | format | required |
-|------------|--------------------------|--------|----------|
-| id         | int8                     | number | true     |
-| account    | text                     | string | true     |
-| balance    | numeric                  | number | true     |
-| user_id    | uuid                     | string | true     |
-| created_at | timestamp with time zone | string | false    |
+| name        | type                     | format | required |
+|-------------|--------------------------|--------|----------|
+| id          | int8                     | number | true     |
+| account     | text                     | string | true     |
+| balance     | numeric                  | number | true     |
+| user_id     | uuid                     | string | true     |
+| fiscal_year | int4                     | number | true     |
+| created_at  | timestamp with time zone | string | false    |
 
 */
 
-export const useOpeningBalances = (userId) => useQuery({
-    queryKey: ['openingBalances', userId],
-    queryFn: () => fromSupabase(supabase.from('opening_balances').select('*').eq('user_id', userId)),
+export const useOpeningBalances = (userId, fiscalYear) => useQuery({
+    queryKey: ['openingBalances', userId, fiscalYear],
+    queryFn: () => fromSupabase(
+        supabase.from('opening_balances')
+               .select('*')
+               .eq('user_id', userId)
+               .eq('fiscal_year', fiscalYear)
+    ),
+    enabled: !!userId && !!fiscalYear,
 });
 
 export const useAddOpeningBalance = () => {
@@ -30,7 +37,7 @@ export const useAddOpeningBalance = () => {
     return useMutation({
         mutationFn: (newBalance) => fromSupabase(supabase.from('opening_balances').insert([newBalance])),
         onSuccess: (_, variables) => {
-            queryClient.invalidateQueries(['openingBalances', variables.user_id]);
+            queryClient.invalidateQueries(['openingBalances', variables.user_id, variables.fiscal_year]);
         },
     });
 };
@@ -48,17 +55,18 @@ export const useDeleteOpeningBalance = () => {
 export const useImportOpeningBalances = () => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async ({ balances, userId }) => {
+        mutationFn: async ({ balances, userId, fiscalYear }) => {
             const formattedBalances = balances.map(balance => ({
                 ...balance,
-                user_id: userId
+                user_id: userId,
+                fiscal_year: fiscalYear
             }));
             const { data, error } = await supabase.from('opening_balances').insert(formattedBalances);
             if (error) throw new Error(error.message);
             return data;
         },
         onSuccess: (_, variables) => {
-            queryClient.invalidateQueries(['openingBalances', variables.userId]);
+            queryClient.invalidateQueries(['openingBalances', variables.userId, variables.fiscalYear]);
         },
     });
 };
