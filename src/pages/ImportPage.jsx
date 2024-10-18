@@ -4,13 +4,16 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { toast } from 'sonner'
-import { supabase } from '../lib/supabase'
 import { parseSEFile } from '../utils/seFileParser'
 import { ibm437ToUnicode } from '../utils/encodingUtils'
+import { useImportTransactions } from '../integrations/supabase/hooks/transactions'
+import { useFiscalYear } from '../contexts/FiscalYearContext'
 
 const ImportPage = () => {
   const { session } = useSupabaseAuth()
   const [file, setFile] = useState(null)
+  const importTransactionsMutation = useImportTransactions()
+  const { selectedYear } = useFiscalYear()
 
   const handleFileChange = (e) => {
     setFile(e.target.files[0])
@@ -35,10 +38,19 @@ const ImportPage = () => {
 
       const transactions = parseSEFile(decodedContent)
 
-      // Here you would typically save the transactions to your database
-      // For now, we'll just log them and show a success message
-      console.log('Parsed transactions:', transactions)
-      toast.success(`Successfully imported ${transactions.length} transactions`)
+      // Import transactions using the mutation
+      importTransactionsMutation.mutate(
+        { transactions, userId: session.user.id, fiscalYear: selectedYear },
+        {
+          onSuccess: () => {
+            toast.success(`Successfully imported ${transactions.length} transactions`)
+            setFile(null)
+          },
+          onError: (error) => {
+            toast.error(`Error importing transactions: ${error.message}`)
+          }
+        }
+      )
     } catch (error) {
       console.error('Error importing file:', error)
       toast.error('Error importing file: ' + error.message)
@@ -54,8 +66,15 @@ const ImportPage = () => {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleImport} className="space-y-4">
-              <Input type="file" accept=".se,.si" onChange={handleFileChange} required />
-              <Button type="submit">Import</Button>
+              <Input 
+                type="file" 
+                accept=".se,.si" 
+                onChange={handleFileChange} 
+                required 
+              />
+              <Button type="submit" disabled={importTransactionsMutation.isPending}>
+                {importTransactionsMutation.isPending ? 'Importing...' : 'Import'}
+              </Button>
             </form>
           </CardContent>
         </Card>
