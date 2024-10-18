@@ -8,17 +8,19 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { format } from 'date-fns'
+import { useFiscalYear } from '../contexts/FiscalYearContext'
 
 const Ledger = () => {
   const { session } = useSupabaseAuth()
-  const { data: transactions, isLoading: transactionsLoading } = useTransactions(session?.user?.id)
+  const { selectedYear } = useFiscalYear()
+  const { data: transactions, isLoading: transactionsLoading } = useTransactions(session?.user?.id, 'desc', selectedYear)
   const { data: accounts, isLoading: accountsLoading } = useAccounts(session?.user?.id)
   const { data: openingBalances, isLoading: openingBalancesLoading } = useOpeningBalances(session?.user?.id)
   const [selectedAccount, setSelectedAccount] = useState('')
 
   if (transactionsLoading || accountsLoading || openingBalancesLoading) return <div>Loading ledger data...</div>
 
-  const ledgerData = transactions.reduce((acc, transaction) => {
+  const ledgerData = (transactions || []).reduce((acc, transaction) => {
     if (!acc[transaction.account]) {
       acc[transaction.account] = []
     }
@@ -27,13 +29,13 @@ const Ledger = () => {
   }, {})
 
   const getOpeningBalance = (account) => {
-    const openingBalance = openingBalances.find(balance => balance.account === account)
+    const openingBalance = (openingBalances || []).find(balance => balance.account === account)
     return openingBalance ? openingBalance.balance : 0
   }
 
   const accountBalance = (accountTransactions, account) => {
     const openingBalance = getOpeningBalance(account)
-    return accountTransactions.reduce((balance, transaction) => {
+    return (accountTransactions || []).reduce((balance, transaction) => {
       return balance + transaction.debit - transaction.credit
     }, openingBalance)
   }
@@ -55,7 +57,7 @@ const Ledger = () => {
       {Object.entries(filteredLedgerData).map(([account, transactions]) => (
         <Card key={account} className="mb-6">
           <CardHeader>
-            <CardTitle>{account} - {accounts.find(a => a.account === account)?.account_name}</CardTitle>
+            <CardTitle>{account} - {(accounts || []).find(a => a.account === account)?.account_name}</CardTitle>
           </CardHeader>
           <CardContent>
             <Table>
@@ -75,8 +77,8 @@ const Ledger = () => {
                     <TableCell className="text-right">{getOpeningBalance(account).toFixed(2)}</TableCell>
                   </TableRow>
                 )}
-                {transactions.map((transaction, index) => {
-                  const runningBalance = accountBalance(transactions.slice(0, index + 1), account)
+                {(transactions || []).map((transaction, index) => {
+                  const runningBalance = accountBalance((transactions || []).slice(0, index + 1), account)
                   return (
                     <TableRow key={transaction.id}>
                       <TableCell>{format(new Date(transaction.date), 'yyyy-MM-dd')}</TableCell>
