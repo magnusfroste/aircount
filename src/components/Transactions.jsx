@@ -28,9 +28,9 @@ const Transactions = () => {
     }, {})
   }, [accounts])
 
-  const groupedTransactions = useMemo(() => {
-    if (!transactions) return {}
-    return transactions.reduce((acc, transaction) => {
+  const groupedAndSortedTransactions = useMemo(() => {
+    if (!transactions) return []
+    const grouped = transactions.reduce((acc, transaction) => {
       const ver = transaction.ver || 'Unspecified'
       if (!acc[ver]) {
         acc[ver] = []
@@ -38,7 +38,14 @@ const Transactions = () => {
       acc[ver].push(transaction)
       return acc
     }, {})
-  }, [transactions])
+    
+    return Object.entries(grouped)
+      .sort(([verA], [verB]) => {
+        if (verA === 'Unspecified') return 1
+        if (verB === 'Unspecified') return -1
+        return sortOrder === 'desc' ? verB.localeCompare(verA) : verA.localeCompare(verB)
+      })
+  }, [transactions, sortOrder])
 
   const handleAddTransaction = () => {
     addTransactionMutation.mutate({ ...newTransaction, user_id: session.user.id })
@@ -89,7 +96,7 @@ const Transactions = () => {
         </Button>
       </div>
       <div className="space-y-6">
-        {Object.entries(groupedTransactions).map(([ver, verTransactions]) => (
+        {groupedAndSortedTransactions.map(([ver, verTransactions]) => (
           <Card key={ver}>
             <CardHeader>
               <CardTitle>Transaction Number: {ver}</CardTitle>
