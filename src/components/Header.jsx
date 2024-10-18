@@ -4,12 +4,11 @@ import { useSupabaseAuth } from '../integrations/supabase/auth'
 import { Button } from "@/components/ui/button"
 import { useFiscalYear } from '../contexts/FiscalYearContext'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Loader2 } from "lucide-react"
 
 const Header = () => {
   const { session, logout } = useSupabaseAuth()
   const navigate = useNavigate()
-  const { fiscalYears, selectedYear, setSelectedYear, isLoading } = useFiscalYear()
+  const { fiscalYears, selectedYear, setSelectedYear } = useFiscalYear()
 
   const handleSignOut = async () => {
     try {
@@ -33,35 +32,27 @@ const Header = () => {
                 <li><Link to="/balance-sheet" className="text-blue-600 hover:text-blue-800">Balance Sheet</Link></li>
                 <li><Link to="/profit-and-loss" className="text-blue-600 hover:text-blue-800">Profit & Loss</Link></li>
                 <li><Link to="/templates" className="text-blue-600 hover:text-blue-800">Templates</Link></li>
-                <li><Link to="/admin" className="text-blue-600 hover:text-blue-800">Admin</Link></li>
+                <li><Link to="/import" className="text-blue-600 hover:text-blue-800">Import</Link></li>
+                <li><Link to="/year-management" className="text-blue-600 hover:text-blue-800">Year Management</Link></li>
                 <li><Link to="/opening-balances" className="text-blue-600 hover:text-blue-800">Opening Balances</Link></li>
               </>
             )}
           </ul>
         </nav>
         <div className="flex items-center space-x-4">
-          {session && (
-            isLoading ? (
-              <div className="flex items-center">
-                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                <span>Loading...</span>
-              </div>
-            ) : (
-              fiscalYears && fiscalYears.length > 0 && (
-                <Select value={selectedYear} onValueChange={setSelectedYear}>
-                  <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="Select Fiscal Year" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {fiscalYears.map((year) => (
-                      <SelectItem key={year.id} value={year.year.toString()}>
-                        {year.year}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )
-            )
+          {session && fiscalYears && fiscalYears.length > 0 && (
+            <Select value={selectedYear} onValueChange={setSelectedYear}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Select Fiscal Year" />
+              </SelectTrigger>
+              <SelectContent>
+                {fiscalYears.map((year) => (
+                  <SelectItem key={year.id} value={year.year.toString()}>
+                    {year.year}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           )}
           {session ? (
             <Button onClick={handleSignOut}>Sign Out</Button>
