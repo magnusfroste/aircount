@@ -39,8 +39,8 @@ const Header = () => {
               </SelectTrigger>
               <SelectContent>
                 {fiscalYears.map((year) => (
-                  <SelectItem key={year} value={year}>
-                    {year}
+                  <SelectItem key={year.id} value={year.year.toString()}>
+                    {year.year}
                   </SelectItem>
                 ))}
               </SelectContent>
