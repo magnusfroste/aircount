@@ -27,7 +27,7 @@ const Header = () => {
         <h1 className="text-2xl font-bold text-blue-600">
           <Link to="/">AirAccounter</Link>
         </h1>
-        <nav className="hidden md:flex space-x-4">
+        <nav className="hidden md:flex items-center space-x-4">
           {session ? (
             <>
               <Link to="/dashboard" className="text-gray-600 hover:text-blue-600 transition-colors">Dashboard</Link>
