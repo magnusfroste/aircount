@@ -59,7 +59,6 @@ const TransactionForm = ({ newTransaction, setNewTransaction, accounts, handleAd
 
 const TransactionRow = ({ transaction, handleDeleteTransaction, accountName }) => (
   <TableRow key={transaction.id}>
-    <TableCell>{transaction.ver}</TableCell>
     <TableCell>{format(new Date(transaction.date), 'yyyy-MM-dd')}</TableCell>
     <TableCell>{transaction.account} - {accountName}</TableCell>
     <TableCell>{transaction.debit}</TableCell>
@@ -92,6 +91,17 @@ const Transactions = () => {
       return acc
     }, {})
   }, [accounts])
+
+  const groupedTransactions = useMemo(() => {
+    if (!transactions) return {}
+    return transactions.reduce((acc, transaction) => {
+      if (!acc[transaction.ver]) {
+        acc[transaction.ver] = []
+      }
+      acc[transaction.ver].push(transaction)
+      return acc
+    }, {})
+  }, [transactions])
 
   const handleAddTransaction = () => {
     addTransactionMutation.mutate({ ...newTransaction, user_id: session.user.id })
@@ -143,28 +153,36 @@ const Transactions = () => {
           </Button>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Nr</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Account</TableHead>
-                <TableHead>Debit</TableHead>
-                <TableHead>Credit</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {transactions.map((transaction) => (
-                <TransactionRow
-                  key={transaction.id}
-                  transaction={transaction}
-                  handleDeleteTransaction={handleDeleteTransaction}
-                  accountName={accountMap[transaction.account] || 'Unknown Account'}
-                />
-              ))}
-            </TableBody>
-          </Table>
+          {Object.entries(groupedTransactions).map(([ver, transactions]) => (
+            <Card key={ver} className="mb-4">
+              <CardHeader>
+                <CardTitle>Transaction Number: {ver}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Account</TableHead>
+                      <TableHead>Debit</TableHead>
+                      <TableHead>Credit</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {transactions.map((transaction) => (
+                      <TransactionRow
+                        key={transaction.id}
+                        transaction={transaction}
+                        handleDeleteTransaction={handleDeleteTransaction}
+                        accountName={accountMap[transaction.account] || 'Unknown Account'}
+                      />
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          ))}
         </CardContent>
       </Card>
     </div>
