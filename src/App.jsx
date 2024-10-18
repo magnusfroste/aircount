@@ -5,6 +5,7 @@ import { FiscalYearProvider } from './contexts/FiscalYearContext'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import Header from './components/Header'
 import LandingPage from './components/LandingPage'
+import Login from './components/Login'
 import DashboardPage from './pages/DashboardPage'
 import TransactionsPage from './pages/TransactionsPage'
 import AccountsPage from './pages/AccountsPage'
@@ -20,7 +21,7 @@ const queryClient = new QueryClient()
 const ProtectedRoute = ({ children }) => {
   const { session } = useSupabaseAuth()
   if (!session) {
-    return <Navigate to="/" replace />
+    return <Navigate to="/login" replace />
   }
   return children
 }
@@ -35,6 +36,7 @@ function App() {
               <Header />
               <Routes>
                 <Route path="/" element={<LandingPage />} />
+                <Route path="/login" element={<Login />} />
                 <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
                 <Route path="/transactions" element={<ProtectedRoute><TransactionsPage /></ProtectedRoute>} />
                 <Route path="/accounts" element={<ProtectedRoute><AccountsPage /></ProtectedRoute>} />

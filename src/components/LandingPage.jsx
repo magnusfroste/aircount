@@ -16,7 +16,7 @@ const LandingPage = () => {
           {!session ? (
             <Link to="/login">
               <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white">
-                Get Started <ArrowRight className="ml-2 w-5 h-5" />
+                Sign In <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
             </Link>
           ) : (
