@@ -1,27 +1,13 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import { Button } from "@/components/ui/button"
-import { ArrowRight, CheckCircle, DollarSign, Smile, PieChart, LogIn, User, Menu } from 'lucide-react'
+import { ArrowRight, CheckCircle, DollarSign, Smile, PieChart } from 'lucide-react'
+import Header from './Header'
 
 const LandingPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
-      <header className="bg-white shadow-sm">
-        <div className="container mx-auto py-4 px-6 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-blue-600">Aircount</h1>
-          <nav className="hidden md:flex space-x-4">
-            <a href="#features" className="text-gray-600 hover:text-blue-600 transition-colors">Features</a>
-            <a href="#testimonials" className="text-gray-600 hover:text-blue-600 transition-colors">Testimonials</a>
-            <Link to="/login" className="flex items-center text-blue-600 hover:text-blue-700 transition-colors">
-              <LogIn className="w-4 h-4 mr-1" />
-              Login
-            </Link>
-          </nav>
-          <Button variant="ghost" className="md:hidden">
-            <Menu className="w-6 h-6" />
-          </Button>
-        </div>
-      </header>
+      <Header />
 
       <main className="container mx-auto px-6 py-12">
         <section className="text-center mb-16">
