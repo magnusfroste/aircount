@@ -6,10 +6,13 @@ import { supabase } from '../lib/supabase'
 import { toast } from 'sonner'
 import { useNavigate } from 'react-router-dom'
 import { User } from 'lucide-react'
+import { useFiscalYear } from '../contexts/FiscalYearContext'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 const Header = () => {
   const { session } = useSupabaseAuth()
   const navigate = useNavigate()
+  const { selectedYear, setSelectedYear, fiscalYears } = useFiscalYear()
 
   const handleLogout = async () => {
     try {
@@ -29,6 +32,18 @@ const Header = () => {
         <nav className="hidden md:flex items-center space-x-4">
           {session ? (
             <>
+              <Select value={selectedYear?.toString()} onValueChange={(value) => setSelectedYear(parseInt(value))}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Select Fiscal Year" />
+                </SelectTrigger>
+                <SelectContent>
+                  {fiscalYears?.map((year) => (
+                    <SelectItem key={year.id} value={year.year.toString()}>
+                      {year.year}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <Link to="/dashboard" className="text-gray-600 hover:text-blue-600 transition-colors">Dashboard</Link>
               <Link to="/templates" className="text-gray-600 hover:text-blue-600 transition-colors">Templates</Link>
               <Link to="/transactions" className="text-gray-600 hover:text-blue-600 transition-colors">Transactions</Link>

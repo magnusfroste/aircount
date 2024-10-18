@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { Toaster } from "@/components/ui/sonner"
 import { SupabaseAuthProvider, useSupabaseAuth } from './integrations/supabase/auth'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { FiscalYearProvider } from './contexts/FiscalYearContext'
 import Login from './components/Login'
 import Index from './pages/Index'
 import DashboardPage from './pages/DashboardPage'
@@ -45,24 +46,26 @@ function AppContent() {
   }
 
   return (
-    <Router>
-      <Header />
-      <Routes>
-        <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
-        <Route path="/transactions" element={<ProtectedRoute><TransactionsPage /></ProtectedRoute>} />
-        <Route path="/accounts" element={<ProtectedRoute><AccountsPage /></ProtectedRoute>} />
-        <Route path="/templates" element={<ProtectedRoute><TemplatesPage /></ProtectedRoute>} />
-        <Route path="/balance-sheet" element={<ProtectedRoute><BalanceSheetPage /></ProtectedRoute>} />
-        <Route path="/profit-and-loss" element={<ProtectedRoute><ProfitAndLossPage /></ProtectedRoute>} />
-        <Route path="/ledger" element={<ProtectedRoute><LedgerPage /></ProtectedRoute>} />
-        <Route path="/opening-balances" element={<ProtectedRoute><OpeningBalancesPage /></ProtectedRoute>} />
-        <Route path="/year-management" element={<ProtectedRoute><YearManagementPage /></ProtectedRoute>} />
-        <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-      </Routes>
-      <Toaster />
-    </Router>
+    <FiscalYearProvider>
+      <Router>
+        <Header />
+        <Routes>
+          <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+          <Route path="/transactions" element={<ProtectedRoute><TransactionsPage /></ProtectedRoute>} />
+          <Route path="/accounts" element={<ProtectedRoute><AccountsPage /></ProtectedRoute>} />
+          <Route path="/templates" element={<ProtectedRoute><TemplatesPage /></ProtectedRoute>} />
+          <Route path="/balance-sheet" element={<ProtectedRoute><BalanceSheetPage /></ProtectedRoute>} />
+          <Route path="/profit-and-loss" element={<ProtectedRoute><ProfitAndLossPage /></ProtectedRoute>} />
+          <Route path="/ledger" element={<ProtectedRoute><LedgerPage /></ProtectedRoute>} />
+          <Route path="/opening-balances" element={<ProtectedRoute><OpeningBalancesPage /></ProtectedRoute>} />
+          <Route path="/year-management" element={<ProtectedRoute><YearManagementPage /></ProtectedRoute>} />
+          <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+        </Routes>
+        <Toaster />
+      </Router>
+    </FiscalYearProvider>
   )
 }
 

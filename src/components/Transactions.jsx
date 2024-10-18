@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Trash2, ArrowUpDown } from 'lucide-react'
 import { useSupabaseAuth } from '../integrations/supabase/auth'
+import { useFiscalYear } from '../contexts/FiscalYearContext'
 import { toast } from 'sonner'
 import TransactionForm from './TransactionForm'
 import TransactionRow from './TransactionRow'
@@ -15,7 +16,8 @@ const Transactions = () => {
   const [newTransaction, setNewTransaction] = useState({ ver: '', date: '', account: '', debit: 0, credit: 0 })
   const [sortOrder, setSortOrder] = useState('desc')
   const { session } = useSupabaseAuth()
-  const { data: transactions, isLoading: transactionsLoading, error: transactionsError } = useTransactions(session.user.id, sortOrder)
+  const { selectedYear } = useFiscalYear()
+  const { data: transactions, isLoading: transactionsLoading, error: transactionsError } = useTransactions(session.user.id, sortOrder, selectedYear)
   const { data: accounts, isLoading: accountsLoading, error: accountsError } = useAccounts(session.user.id)
   const addTransactionMutation = useAddTransaction()
   const deleteTransactionMutation = useDeleteTransaction()
@@ -80,66 +82,64 @@ const Transactions = () => {
   if (transactionsError) return <div>Error loading transactions: {transactionsError.message}</div>
   if (accountsError) return <div>Error loading accounts: {accountsError.message}</div>
 
-
-return (
-  <div className="container mx-auto p-4">
-    <h1 className="text-2xl font-bold mb-4">Transactions</h1>
-    <TransactionForm
-      newTransaction={newTransaction}
-      setNewTransaction={setNewTransaction}
-      accounts={accounts}
-      handleAddTransaction={handleAddTransaction}
-    />
-    <div className="flex justify-between items-center mb-4">
-      <Button onClick={handleDeleteAllTransactions} variant="destructive">
-        <Trash2 className="mr-2 h-4 w-4" /> Delete All
-      </Button>
-      <Button onClick={toggleSortOrder} variant="outline">
-        Sort {sortOrder === 'desc' ? 'Ascending' : 'Descending'}
-        <ArrowUpDown className="ml-2 h-4 w-4" />
-      </Button>
+  return (
+    <div className="container mx-auto p-4">
+      <h1 className="text-2xl font-bold mb-4">Transactions for Fiscal Year {selectedYear}</h1>
+      <TransactionForm
+        newTransaction={newTransaction}
+        setNewTransaction={setNewTransaction}
+        accounts={accounts}
+        handleAddTransaction={handleAddTransaction}
+      />
+      <div className="flex justify-between items-center mb-4">
+        <Button onClick={handleDeleteAllTransactions} variant="destructive">
+          <Trash2 className="mr-2 h-4 w-4" /> Delete All
+        </Button>
+        <Button onClick={toggleSortOrder} variant="outline">
+          Sort {sortOrder === 'desc' ? 'Ascending' : 'Descending'}
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      </div>
+      <div className="space-y-6">
+        {groupedAndSortedTransactions.map(([ver, verTransactions]) => (
+          <Card key={ver}>
+            <CardHeader>
+              <CardTitle>Transaction Number: {ver}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Account Number</TableHead>
+                    <TableHead>Account Name</TableHead>
+                    <TableHead>Debit</TableHead>
+                    <TableHead>Credit</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {verTransactions.map((transaction) => (
+                    <TransactionRow
+                      key={transaction.id}
+                      transaction={{
+                        ...transaction,
+                        debit: formatNumber(transaction.debit),
+                        credit: formatNumber(transaction.credit)
+                      }}
+                      handleDeleteTransaction={handleDeleteTransaction}
+                      accountNumber={transaction.account}
+                      accountName={accountMap[transaction.account] || 'Unknown Account'}
+                    />
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
     </div>
-    <div className="space-y-6">
-      {groupedAndSortedTransactions.map(([ver, verTransactions]) => (
-        <Card key={ver}>
-          <CardHeader>
-            <CardTitle>Transaction Number: {ver}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Account Number</TableHead>
-                  <TableHead>Account Name</TableHead>
-                  <TableHead>Debit</TableHead>
-                  <TableHead>Credit</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {verTransactions.map((transaction) => (
-                  <TransactionRow
-                    key={transaction.id}
-                    transaction={{
-                      ...transaction,
-                      debit: formatNumber(transaction.debit),
-                      credit: formatNumber(transaction.credit)
-                    }}
-                    handleDeleteTransaction={handleDeleteTransaction}
-                    accountNumber={transaction.account}
-                    accountName={accountMap[transaction.account] || 'Unknown Account'}
-                  />
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-      ))}
-    </div>
-  </div>
-)
-
+  )
 }
 
 export default Transactions
