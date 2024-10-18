@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 import { useOpeningBalances, useAddOpeningBalance, useDeleteOpeningBalance } from '../integrations/supabase/hooks/openingBalances'
 import { useAccounts } from '../integrations/supabase/hooks/accounts'
 import { useSupabaseAuth } from '../integrations/supabase/auth'
@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { toast } from 'sonner'
 import { Trash2 } from 'lucide-react'
 
@@ -16,6 +17,18 @@ const OpeningBalancesPage = () => {
   const addOpeningBalanceMutation = useAddOpeningBalance()
   const deleteOpeningBalanceMutation = useDeleteOpeningBalance()
   const [newBalance, setNewBalance] = useState({ account: '', balance: 0 })
+
+  const groupedBalances = useMemo(() => {
+    if (!openingBalances) return { positive: [], negative: [] }
+    return openingBalances.reduce((acc, balance) => {
+      if (balance.balance >= 0) {
+        acc.positive.push(balance)
+      } else {
+        acc.negative.push(balance)
+      }
+      return acc
+    }, { positive: [], negative: [] })
+  }, [openingBalances])
 
   const handleAddBalance = () => {
     if (!newBalance.account || !newBalance.balance) {
@@ -36,6 +49,40 @@ const OpeningBalancesPage = () => {
       }
     })
   }
+
+  const renderBalanceTable = (balances) => (
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Account</TableHead>
+          <TableHead>Account Name</TableHead>
+          <TableHead>Balance</TableHead>
+          <TableHead>Actions</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {balances.map((balance) => {
+          const account = accounts.find(a => a.account === balance.account)
+          return (
+            <TableRow key={balance.id}>
+              <TableCell>{balance.account}</TableCell>
+              <TableCell>{account ? account.account_name : 'Unknown'}</TableCell>
+              <TableCell>{balance.balance.toFixed(2)}</TableCell>
+              <TableCell>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => handleDeleteBalance(balance.id)}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </TableCell>
+            </TableRow>
+          )
+        })}
+      </TableBody>
+    </Table>
+  )
 
   if (balancesLoading || accountsLoading) return <div>Loading opening balances and accounts...</div>
   if (balancesError) return <div>Error loading opening balances: {balancesError.message}</div>
@@ -68,37 +115,24 @@ const OpeningBalancesPage = () => {
         />
         <Button onClick={handleAddBalance}>Add Balance</Button>
       </div>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Account</TableHead>
-            <TableHead>Account Name</TableHead>
-            <TableHead>Balance</TableHead>
-            <TableHead>Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {openingBalances.map((balance) => {
-            const account = accounts.find(a => a.account === balance.account)
-            return (
-              <TableRow key={balance.id}>
-                <TableCell>{balance.account}</TableCell>
-                <TableCell>{account ? account.account_name : 'Unknown'}</TableCell>
-                <TableCell>{balance.balance.toFixed(2)}</TableCell>
-                <TableCell>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleDeleteBalance(balance.id)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </TableCell>
-              </TableRow>
-            )
-          })}
-        </TableBody>
-      </Table>
+      <div className="space-y-4">
+        <Card>
+          <CardHeader>
+            <CardTitle>Positive Balances</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {renderBalanceTable(groupedBalances.positive)}
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Negative Balances</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {renderBalanceTable(groupedBalances.negative)}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   )
 }
