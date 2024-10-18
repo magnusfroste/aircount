@@ -1,103 +1,97 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import { Button } from "@/components/ui/button"
-import { ArrowRight, CheckCircle, DollarSign, Smile, PieChart } from 'lucide-react'
+import { ArrowRight, CheckCircle, DollarSign, Smile, PieChart, LogIn, User, Menu } from 'lucide-react'
 
 const LandingPage = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-100 to-white">
-      <header className="container mx-auto py-8">
-        <h1 className="text-4xl font-bold text-center text-blue-600">Welcome to AirAccounter</h1>
-        <p className="text-xl text-center mt-2 text-gray-600">Your free, donation-powered financial companion</p>
+    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
+      <header className="bg-white shadow-sm">
+        <div className="container mx-auto py-4 px-6 flex justify-between items-center">
+          <h1 className="text-2xl font-bold text-blue-600">AirAccounter</h1>
+          <nav className="hidden md:flex space-x-4">
+            <a href="#features" className="text-gray-600 hover:text-blue-600 transition-colors">Features</a>
+            <a href="#testimonials" className="text-gray-600 hover:text-blue-600 transition-colors">Testimonials</a>
+            <Link to="/login" className="flex items-center text-blue-600 hover:text-blue-700 transition-colors">
+              <LogIn className="w-4 h-4 mr-1" />
+              Login
+            </Link>
+          </nav>
+          <Button variant="ghost" className="md:hidden">
+            <Menu className="w-6 h-6" />
+          </Button>
+        </div>
       </header>
 
-      <main className="container mx-auto mt-12">
-        <section className="grid md:grid-cols-2 gap-12 items-center">
-          <div>
-            <h2 className="text-3xl font-semibold mb-4">Take Control of Your Finances</h2>
-            <ul className="space-y-4">
-              {[
-                "Easy-to-use accounting software",
-                "Comprehensive financial reports",
-                "Secure and privacy-focused",
-                "Always free, powered by donations"
-              ].map((item, index) => (
-                <li key={index} className="flex items-center">
-                  <CheckCircle className="text-green-500 mr-2" />
-                  <span>{item}</span>
-                </li>
-              ))}
-            </ul>
-            <Link to="/login">
-              <Button className="mt-6">
-                Get Started <ArrowRight className="ml-2" />
-              </Button>
-            </Link>
-          </div>
-          <div className="relative">
-            <img
-              src="/dashboard-mockup.jpg"
-              alt="AirAccounter Dashboard"
-              className="rounded-lg shadow-xl"
-            />
-            <img
-              src="/happy-user.jpg"
-              alt="Happy AirAccounter User"
-              className="absolute -bottom-4 -left-4 w-32 h-32 rounded-full border-4 border-white shadow-lg"
-            />
-          </div>
+      <main className="container mx-auto px-6 py-12">
+        <section className="text-center mb-16">
+          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Welcome to AirAccounter</h2>
+          <p className="text-xl text-gray-600 mb-8">Your free, donation-powered financial companion</p>
+          <Link to="/login">
+            <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white">
+              Get Started <ArrowRight className="ml-2 w-5 h-5" />
+            </Button>
+          </Link>
         </section>
 
-        <section className="mt-24">
-          <h2 className="text-3xl font-semibold text-center mb-12">Why Choose AirAccounter?</h2>
+        <section id="features" className="grid md:grid-cols-3 gap-8 mb-16">
+          {[
+            {
+              icon: <DollarSign className="w-12 h-12 text-blue-500" />,
+              title: "Financial Clarity",
+              description: "Gain insights into your financial health with easy-to-understand reports and visualizations."
+            },
+            {
+              icon: <Smile className="w-12 h-12 text-yellow-500" />,
+              title: "Stress-Free Accounting",
+              description: "Say goodbye to accounting headaches with our user-friendly interface and automated features."
+            },
+            {
+              icon: <PieChart className="w-12 h-12 text-green-500" />,
+              title: "Growth-Focused",
+              description: "Make informed decisions to grow your business or personal wealth with data-driven insights."
+            }
+          ].map((feature, index) => (
+            <div key={index} className="bg-white rounded-lg shadow-md p-6 text-center">
+              <div className="flex justify-center mb-4">{feature.icon}</div>
+              <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
+              <p className="text-gray-600">{feature.description}</p>
+            </div>
+          ))}
+        </section>
+
+        <section id="testimonials" className="text-center mb-16">
+          <h2 className="text-3xl font-semibold mb-8">What Our Users Say</h2>
           <div className="grid md:grid-cols-3 gap-8">
             {[
-              {
-                icon: <DollarSign className="w-12 h-12 text-blue-500" />,
-                title: "Financial Clarity",
-                description: "Gain insights into your financial health with easy-to-understand reports and visualizations."
-              },
-              {
-                icon: <Smile className="w-12 h-12 text-yellow-500" />,
-                title: "Stress-Free Accounting",
-                description: "Say goodbye to accounting headaches with our user-friendly interface and automated features."
-              },
-              {
-                icon: <PieChart className="w-12 h-12 text-green-500" />,
-                title: "Growth-Focused",
-                description: "Make informed decisions to grow your business or personal wealth with data-driven insights."
-              }
-            ].map((feature, index) => (
-              <div key={index} className="text-center">
-                <div className="flex justify-center mb-4">{feature.icon}</div>
-                <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-                <p className="text-gray-600">{feature.description}</p>
+              { name: "Alex", comment: "AirAccounter simplified my business finances!" },
+              { name: "Sarah", comment: "I love how easy it is to track my expenses now." },
+              { name: "Mike", comment: "The reports are clear and help me make better decisions." }
+            ].map((testimonial, index) => (
+              <div key={index} className="bg-white rounded-lg shadow-md p-6">
+                <p className="text-gray-600 mb-4">"{testimonial.comment}"</p>
+                <p className="font-semibold">{testimonial.name}</p>
               </div>
             ))}
           </div>
         </section>
 
-        <section className="mt-24 text-center">
-          <h2 className="text-3xl font-semibold mb-4">Join Thousands of Happy Users</h2>
-          <p className="text-xl text-gray-600 mb-8">Experience the joy of having complete control over your finances</p>
-          <div className="flex justify-center space-x-4">
-            <img src="/user-testimonial-1.jpg" alt="Happy User 1" className="w-16 h-16 rounded-full" />
-            <img src="/user-testimonial-2.jpg" alt="Happy User 2" className="w-16 h-16 rounded-full" />
-            <img src="/user-testimonial-3.jpg" alt="Happy User 3" className="w-16 h-16 rounded-full" />
-          </div>
+        <section className="text-center">
+          <h2 className="text-3xl font-semibold mb-4">Ready to Take Control of Your Finances?</h2>
+          <p className="text-xl text-gray-600 mb-8">Join thousands of satisfied users today</p>
           <Link to="/login">
-            <Button className="mt-8">
-              Start Your Financial Journey <ArrowRight className="ml-2" />
+            <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white">
+              Start Your Financial Journey <ArrowRight className="ml-2 w-5 h-5" />
             </Button>
           </Link>
         </section>
       </main>
 
-      <footer className="mt-24 bg-blue-600 text-white py-8">
-        <div className="container mx-auto text-center">
-          <p>AirAccounter - Empowering Your Financial Future</p>
-          <p className="mt-2">Powered by donations from users like you</p>
-          <Button variant="outline" className="mt-4">
+      <footer className="bg-gray-800 text-white py-8 mt-16">
+        <div className="container mx-auto px-6 text-center">
+          <p className="mb-2">AirAccounter - Empowering Your Financial Future</p>
+          <p className="mb-4">Powered by donations from users like you</p>
+          <Button variant="outline" className="text-white border-white hover:bg-white hover:text-gray-800">
             Support AirAccounter
           </Button>
         </div>
