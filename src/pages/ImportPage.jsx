@@ -27,26 +27,36 @@ const ImportPage = () => {
     }
 
     try {
+      console.log('Starting file import process')
       const fileContent = await file.arrayBuffer()
+      console.log('File content loaded as ArrayBuffer')
       const decoder = new TextDecoder('utf-8')
       let decodedContent = decoder.decode(new Uint8Array(fileContent))
+      console.log('Initial UTF-8 decoding completed')
 
       // If UTF-8 decoding fails, try IBM-437
       if (decodedContent.includes('�')) {
+        console.log('UTF-8 decoding failed, trying IBM-437')
         decodedContent = ibm437ToUnicode(new Uint8Array(fileContent))
       }
 
+      console.log('Decoded content:', decodedContent.substring(0, 100) + '...') // Log first 100 characters
+
       const transactions = parseSEFile(decodedContent)
+      console.log(`Parsed ${transactions.length} transactions`)
 
       // Import transactions using the mutation
+      console.log('Starting transaction import')
       importTransactionsMutation.mutate(
         { transactions, userId: session.user.id, fiscalYear: selectedYear },
         {
           onSuccess: () => {
+            console.log('Import successful')
             toast.success(`Successfully imported ${transactions.length} transactions`)
             setFile(null)
           },
           onError: (error) => {
+            console.error('Import error:', error)
             toast.error(`Error importing transactions: ${error.message}`)
           }
         }
