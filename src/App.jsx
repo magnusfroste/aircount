@@ -14,6 +14,7 @@ import TemplatesPage from './pages/TemplatesPage'
 import ImportPage from './pages/ImportPage'
 import YearManagementPage from './pages/YearManagementPage'
 import OpeningBalancesPage from './pages/OpeningBalancesPage'
+import Login from './components/Login'
 
 const queryClient = new QueryClient()
 
@@ -27,6 +28,7 @@ function App() {
               <Header />
               <Routes>
                 <Route path="/" element={<LandingPage />} />
+                <Route path="/login" element={<Login />} />
                 <Route path="/dashboard" element={<DashboardPage />} />
                 <Route path="/transactions" element={<TransactionsPage />} />
                 <Route path="/accounts" element={<AccountsPage />} />
