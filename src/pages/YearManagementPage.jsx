@@ -2,7 +2,6 @@ import React, { useState } from 'react'
 import { useSupabaseAuth } from '../integrations/supabase/auth'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
-import Header from '../components/Header'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -57,49 +56,47 @@ const YearManagementPage = () => {
   if (isLoading) return <div>Loading...</div>
 
   return (
-    <div className="min-h-screen bg-white">
-      <Header />
-      <div className="container mx-auto p-4">
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle>Add New Fiscal Year</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleAddYear} className="flex space-x-2">
-              <Input
-                type="number"
-                value={newYear}
-                onChange={(e) => setNewYear(e.target.value)}
-                placeholder="Enter year (e.g., 2024)"
-                className="max-w-xs"
-              />
-              <Button type="submit">Add Year</Button>
-            </form>
-          </CardContent>
-        </Card>
+    <div className="container mx-auto p-4">
+      <h1 className="text-2xl font-bold mb-6">Fiscal Year Management</h1>
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle>Add New Fiscal Year</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleAddYear} className="flex space-x-2">
+            <Input
+              type="number"
+              value={newYear}
+              onChange={(e) => setNewYear(e.target.value)}
+              placeholder="Enter year (e.g., 2024)"
+              className="max-w-xs"
+            />
+            <Button type="submit">Add Year</Button>
+          </form>
+        </CardContent>
+      </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Fiscal Years</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Year</TableHead>
+      <Card>
+        <CardHeader>
+          <CardTitle>Fiscal Years</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Year</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {years?.map((year) => (
+                <TableRow key={year.id}>
+                  <TableCell>{year.year}</TableCell>
                 </TableRow>
-              </TableHeader>
-              <TableBody>
-                {years?.map((year) => (
-                  <TableRow key={year.id}>
-                    <TableCell>{year.year}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-      </div>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
     </div>
   )
 }
