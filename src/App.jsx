@@ -15,6 +15,7 @@ import LedgerPage from './pages/LedgerPage'
 import OpeningBalancesPage from './pages/OpeningBalancesPage'
 import YearManagementPage from './pages/YearManagementPage'
 import ProfilePage from './pages/ProfilePage'
+import Header from './components/Header'
 
 const queryClient = new QueryClient()
 
@@ -45,6 +46,7 @@ function AppContent() {
 
   return (
     <Router>
+      <Header />
       <Routes>
         <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
         <Route path="/login" element={<Login />} />
