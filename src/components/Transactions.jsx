@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { PlusIcon, Trash2 } from 'lucide-react'
+import { PlusIcon, Trash2, ArrowUpDown } from 'lucide-react'
 import { useSupabaseAuth } from '../integrations/supabase/auth'
 import { format, parseISO } from 'date-fns'
 import { toast } from 'sonner'
@@ -77,6 +77,7 @@ const TransactionRow = ({ transaction, handleDeleteTransaction, accountName }) =
 
 const Transactions = () => {
   const [newTransaction, setNewTransaction] = useState({ ver: '', date: '', account: '', debit: 0, credit: 0 })
+  const [sortOrder, setSortOrder] = useState('desc') // 'desc' for descending, 'asc' for ascending
   const { session } = useSupabaseAuth()
   const { data: transactions, isLoading: transactionsLoading, error: transactionsError } = useTransactions(session.user.id)
   const { data: accounts, isLoading: accountsLoading, error: accountsError } = useAccounts(session.user.id)
@@ -103,15 +104,17 @@ const Transactions = () => {
       return acc
     }, {})
 
-    // Sort the groups by transaction number (ver) from highest to lowest
+    // Sort the groups by transaction number (ver) based on sortOrder
     return Object.fromEntries(
       Object.entries(grouped).sort((a, b) => {
-        if (a[0] === 'Unspecified') return 1
-        if (b[0] === 'Unspecified') return -1
-        return parseInt(b[0]) - parseInt(a[0])
+        if (a[0] === 'Unspecified') return sortOrder === 'desc' ? 1 : -1
+        if (b[0] === 'Unspecified') return sortOrder === 'desc' ? -1 : 1
+        return sortOrder === 'desc'
+          ? parseInt(b[0]) - parseInt(a[0])
+          : parseInt(a[0]) - parseInt(b[0])
       })
     )
-  }, [transactions])
+  }, [transactions, sortOrder])
 
   const handleAddTransaction = () => {
     addTransactionMutation.mutate({ ...newTransaction, user_id: session.user.id })
@@ -135,6 +138,10 @@ const Transactions = () => {
     }
   }
 
+  const toggleSortOrder = () => {
+    setSortOrder(prevOrder => prevOrder === 'desc' ? 'asc' : 'desc')
+  }
+
   if (transactionsLoading || accountsLoading) return <div>Loading...</div>
   if (transactionsError) return <div>Error loading transactions: {transactionsError.message}</div>
   if (accountsError) return <div>Error loading accounts: {accountsError.message}</div>
@@ -148,9 +155,15 @@ const Transactions = () => {
         accounts={accounts}
         handleAddTransaction={handleAddTransaction}
       />
-      <Button onClick={handleDeleteAllTransactions} variant="destructive" className="mb-4">
-        <Trash2 className="mr-2 h-4 w-4" /> Delete All
-      </Button>
+      <div className="flex justify-between items-center mb-4">
+        <Button onClick={handleDeleteAllTransactions} variant="destructive">
+          <Trash2 className="mr-2 h-4 w-4" /> Delete All
+        </Button>
+        <Button onClick={toggleSortOrder} variant="outline">
+          Sort {sortOrder === 'desc' ? 'Ascending' : 'Descending'}
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      </div>
       <div className="space-y-6">
         {Object.entries(groupedTransactions).map(([ver, verTransactions]) => (
           <Card key={ver}>
