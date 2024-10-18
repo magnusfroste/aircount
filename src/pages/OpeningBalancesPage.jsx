@@ -1,5 +1,4 @@
 import React, { useState } from 'react'
-import Header from '../components/Header'
 import { useSupabaseAuth } from '../integrations/supabase/auth'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -61,6 +60,7 @@ const OpeningBalancesPage = () => {
   const sumPositive = groupedBalances?.positive.reduce((sum, balance) => sum + balance.balance, 0) || 0
   const sumNegative = groupedBalances?.negative.reduce((sum, balance) => sum + Math.abs(balance.balance), 0) || 0
 
+
   if (isLoading) return <div>Loading opening balances...</div>
   if (error) return <div>Error loading opening balances: {error.message}</div>
 
@@ -106,7 +106,6 @@ const OpeningBalancesPage = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      <Header />
       <div className="container mx-auto p-4">
         <div className="bg-gradient-to-b from-blue-50 to-white rounded-lg shadow-md p-6">
           <h1 className="text-2xl font-bold mb-4">Opening Balances for Fiscal Year {selectedYear}</h1>
