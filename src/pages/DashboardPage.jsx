@@ -1,7 +1,6 @@
 import React from 'react'
 import Dashboard from '../components/Dashboard'
 import { useSupabaseAuth } from '../integrations/supabase/auth'
-import Header from '../components/Header'
 
 const DashboardPage = () => {
   const { session } = useSupabaseAuth()
@@ -11,11 +10,9 @@ const DashboardPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
-      <Header />
-      <div className="container mx-auto p-4">
-        <Dashboard />
-      </div>
+    <div className="container mx-auto p-4">
+      <h1 className="text-2xl font-bold mb-4">Welcome to your Dashboard</h1>
+      <Dashboard />
     </div>
   )
 }

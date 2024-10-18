@@ -2,20 +2,83 @@ import React, { useState, useMemo } from 'react'
 import { useTransactions, useAddTransaction, useDeleteTransaction, useDeleteAllTransactions } from '../integrations/supabase/hooks/transactions'
 import { useAccounts } from '../integrations/supabase/hooks/accounts'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Trash2, ArrowUpDown } from 'lucide-react'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { PlusIcon, Trash2 } from 'lucide-react'
 import { useSupabaseAuth } from '../integrations/supabase/auth'
+import { format } from 'date-fns'
 import { toast } from 'sonner'
-import TransactionForm from './TransactionForm'
-import TransactionRow from './TransactionRow'
-import { formatNumber } from '../utils/numberFormatting'
+
+const TransactionForm = ({ newTransaction, setNewTransaction, accounts, handleAddTransaction }) => (
+  <div className="mb-4 flex space-x-2">
+    <Input
+      type="text"
+      placeholder="Nr"
+      value={newTransaction.ver}
+      onChange={(e) => setNewTransaction({ ...newTransaction, ver: e.target.value })}
+    />
+    <Input
+      type="date"
+      value={newTransaction.date}
+      onChange={(e) => setNewTransaction({ ...newTransaction, date: e.target.value })}
+    />
+    <Select
+      value={newTransaction.account}
+      onValueChange={(value) => setNewTransaction({ ...newTransaction, account: value })}
+    >
+      <SelectTrigger className="w-[300px]">
+        <SelectValue placeholder="Select account" />
+      </SelectTrigger>
+      <SelectContent>
+        {accounts.map((account) => (
+          <SelectItem key={account.id} value={account.account}>
+            {account.account} - {account.account_name}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+    <Input
+      type="number"
+      placeholder="Debit"
+      value={newTransaction.debit}
+      onChange={(e) => setNewTransaction({ ...newTransaction, debit: parseFloat(e.target.value) })}
+    />
+    <Input
+      type="number"
+      placeholder="Credit"
+      value={newTransaction.credit}
+      onChange={(e) => setNewTransaction({ ...newTransaction, credit: parseFloat(e.target.value) })}
+    />
+    <Button onClick={handleAddTransaction}>
+      <PlusIcon className="mr-2 h-4 w-4" /> Add
+    </Button>
+  </div>
+)
+
+const TransactionRow = ({ transaction, handleDeleteTransaction, accountName }) => (
+  <TableRow key={transaction.id}>
+    <TableCell>{transaction.ver}</TableCell>
+    <TableCell>{format(new Date(transaction.date), 'yyyy-MM-dd')}</TableCell>
+    <TableCell>{transaction.account} - {accountName}</TableCell>
+    <TableCell>{transaction.debit}</TableCell>
+    <TableCell>{transaction.credit}</TableCell>
+    <TableCell>
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => handleDeleteTransaction(transaction.id)}
+      >
+        <Trash2 className="h-4 w-4" />
+      </Button>
+    </TableCell>
+  </TableRow>
+)
 
 const Transactions = () => {
   const [newTransaction, setNewTransaction] = useState({ ver: '', date: '', account: '', debit: 0, credit: 0 })
-  const [sortOrder, setSortOrder] = useState('desc')
   const { session } = useSupabaseAuth()
-  const { data: transactions, isLoading: transactionsLoading, error: transactionsError } = useTransactions(session.user.id, sortOrder)
+  const { data: transactions, isLoading: transactionsLoading, error: transactionsError } = useTransactions(session.user.id)
   const { data: accounts, isLoading: accountsLoading, error: accountsError } = useAccounts(session.user.id)
   const addTransactionMutation = useAddTransaction()
   const deleteTransactionMutation = useDeleteTransaction()
@@ -28,27 +91,6 @@ const Transactions = () => {
       return acc
     }, {})
   }, [accounts])
-
-  const groupedAndSortedTransactions = useMemo(() => {
-    if (!transactions) return []
-    const grouped = transactions.reduce((acc, transaction) => {
-      const ver = transaction.ver || 'Unspecified'
-      if (!acc[ver]) {
-        acc[ver] = []
-      }
-      acc[ver].push(transaction)
-      return acc
-    }, {})
-    
-    return Object.entries(grouped)
-      .sort(([verA], [verB]) => {
-        if (verA === 'Unspecified') return 1
-        if (verB === 'Unspecified') return -1
-        const numA = parseInt(verA, 10)
-        const numB = parseInt(verB, 10)
-        return sortOrder === 'desc' ? numB - numA : numA - numB
-      })
-  }, [transactions, sortOrder])
 
   const handleAddTransaction = () => {
     addTransactionMutation.mutate({ ...newTransaction, user_id: session.user.id })
@@ -72,74 +114,46 @@ const Transactions = () => {
     }
   }
 
-  const toggleSortOrder = () => {
-    setSortOrder(prevOrder => prevOrder === 'desc' ? 'asc' : 'desc')
-  }
-
   if (transactionsLoading || accountsLoading) return <div>Loading...</div>
   if (transactionsError) return <div>Error loading transactions: {transactionsError.message}</div>
   if (accountsError) return <div>Error loading accounts: {accountsError.message}</div>
 
-
-return (
-  <div className="container mx-auto p-4">
-    <h1 className="text-2xl font-bold mb-4">Transactions</h1>
-    <TransactionForm
-      newTransaction={newTransaction}
-      setNewTransaction={setNewTransaction}
-      accounts={accounts}
-      handleAddTransaction={handleAddTransaction}
-    />
-    <div className="flex justify-between items-center mb-4">
-      <Button onClick={handleDeleteAllTransactions} variant="destructive">
+  return (
+    <div className="container mx-auto p-4">
+      <h1 className="text-2xl font-bold mb-4">Transactions</h1>
+      <TransactionForm
+        newTransaction={newTransaction}
+        setNewTransaction={setNewTransaction}
+        accounts={accounts}
+        handleAddTransaction={handleAddTransaction}
+      />
+      <Button onClick={handleDeleteAllTransactions} variant="destructive" className="mb-4">
         <Trash2 className="mr-2 h-4 w-4" /> Delete All
       </Button>
-      <Button onClick={toggleSortOrder} variant="outline">
-        Sort {sortOrder === 'desc' ? 'Ascending' : 'Descending'}
-        <ArrowUpDown className="ml-2 h-4 w-4" />
-      </Button>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Nr</TableHead>
+            <TableHead>Date</TableHead>
+            <TableHead>Account</TableHead>
+            <TableHead>Debit</TableHead>
+            <TableHead>Credit</TableHead>
+            <TableHead>Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {transactions.map((transaction) => (
+            <TransactionRow
+              key={transaction.id}
+              transaction={transaction}
+              handleDeleteTransaction={handleDeleteTransaction}
+              accountName={accountMap[transaction.account] || 'Unknown Account'}
+            />
+          ))}
+        </TableBody>
+      </Table>
     </div>
-    <div className="space-y-6">
-      {groupedAndSortedTransactions.map(([ver, verTransactions]) => (
-        <Card key={ver}>
-          <CardHeader>
-            <CardTitle>Transaction Number: {ver}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Account Number</TableHead>
-                  <TableHead>Account Name</TableHead>
-                  <TableHead>Debit</TableHead>
-                  <TableHead>Credit</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {verTransactions.map((transaction) => (
-                  <TransactionRow
-                    key={transaction.id}
-                    transaction={{
-                      ...transaction,
-                      debit: formatNumber(transaction.debit),
-                      credit: formatNumber(transaction.credit)
-                    }}
-                    handleDeleteTransaction={handleDeleteTransaction}
-                    accountNumber={transaction.account}
-                    accountName={accountMap[transaction.account] || 'Unknown Account'}
-                  />
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-      ))}
-    </div>
-  </div>
-)
-
+  )
 }
 
 export default Transactions

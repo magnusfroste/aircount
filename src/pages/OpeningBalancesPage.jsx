@@ -1,147 +1,104 @@
 import React, { useState } from 'react'
-import Header from '../components/Header'
-import { useSupabaseAuth } from '../integrations/supabase/auth'
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { toast } from 'sonner'
 import { useOpeningBalances, useAddOpeningBalance, useDeleteOpeningBalance } from '../integrations/supabase/hooks/openingBalances'
 import { useAccounts } from '../integrations/supabase/hooks/accounts'
-import { formatNumber } from '../utils/numberFormatting'
+import { useSupabaseAuth } from '../integrations/supabase/auth'
+import { Button } from '@/components/ui/button'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { toast } from 'sonner'
+import { Trash2 } from 'lucide-react'
 
 const OpeningBalancesPage = () => {
   const { session } = useSupabaseAuth()
-  const { data: openingBalances, isLoading, error } = useOpeningBalances(session?.user?.id)
-  const { data: accounts } = useAccounts(session?.user?.id)
+  const { data: openingBalances, isLoading: balancesLoading, error: balancesError } = useOpeningBalances(session?.user?.id)
+  const { data: accounts, isLoading: accountsLoading, error: accountsError } = useAccounts(session?.user?.id)
   const addOpeningBalanceMutation = useAddOpeningBalance()
   const deleteOpeningBalanceMutation = useDeleteOpeningBalance()
   const [newBalance, setNewBalance] = useState({ account: '', balance: 0 })
 
-  const handleAddBalance = async (e) => {
-    e.preventDefault()
-    try {
-      await addOpeningBalanceMutation.mutateAsync({
-        ...newBalance,
-        user_id: session.user.id
-      })
-      toast.success('Balance added successfully')
-      setNewBalance({ account: '', balance: 0 })
-    } catch (error) {
-      toast.error(`Error adding balance: ${error.message}`)
+  const handleAddBalance = () => {
+    if (!newBalance.account || !newBalance.balance) {
+      toast.error('Please select an account and enter a balance')
+      return
     }
+    addOpeningBalanceMutation.mutate({ ...newBalance, user_id: session.user.id })
+    setNewBalance({ account: '', balance: 0 })
   }
 
-  const handleDeleteBalance = async (id) => {
-    try {
-      await deleteOpeningBalanceMutation.mutateAsync({ id, user_id: session.user.id })
-      toast.success('Balance deleted successfully')
-    } catch (error) {
-      toast.error(`Error deleting balance: ${error.message}`)
-    }
+  const handleDeleteBalance = (id) => {
+    deleteOpeningBalanceMutation.mutate({ id, user_id: session.user.id }, {
+      onSuccess: () => {
+        toast.success('Opening balance deleted successfully')
+      },
+      onError: (error) => {
+        toast.error(`Error deleting opening balance: ${error.message}`)
+      }
+    })
   }
 
-  const getAccountName = (accountNumber) => {
-    const account = accounts?.find(acc => acc.account === accountNumber)
-    return account ? account.account_name : 'Unknown Account'
-  }
-
-  const groupedBalances = openingBalances?.reduce((acc, balance) => {
-    if (balance.balance >= 0) {
-      acc.positive.push(balance)
-    } else {
-      acc.negative.push(balance)
-    }
-    return acc
-  }, { positive: [], negative: [] })
-
-  const sumPositive = groupedBalances?.positive.reduce((sum, balance) => sum + balance.balance, 0) || 0
-  const sumNegative = groupedBalances?.negative.reduce((sum, balance) => sum + Math.abs(balance.balance), 0) || 0
-
-  if (isLoading) return <div>Loading opening balances...</div>
-  if (error) return <div>Error loading opening balances: {error.message}</div>
-
-  const renderBalanceTable = (balances, title) => (
-    <Card className="mb-6">
-      <CardHeader>
-        <CardTitle>{title}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Account Number</TableHead>
-              <TableHead>Account Name</TableHead>
-              <TableHead>Debit</TableHead>
-              <TableHead>Credit</TableHead>
-              <TableHead>Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {balances.map((balance) => (
-              <TableRow key={balance.id}>
-                <TableCell>{balance.account}</TableCell>
-                <TableCell>{getAccountName(balance.account)}</TableCell>
-                <TableCell>{balance.balance >= 0 ? formatNumber(balance.balance) : '0.00'}</TableCell>
-                <TableCell>{balance.balance < 0 ? formatNumber(Math.abs(balance.balance)) : '0.00'}</TableCell>
-                <TableCell>
-                  <Button variant="destructive" onClick={() => handleDeleteBalance(balance.id)}>Delete</Button>
-                </TableCell>
-              </TableRow>
-            ))}
-            <TableRow className="font-bold">
-              <TableCell colSpan={2}>Total</TableCell>
-              <TableCell>{formatNumber(sumPositive)}</TableCell>
-              <TableCell>{formatNumber(sumNegative)}</TableCell>
-              <TableCell></TableCell>
-            </TableRow>
-          </TableBody>
-        </Table>
-      </CardContent>
-    </Card>
-  )
+  if (balancesLoading || accountsLoading) return <div>Loading opening balances and accounts...</div>
+  if (balancesError) return <div>Error loading opening balances: {balancesError.message}</div>
+  if (accountsError) return <div>Error loading accounts: {accountsError.message}</div>
 
   return (
-    <div className="min-h-screen bg-white">
-      <Header />
-      <div className="container mx-auto p-4">
-        <div className="bg-gradient-to-b from-blue-50 to-white rounded-lg shadow-md p-6">
-          <h1 className="text-2xl font-bold mb-4">Opening Balances</h1>
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle>Add Opening Balance</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleAddBalance} className="space-y-4">
-                <select
-                  className="w-full p-2 border rounded"
-                  value={newBalance.account}
-                  onChange={(e) => setNewBalance({ ...newBalance, account: e.target.value })}
-                  required
-                >
-                  <option value="">Select Account</option>
-                  {accounts?.map((account) => (
-                    <option key={account.id} value={account.account}>
-                      {account.account} - {account.account_name}
-                    </option>
-                  ))}
-                </select>
-                <Input
-                  type="number"
-                  placeholder="Balance (use negative for credit)"
-                  value={newBalance.balance}
-                  onChange={(e) => setNewBalance({ ...newBalance, balance: parseFloat(e.target.value) })}
-                  required
-                />
-                <Button type="submit">Add Balance</Button>
-              </form>
-            </CardContent>
-          </Card>
-
-          {renderBalanceTable(groupedBalances?.positive || [], 'Positive Balances (Debit)')}
-          {renderBalanceTable(groupedBalances?.negative || [], 'Negative Balances (Credit)')}
-        </div>
+    <div className="container mx-auto p-4">
+      <h1 className="text-2xl font-bold mb-4">Opening Balances</h1>
+      <div className="mb-4 flex space-x-2">
+        <Select
+          value={newBalance.account}
+          onValueChange={(value) => setNewBalance({ ...newBalance, account: value })}
+        >
+          <SelectTrigger className="w-[300px]">
+            <SelectValue placeholder="Select account" />
+          </SelectTrigger>
+          <SelectContent>
+            {accounts.map((account) => (
+              <SelectItem key={account.id} value={account.account}>
+                {account.account} - {account.account_name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Input
+          type="number"
+          placeholder="Balance"
+          value={newBalance.balance}
+          onChange={(e) => setNewBalance({ ...newBalance, balance: parseFloat(e.target.value) })}
+        />
+        <Button onClick={handleAddBalance}>Add Balance</Button>
       </div>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Account</TableHead>
+            <TableHead>Account Name</TableHead>
+            <TableHead>Balance</TableHead>
+            <TableHead>Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {openingBalances.map((balance) => {
+            const account = accounts.find(a => a.account === balance.account)
+            return (
+              <TableRow key={balance.id}>
+                <TableCell>{balance.account}</TableCell>
+                <TableCell>{account ? account.account_name : 'Unknown'}</TableCell>
+                <TableCell>{balance.balance.toFixed(2)}</TableCell>
+                <TableCell>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleDeleteBalance(balance.id)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </TableCell>
+              </TableRow>
+            )
+          })}
+        </TableBody>
+      </Table>
     </div>
   )
 }

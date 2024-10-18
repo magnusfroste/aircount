@@ -4,7 +4,9 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { SupabaseAuthProvider, useSupabaseAuth } from './integrations/supabase/auth';
 import Login from './components/Login';
+import Index from './pages/Index';
 import EventsPage from './pages/EventsPage';
+import Navigation from './components/Navigation';
 import TransactionsPage from './pages/TransactionsPage';
 import AccountsPage from './pages/AccountsPage';
 import ProfitAndLossPage from './pages/ProfitAndLossPage';
@@ -37,21 +39,24 @@ const AppRoutes = () => {
   const { session } = useSupabaseAuth();
 
   return (
-    <Routes>
-      <Route path="/" element={<LandingPage />} />
-      <Route path="/login" element={session ? <Navigate to="/dashboard" replace /> : <Login />} />
-      <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
-      <Route path="/events" element={<ProtectedRoute><EventsPage /></ProtectedRoute>} />
-      <Route path="/transactions" element={<ProtectedRoute><TransactionsPage /></ProtectedRoute>} />
-      <Route path="/accounts" element={<ProtectedRoute><AccountsPage /></ProtectedRoute>} />
-      <Route path="/profit-and-loss" element={<ProtectedRoute><ProfitAndLossPage /></ProtectedRoute>} />
-      <Route path="/ledger" element={<ProtectedRoute><LedgerPage /></ProtectedRoute>} />
-      <Route path="/balance-sheet" element={<ProtectedRoute><BalanceSheetPage /></ProtectedRoute>} />
-      <Route path="/opening-balances" element={<ProtectedRoute><OpeningBalancesPage /></ProtectedRoute>} />
-      <Route path="/import" element={<ProtectedRoute><ImportPage /></ProtectedRoute>} />
-      <Route path="/templates" element={<ProtectedRoute><TemplatesPage /></ProtectedRoute>} />
-      <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-    </Routes>
+    <>
+      {session && <Navigation />}
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/login" element={session ? <Navigate to="/dashboard" replace /> : <Login />} />
+        <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+        <Route path="/events" element={<ProtectedRoute><EventsPage /></ProtectedRoute>} />
+        <Route path="/transactions" element={<ProtectedRoute><TransactionsPage /></ProtectedRoute>} />
+        <Route path="/accounts" element={<ProtectedRoute><AccountsPage /></ProtectedRoute>} />
+        <Route path="/profit-and-loss" element={<ProtectedRoute><ProfitAndLossPage /></ProtectedRoute>} />
+        <Route path="/ledger" element={<ProtectedRoute><LedgerPage /></ProtectedRoute>} />
+        <Route path="/balance-sheet" element={<ProtectedRoute><BalanceSheetPage /></ProtectedRoute>} />
+        <Route path="/opening-balances" element={<ProtectedRoute><OpeningBalancesPage /></ProtectedRoute>} />
+        <Route path="/import" element={<ProtectedRoute><ImportPage /></ProtectedRoute>} />
+        <Route path="/templates" element={<ProtectedRoute><TemplatesPage /></ProtectedRoute>} />
+        <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+      </Routes>
+    </>
   );
 };
 

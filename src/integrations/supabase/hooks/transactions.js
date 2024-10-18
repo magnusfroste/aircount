@@ -23,15 +23,9 @@ const fromSupabase = async (query) => {
 
 */
 
-export const useTransactions = (userId, sortOrder = 'desc') => useQuery({
-    queryKey: ['transactions', userId, sortOrder],
-    queryFn: () => fromSupabase(
-        supabase
-            .from('transactions')
-            .select('*')
-            .eq('user_id', userId)
-            .order('ver', { ascending: sortOrder === 'asc' })
-    ),
+export const useTransactions = (userId) => useQuery({
+    queryKey: ['transactions', userId],
+    queryFn: () => fromSupabase(supabase.from('transactions').select('*').eq('user_id', userId)),
 });
 
 export const useAddTransaction = () => {
