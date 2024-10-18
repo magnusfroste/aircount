@@ -17,75 +17,6 @@ const BalanceSheet = () => {
   const { data: accounts, isLoading: accountsLoading, error: accountsError } = useAccounts(session?.user?.id)
   const { data: openingBalances, isLoading: openingBalancesLoading, error: openingBalancesError } = useOpeningBalances(session?.user?.id, selectedYear)
 
-  if (!session) {
-    return (
-      <Alert variant="destructive">
-        <AlertTitle>Authentication Error</AlertTitle>
-        <AlertDescription>
-          You must be logged in to view the balance sheet.
-        </AlertDescription>
-      </Alert>
-    )
-  }
-
-  if (!selectedYear) {
-    return (
-      <Alert variant="destructive">
-        <AlertTitle>Fiscal Year Not Selected</AlertTitle>
-        <AlertDescription>
-          Please select a fiscal year to view the balance sheet.
-        </AlertDescription>
-      </Alert>
-    )
-  }
-
-  if (transactionsLoading || accountsLoading || openingBalancesLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin" />
-        <span className="ml-2">Loading balance sheet data...</span>
-      </div>
-    )
-  }
-
-  if (transactionsError) {
-    return (
-      <Alert variant="destructive">
-        <AlertTitle>Error Loading Transactions</AlertTitle>
-        <AlertDescription>{transactionsError.message}</AlertDescription>
-      </Alert>
-    )
-  }
-
-  if (accountsError) {
-    return (
-      <Alert variant="destructive">
-        <AlertTitle>Error Loading Accounts</AlertTitle>
-        <AlertDescription>{accountsError.message}</AlertDescription>
-      </Alert>
-    )
-  }
-
-  if (openingBalancesError) {
-    return (
-      <Alert variant="destructive">
-        <AlertTitle>Error Loading Opening Balances</AlertTitle>
-        <AlertDescription>{openingBalancesError.message}</AlertDescription>
-      </Alert>
-    )
-  }
-
-  if (!transactions?.length || !accounts?.length || !openingBalances?.length) {
-    return (
-      <Alert>
-        <AlertTitle>No Data Available</AlertTitle>
-        <AlertDescription>
-          There is no data available for the balance sheet. Please ensure you have transactions, accounts, and opening balances for the selected fiscal year ({selectedYear}).
-        </AlertDescription>
-      </Alert>
-    )
-  }
-
   const balanceSheetData = useMemo(() => {
     if (!transactions || !accounts || !openingBalances) return null
 
@@ -163,6 +94,59 @@ const BalanceSheet = () => {
 
     return balanceSheet
   }, [transactions, accounts, openingBalances])
+
+  if (!session) {
+    return (
+      <Alert variant="destructive">
+        <AlertTitle>Authentication Error</AlertTitle>
+        <AlertDescription>
+          You must be logged in to view the balance sheet.
+        </AlertDescription>
+      </Alert>
+    )
+  }
+
+  if (!selectedYear) {
+    return (
+      <Alert variant="destructive">
+        <AlertTitle>Fiscal Year Not Selected</AlertTitle>
+        <AlertDescription>
+          Please select a fiscal year to view the balance sheet.
+        </AlertDescription>
+      </Alert>
+    )
+  }
+
+  if (transactionsLoading || accountsLoading || openingBalancesLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin" />
+        <span className="ml-2">Loading balance sheet data...</span>
+      </div>
+    )
+  }
+
+  if (transactionsError || accountsError || openingBalancesError) {
+    return (
+      <Alert variant="destructive">
+        <AlertTitle>Error Loading Data</AlertTitle>
+        <AlertDescription>
+          {transactionsError?.message || accountsError?.message || openingBalancesError?.message}
+        </AlertDescription>
+      </Alert>
+    )
+  }
+
+  if (!transactions?.length || !accounts?.length || !openingBalances?.length || !balanceSheetData) {
+    return (
+      <Alert>
+        <AlertTitle>No Data Available</AlertTitle>
+        <AlertDescription>
+          There is no data available for the balance sheet. Please ensure you have transactions, accounts, and opening balances for the selected fiscal year ({selectedYear}).
+        </AlertDescription>
+      </Alert>
+    )
+  }
 
   const renderCategory = (category, depth = 0) => {
     if (Array.isArray(category.accounts)) {
