@@ -2,6 +2,7 @@ import React from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { Toaster } from "@/components/ui/sonner"
 import { SupabaseAuthProvider, useSupabaseAuth } from './integrations/supabase/auth'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import Login from './components/Login'
 import Index from './pages/Index'
 import DashboardPage from './pages/DashboardPage'
@@ -14,6 +15,8 @@ import LedgerPage from './pages/LedgerPage'
 import OpeningBalancesPage from './pages/OpeningBalancesPage'
 import YearManagementPage from './pages/YearManagementPage'
 import ProfilePage from './pages/ProfilePage'
+
+const queryClient = new QueryClient()
 
 const ProtectedRoute = ({ children }) => {
   const { session, loading } = useSupabaseAuth()
@@ -63,9 +66,11 @@ function AppContent() {
 
 function App() {
   return (
-    <SupabaseAuthProvider>
-      <AppContent />
-    </SupabaseAuthProvider>
+    <QueryClientProvider client={queryClient}>
+      <SupabaseAuthProvider>
+        <AppContent />
+      </SupabaseAuthProvider>
+    </QueryClientProvider>
   )
 }
 
