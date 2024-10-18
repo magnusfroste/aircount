@@ -27,13 +27,14 @@ const ImportPage = () => {
     }
 
     try {
-      const fileContent = await file.arrayBuffer()
-      const decoder = new TextDecoder('utf-8')
-      let decodedContent = decoder.decode(new Uint8Array(fileContent))
+      const fileContent = await file.text() // Use text() instead of arrayBuffer()
+
+      let decodedContent = fileContent
 
       // If UTF-8 decoding fails, try IBM-437
       if (decodedContent.includes('�')) {
-        decodedContent = ibm437ToUnicode(new Uint8Array(fileContent))
+        const buffer = await file.arrayBuffer()
+        decodedContent = ibm437ToUnicode(new Uint8Array(buffer))
       }
 
       const transactions = parseSEFile(decodedContent)
