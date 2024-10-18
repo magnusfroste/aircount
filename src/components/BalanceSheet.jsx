@@ -5,6 +5,7 @@ import { useOpeningBalances } from '../integrations/supabase/hooks/openingBalanc
 import { useSupabaseAuth } from '../integrations/supabase/auth'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { formatNumber } from '../utils/numberFormatting'
 
 const BalanceSheet = () => {
   const { session } = useSupabaseAuth()
@@ -101,9 +102,9 @@ const BalanceSheet = () => {
       return category.accounts.map(({ account, name, openingBalance, change, closingBalance }) => (
         <TableRow key={account}>
           <TableCell className={`pl-${depth * 4}`}>{account} - {name}</TableCell>
-          <TableCell className="text-right">{openingBalance.toFixed(2)}</TableCell>
-          <TableCell className="text-right">{change.toFixed(2)}</TableCell>
-          <TableCell className="text-right">{closingBalance.toFixed(2)}</TableCell>
+          <TableCell className="text-right">{formatNumber(openingBalance.toFixed(2))}</TableCell>
+          <TableCell className="text-right">{formatNumber(change.toFixed(2))}</TableCell>
+          <TableCell className="text-right">{formatNumber(closingBalance.toFixed(2))}</TableCell>
         </TableRow>
       ))
     }
@@ -158,16 +159,16 @@ const BalanceSheet = () => {
               {renderCategory(balanceSheetData.Assets)}
               <TableRow className="font-bold">
                 <TableCell>Total Assets</TableCell>
-                <TableCell className="text-right">{assetsTotals.openingBalance.toFixed(2)}</TableCell>
-                <TableCell className="text-right">{assetsTotals.change.toFixed(2)}</TableCell>
-                <TableCell className="text-right">{assetsTotals.closingBalance.toFixed(2)}</TableCell>
+                <TableCell className="text-right">{formatNumber(assetsTotals.openingBalance.toFixed(2))}</TableCell>
+                <TableCell className="text-right">{formatNumber(assetsTotals.change.toFixed(2))}</TableCell>
+                <TableCell className="text-right">{formatNumber(assetsTotals.closingBalance.toFixed(2))}</TableCell>
               </TableRow>
               {renderCategory(balanceSheetData['Equity and Liabilities'])}
               <TableRow className="font-bold">
                 <TableCell>Total Equity and Liabilities</TableCell>
-                <TableCell className="text-right">{equityLiabilitiesTotals.openingBalance.toFixed(2)}</TableCell>
-                <TableCell className="text-right">{equityLiabilitiesTotals.change.toFixed(2)}</TableCell>
-                <TableCell className="text-right">{equityLiabilitiesTotals.closingBalance.toFixed(2)}</TableCell>
+                <TableCell className="text-right">{formatNumber(equityLiabilitiesTotals.openingBalance.toFixed(2))}</TableCell>
+                <TableCell className="text-right">{formatNumber(equityLiabilitiesTotals.change.toFixed(2))}</TableCell>
+                <TableCell className="text-right">{formatNumber(equityLiabilitiesTotals.closingBalance.toFixed(2))}</TableCell>
               </TableRow>
             </TableBody>
           </Table>

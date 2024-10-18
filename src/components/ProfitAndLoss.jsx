@@ -4,6 +4,7 @@ import { useAccounts } from '../integrations/supabase/hooks/accounts'
 import { useSupabaseAuth } from '../integrations/supabase/auth'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { formatNumber } from '../utils/numberFormatting'
 
 const ProfitAndLoss = () => {
   const { session } = useSupabaseAuth()
@@ -83,14 +84,14 @@ const ProfitAndLoss = () => {
                     <TableCell>{category}</TableCell>
                     <TableCell></TableCell>
                     <TableCell></TableCell>
-                    <TableCell className="text-right">{sum.toFixed(2)}</TableCell>
+                    <TableCell className="text-right">{formatNumber(sum.toFixed(2))}</TableCell>
                   </TableRow>
                   {accounts.map(({ account, accountName, sum }) => (
                     <TableRow key={account}>
                       <TableCell className="pl-8"></TableCell>
                       <TableCell>{account}</TableCell>
                       <TableCell>{accountName}</TableCell>
-                      <TableCell className="text-right">{sum.toFixed(2)}</TableCell>
+                      <TableCell className="text-right">{formatNumber(sum.toFixed(2))}</TableCell>
                     </TableRow>
                   ))}
                 </React.Fragment>
@@ -108,23 +109,23 @@ const ProfitAndLoss = () => {
             <TableBody>
               <TableRow>
                 <TableCell>Total Income</TableCell>
-                <TableCell className="text-right">{plStatement.totalIncome.toFixed(2)}</TableCell>
+                <TableCell className="text-right">{formatNumber(plStatement.totalIncome.toFixed(2))}</TableCell>
               </TableRow>
               <TableRow>
                 <TableCell>Total Costs</TableCell>
-                <TableCell className="text-right">{plStatement.totalCosts.toFixed(2)}</TableCell>
+                <TableCell className="text-right">{formatNumber(plStatement.totalCosts.toFixed(2))}</TableCell>
               </TableRow>
               <TableRow>
                 <TableCell>Financial Income</TableCell>
-                <TableCell className="text-right">{plStatement.financialIncome.toFixed(2)}</TableCell>
+                <TableCell className="text-right">{formatNumber(plStatement.financialIncome.toFixed(2))}</TableCell>
               </TableRow>
               <TableRow>
                 <TableCell>Taxes</TableCell>
-                <TableCell className="text-right">{plStatement.taxes.toFixed(2)}</TableCell>
+                <TableCell className="text-right">{formatNumber(plStatement.taxes.toFixed(2))}</TableCell>
               </TableRow>
               <TableRow className="font-bold">
                 <TableCell>Net Income</TableCell>
-                <TableCell className="text-right">{plStatement.netIncome.toFixed(2)}</TableCell>
+                <TableCell className="text-right">{formatNumber(plStatement.netIncome.toFixed(2))}</TableCell>
               </TableRow>
             </TableBody>
           </Table>
