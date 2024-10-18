@@ -43,7 +43,9 @@ const Transactions = () => {
       .sort(([verA], [verB]) => {
         if (verA === 'Unspecified') return 1
         if (verB === 'Unspecified') return -1
-        return sortOrder === 'desc' ? verB.localeCompare(verA) : verA.localeCompare(verB)
+        const numA = parseInt(verA, 10)
+        const numB = parseInt(verB, 10)
+        return sortOrder === 'desc' ? numB - numA : numA - numB
       })
   }, [transactions, sortOrder])
 
