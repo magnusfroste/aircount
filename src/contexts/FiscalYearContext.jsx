@@ -11,7 +11,7 @@ export const FiscalYearProvider = ({ children }) => {
   const [selectedYear, setSelectedYear] = useState(null);
   const { session } = useSupabaseAuth();
 
-  const { data: fiscalYears } = useQuery({
+  const { data: fiscalYears, isLoading } = useQuery({
     queryKey: ['fiscal-years', session?.user?.id],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -27,12 +27,12 @@ export const FiscalYearProvider = ({ children }) => {
 
   useEffect(() => {
     if (fiscalYears && fiscalYears.length > 0 && !selectedYear) {
-      setSelectedYear(fiscalYears[0].year);
+      setSelectedYear(fiscalYears[0].year.toString());
     }
   }, [fiscalYears, selectedYear]);
 
   return (
-    <FiscalYearContext.Provider value={{ selectedYear, setSelectedYear, fiscalYears }}>
+    <FiscalYearContext.Provider value={{ selectedYear, setSelectedYear, fiscalYears, isLoading }}>
       {children}
     </FiscalYearContext.Provider>
   );
