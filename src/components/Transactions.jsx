@@ -59,7 +59,7 @@ const TransactionForm = ({ newTransaction, setNewTransaction, accounts, handleAd
 
 const TransactionRow = ({ transaction, handleDeleteTransaction, accountName }) => (
   <TableRow key={transaction.id}>
-    <TableCell>{transaction.ver}</TableCell>
+    <TableCell>{format(parseISO(transaction.date), 'yyyy-MM-dd')}</TableCell>
     <TableCell>{accountName}</TableCell>
     <TableCell>{transaction.debit}</TableCell>
     <TableCell>{transaction.credit}</TableCell>
@@ -95,11 +95,11 @@ const Transactions = () => {
   const groupedTransactions = useMemo(() => {
     if (!transactions) return {}
     return transactions.reduce((acc, transaction) => {
-      const date = format(parseISO(transaction.date), 'yyyy-MM-dd')
-      if (!acc[date]) {
-        acc[date] = []
+      const ver = transaction.ver || 'Unspecified'
+      if (!acc[ver]) {
+        acc[ver] = []
       }
-      acc[date].push(transaction)
+      acc[ver].push(transaction)
       return acc
     }, {})
   }, [transactions])
@@ -143,16 +143,16 @@ const Transactions = () => {
         <Trash2 className="mr-2 h-4 w-4" /> Delete All
       </Button>
       <div className="space-y-6">
-        {Object.entries(groupedTransactions).map(([date, dateTransactions]) => (
-          <Card key={date}>
+        {Object.entries(groupedTransactions).map(([ver, verTransactions]) => (
+          <Card key={ver}>
             <CardHeader>
-              <CardTitle>{format(parseISO(date), 'MMMM d, yyyy')}</CardTitle>
+              <CardTitle>Transaction Number: {ver}</CardTitle>
             </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Nr</TableHead>
+                    <TableHead>Date</TableHead>
                     <TableHead>Account</TableHead>
                     <TableHead>Debit</TableHead>
                     <TableHead>Credit</TableHead>
@@ -160,7 +160,7 @@ const Transactions = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {dateTransactions.map((transaction) => (
+                  {verTransactions.map((transaction) => (
                     <TransactionRow
                       key={transaction.id}
                       transaction={transaction}
