@@ -9,51 +9,63 @@ import { PlusIcon, Trash2 } from 'lucide-react'
 import { useSupabaseAuth } from '../integrations/supabase/auth'
 import { format } from 'date-fns'
 import { toast } from 'sonner'
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 const TransactionForm = ({ newTransaction, setNewTransaction, accounts, handleAddTransaction }) => (
-  <div className="mb-4 flex space-x-2">
-    <Input
-      type="text"
-      placeholder="Nr"
-      value={newTransaction.ver}
-      onChange={(e) => setNewTransaction({ ...newTransaction, ver: e.target.value })}
-    />
-    <Input
-      type="date"
-      value={newTransaction.date}
-      onChange={(e) => setNewTransaction({ ...newTransaction, date: e.target.value })}
-    />
-    <Select
-      value={newTransaction.account}
-      onValueChange={(value) => setNewTransaction({ ...newTransaction, account: value })}
-    >
-      <SelectTrigger className="w-[300px]">
-        <SelectValue placeholder="Select account" />
-      </SelectTrigger>
-      <SelectContent>
-        {accounts.map((account) => (
-          <SelectItem key={account.id} value={account.account}>
-            {account.account} - {account.account_name}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
-    <Input
-      type="number"
-      placeholder="Debit"
-      value={newTransaction.debit}
-      onChange={(e) => setNewTransaction({ ...newTransaction, debit: parseFloat(e.target.value) })}
-    />
-    <Input
-      type="number"
-      placeholder="Credit"
-      value={newTransaction.credit}
-      onChange={(e) => setNewTransaction({ ...newTransaction, credit: parseFloat(e.target.value) })}
-    />
-    <Button onClick={handleAddTransaction}>
-      <PlusIcon className="mr-2 h-4 w-4" /> Add
-    </Button>
-  </div>
+  <Card className="mb-4">
+    <CardHeader>
+      <CardTitle>Add New Transaction</CardTitle>
+    </CardHeader>
+    <CardContent>
+      <div className="flex flex-wrap gap-2">
+        <Input
+          type="text"
+          placeholder="Nr"
+          value={newTransaction.ver}
+          onChange={(e) => setNewTransaction({ ...newTransaction, ver: e.target.value })}
+          className="w-full sm:w-auto"
+        />
+        <Input
+          type="date"
+          value={newTransaction.date}
+          onChange={(e) => setNewTransaction({ ...newTransaction, date: e.target.value })}
+          className="w-full sm:w-auto"
+        />
+        <Select
+          value={newTransaction.account}
+          onValueChange={(value) => setNewTransaction({ ...newTransaction, account: value })}
+        >
+          <SelectTrigger className="w-full sm:w-[300px]">
+            <SelectValue placeholder="Select account" />
+          </SelectTrigger>
+          <SelectContent>
+            {accounts.map((account) => (
+              <SelectItem key={account.id} value={account.account}>
+                {account.account} - {account.account_name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Input
+          type="number"
+          placeholder="Debit"
+          value={newTransaction.debit}
+          onChange={(e) => setNewTransaction({ ...newTransaction, debit: parseFloat(e.target.value) })}
+          className="w-full sm:w-auto"
+        />
+        <Input
+          type="number"
+          placeholder="Credit"
+          value={newTransaction.credit}
+          onChange={(e) => setNewTransaction({ ...newTransaction, credit: parseFloat(e.target.value) })}
+          className="w-full sm:w-auto"
+        />
+        <Button onClick={handleAddTransaction} className="w-full sm:w-auto">
+          <PlusIcon className="mr-2 h-4 w-4" /> Add
+        </Button>
+      </div>
+    </CardContent>
+  </Card>
 )
 
 const TransactionRow = ({ transaction, handleDeleteTransaction, accountName }) => (
@@ -119,39 +131,45 @@ const Transactions = () => {
   if (accountsError) return <div>Error loading accounts: {accountsError.message}</div>
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Transactions</h1>
+    <div>
       <TransactionForm
         newTransaction={newTransaction}
         setNewTransaction={setNewTransaction}
         accounts={accounts}
         handleAddTransaction={handleAddTransaction}
       />
-      <Button onClick={handleDeleteAllTransactions} variant="destructive" className="mb-4">
-        <Trash2 className="mr-2 h-4 w-4" /> Delete All
-      </Button>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Nr</TableHead>
-            <TableHead>Date</TableHead>
-            <TableHead>Account</TableHead>
-            <TableHead>Debit</TableHead>
-            <TableHead>Credit</TableHead>
-            <TableHead>Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {transactions.map((transaction) => (
-            <TransactionRow
-              key={transaction.id}
-              transaction={transaction}
-              handleDeleteTransaction={handleDeleteTransaction}
-              accountName={accountMap[transaction.account] || 'Unknown Account'}
-            />
-          ))}
-        </TableBody>
-      </Table>
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle>Transactions</CardTitle>
+          <Button onClick={handleDeleteAllTransactions} variant="destructive">
+            <Trash2 className="mr-2 h-4 w-4" /> Delete All
+          </Button>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Nr</TableHead>
+                <TableHead>Date</TableHead>
+                <TableHead>Account</TableHead>
+                <TableHead>Debit</TableHead>
+                <TableHead>Credit</TableHead>
+                <TableHead>Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {transactions.map((transaction) => (
+                <TransactionRow
+                  key={transaction.id}
+                  transaction={transaction}
+                  handleDeleteTransaction={handleDeleteTransaction}
+                  accountName={accountMap[transaction.account] || 'Unknown Account'}
+                />
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
     </div>
   )
 }
