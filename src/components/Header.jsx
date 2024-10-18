@@ -5,6 +5,7 @@ import { useSupabaseAuth } from '../integrations/supabase/auth'
 import { supabase } from '../lib/supabase'
 import { toast } from 'sonner'
 import { useNavigate } from 'react-router-dom'
+import { User } from 'lucide-react'
 
 const Header = () => {
   const { session } = useSupabaseAuth()
@@ -37,7 +38,9 @@ const Header = () => {
               <Link to="/opening-balances" className="text-gray-600 hover:text-blue-600 transition-colors">Opening Balances</Link>
               <Link to="/accounts" className="text-gray-600 hover:text-blue-600 transition-colors">Accounts</Link>
               <Link to="/import" className="text-gray-600 hover:text-blue-600 transition-colors">Import</Link>
-              <Link to="/profile" className="text-gray-600 hover:text-blue-600 transition-colors">Profile</Link>
+              <Link to="/profile" className="text-gray-600 hover:text-blue-600 transition-colors">
+                <User className="w-5 h-5" />
+              </Link>
               <Button onClick={handleLogout} variant="ghost" className="text-blue-600 hover:text-blue-700">Logout</Button>
             </>
           ) : (
