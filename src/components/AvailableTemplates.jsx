@@ -31,41 +31,43 @@ const AvailableTemplates = ({ templates, accounts, selectedTemplates, handleTemp
           onChange={(e) => setSearchTerm(e.target.value)}
           className="mb-4"
         />
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Select</TableHead>
-              <TableHead>Name</TableHead>
-              <TableHead>Account</TableHead>
-              <TableHead>Debit</TableHead>
-              <TableHead>Credit</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredGroups.map(([groupName, groupTemplates]) => (
-              <React.Fragment key={groupName}>
-                <TableRow className="bg-muted/50">
-                  <TableCell colSpan={5} className="font-medium">{groupName}</TableCell>
-                </TableRow>
-                {groupTemplates.map((template) => (
-                  <TableRow key={template.id}>
-                    <TableCell>
-                      <input
-                        type="checkbox"
-                        checked={selectedTemplates.includes(template.id)}
-                        onChange={() => handleTemplateSelect(template.id)}
-                      />
-                    </TableCell>
-                    <TableCell>{template.name}</TableCell>
-                    <TableCell>{template.account_number} - {accounts.find(acc => acc.account === template.account_number)?.account_name || 'Unknown Account'}</TableCell>
-                    <TableCell>{template.debit}</TableCell>
-                    <TableCell>{template.credit}</TableCell>
+        {filteredGroups.map(([groupName, groupTemplates]) => (
+          <Card key={groupName} className="mb-4">
+            <CardHeader>
+              <CardTitle>{groupName}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Select</TableHead>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Account</TableHead>
+                    <TableHead>Debit</TableHead>
+                    <TableHead>Credit</TableHead>
                   </TableRow>
-                ))}
-              </React.Fragment>
-            ))}
-          </TableBody>
-        </Table>
+                </TableHeader>
+                <TableBody>
+                  {groupTemplates.map((template) => (
+                    <TableRow key={template.id}>
+                      <TableCell>
+                        <input
+                          type="checkbox"
+                          checked={selectedTemplates.includes(template.id)}
+                          onChange={() => handleTemplateSelect(template.id)}
+                        />
+                      </TableCell>
+                      <TableCell>{template.name}</TableCell>
+                      <TableCell>{template.account_number} - {accounts.find(acc => acc.account === template.account_number)?.account_name || 'Unknown Account'}</TableCell>
+                      <TableCell>{template.debit}</TableCell>
+                      <TableCell>{template.credit}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        ))}
       </CardContent>
     </Card>
   )
