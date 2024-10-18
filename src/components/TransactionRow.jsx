@@ -4,9 +4,10 @@ import { Button } from "@/components/ui/button"
 import { Trash2 } from 'lucide-react'
 import { format, parseISO } from 'date-fns'
 
-const TransactionRow = ({ transaction, handleDeleteTransaction, accountName }) => (
+const TransactionRow = ({ transaction, handleDeleteTransaction, accountNumber, accountName }) => (
   <TableRow key={transaction.id}>
     <TableCell>{format(parseISO(transaction.date), 'yyyy-MM-dd')}</TableCell>
+    <TableCell>{accountNumber}</TableCell>
     <TableCell>{accountName}</TableCell>
     <TableCell>{transaction.debit}</TableCell>
     <TableCell>{transaction.credit}</TableCell>

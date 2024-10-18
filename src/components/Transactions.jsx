@@ -108,7 +108,8 @@ const Transactions = () => {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Date</TableHead>
-                    <TableHead>Account</TableHead>
+                    <TableHead>Account Number</TableHead>
+                    <TableHead>Account Name</TableHead>
                     <TableHead>Debit</TableHead>
                     <TableHead>Credit</TableHead>
                     <TableHead>Actions</TableHead>
@@ -120,6 +121,7 @@ const Transactions = () => {
                       key={transaction.id}
                       transaction={transaction}
                       handleDeleteTransaction={handleDeleteTransaction}
+                      accountNumber={transaction.account}
                       accountName={accountMap[transaction.account] || 'Unknown Account'}
                     />
                   ))}
