@@ -107,23 +107,6 @@ const AdminPage = () => {
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-6">Admin</h1>
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle>Add New Fiscal Year</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleAddYear} className="flex space-x-2">
-            <Input
-              type="number"
-              value={newYear}
-              onChange={(e) => setNewYear(e.target.value)}
-              placeholder="Enter year (e.g., 2024)"
-              className="max-w-xs"
-            />
-            <Button type="submit">Add Year</Button>
-          </form>
-        </CardContent>
-      </Card>
 
       <Card className="mb-6">
         <CardHeader>
@@ -140,6 +123,24 @@ const AdminPage = () => {
             <Button type="submit" disabled={importTransactionsMutation.isPending}>
               {importTransactionsMutation.isPending ? 'Importing...' : 'Import'}
             </Button>
+          </form>
+        </CardContent>
+      </Card>
+
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle>Add New Fiscal Year</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleAddYear} className="flex space-x-2">
+            <Input
+              type="number"
+              value={newYear}
+              onChange={(e) => setNewYear(e.target.value)}
+              placeholder="Enter year (e.g., 2024)"
+              className="max-w-xs"
+            />
+            <Button type="submit">Add Year</Button>
           </form>
         </CardContent>
       </Card>
