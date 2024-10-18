@@ -94,7 +94,7 @@ const Transactions = () => {
 
   const groupedTransactions = useMemo(() => {
     if (!transactions) return {}
-    return transactions.reduce((acc, transaction) => {
+    const grouped = transactions.reduce((acc, transaction) => {
       const ver = transaction.ver || 'Unspecified'
       if (!acc[ver]) {
         acc[ver] = []
@@ -102,6 +102,15 @@ const Transactions = () => {
       acc[ver].push(transaction)
       return acc
     }, {})
+
+    // Sort the groups by transaction number (ver) from highest to lowest
+    return Object.fromEntries(
+      Object.entries(grouped).sort((a, b) => {
+        if (a[0] === 'Unspecified') return 1
+        if (b[0] === 'Unspecified') return -1
+        return parseInt(b[0]) - parseInt(a[0])
+      })
+    )
   }, [transactions])
 
   const handleAddTransaction = () => {
