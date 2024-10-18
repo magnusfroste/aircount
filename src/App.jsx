@@ -13,7 +13,7 @@ import BalanceSheetPage from './pages/BalanceSheetPage'
 import ProfitAndLossPage from './pages/ProfitAndLossPage'
 import TemplatesPage from './pages/TemplatesPage'
 import ImportPage from './pages/ImportPage'
-import YearManagementPage from './pages/YearManagementPage'
+import AdminPage from './pages/AdminPage'
 import OpeningBalancesPage from './pages/OpeningBalancesPage'
 
 const queryClient = new QueryClient()
@@ -44,7 +44,7 @@ function App() {
                 <Route path="/profit-and-loss" element={<ProtectedRoute><ProfitAndLossPage /></ProtectedRoute>} />
                 <Route path="/templates" element={<ProtectedRoute><TemplatesPage /></ProtectedRoute>} />
                 <Route path="/import" element={<ProtectedRoute><ImportPage /></ProtectedRoute>} />
-                <Route path="/year-management" element={<ProtectedRoute><YearManagementPage /></ProtectedRoute>} />
+                <Route path="/admin" element={<ProtectedRoute><AdminPage /></ProtectedRoute>} />
                 <Route path="/opening-balances" element={<ProtectedRoute><OpeningBalancesPage /></ProtectedRoute>} />
               </Routes>
             </div>
