@@ -94,8 +94,7 @@ const Transactions = () => {
 
   const groupedTransactions = useMemo(() => {
     if (!transactions) return {}
-    const sortedTransactions = [...transactions].sort((a, b) => new Date(b.date) - new Date(a.date))
-    return sortedTransactions.reduce((acc, transaction) => {
+    return transactions.reduce((acc, transaction) => {
       const ver = transaction.ver || 'Unspecified'
       if (!acc[ver]) {
         acc[ver] = []
