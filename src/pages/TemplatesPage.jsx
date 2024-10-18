@@ -8,9 +8,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { toast } from 'sonner'
 import { format } from 'date-fns'
 
+const SelectedTransactions = ({ selectedTemplates, templates, accounts, transactionDate, onAddTransactions, editedTransactions, setEditedTransactions, accountBalances }) => {
 const SelectedTransactions = ({ selectedTemplates, templates, accounts, transactionDate, onAddTransactions, editedTransactions, setEditedTransactions, accountBalances }) => {
   const selectedTransactionTemplates = templates.filter(template => selectedTemplates.includes(template.id))
 
@@ -105,11 +107,56 @@ const SelectedTransactions = ({ selectedTemplates, templates, accounts, transact
     </Card>
   )
 }
+}
+
+const TemplateGroup = ({ groupName, templates, accounts, selectedTemplates, handleTemplateSelect }) => (
+  <AccordionItem value={groupName}>
+    <AccordionTrigger>{groupName}</AccordionTrigger>
+    <AccordionContent>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Select</TableHead>
+            <TableHead>Account</TableHead>
+            <TableHead>Debit</TableHead>
+            <TableHead>Credit</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {templates.map((template) => (
+            <TableRow key={template.id}>
+              <TableCell>
+                <input
+                  type="checkbox"
+                  checked={selectedTemplates.includes(template.id)}
+                  onChange={() => handleTemplateSelect(template.id)}
+                />
+              </TableCell>
+              <TableCell>{template.account_number} - {accounts.find(acc => acc.account === template.account_number)?.account_name || 'Unknown Account'}</TableCell>
+              <TableCell>{template.debit}</TableCell>
+              <TableCell>{template.credit}</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </AccordionContent>
+  </AccordionItem>
+)
 
 const AvailableTemplates = ({ templates, accounts, selectedTemplates, handleTemplateSelect, searchTerm }) => {
-  const filteredTemplates = templates.filter(template => 
-    template.name.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  const groupedTemplates = useMemo(() => {
+    return templates.reduce((acc, template) => {
+      if (!acc[template.name]) {
+        acc[template.name] = [];
+      }
+      acc[template.name].push(template);
+      return acc;
+    }, {});
+  }, [templates]);
+
+  const filteredGroups = Object.entries(groupedTemplates).filter(([groupName]) => 
+    groupName.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <Card>
@@ -117,40 +164,26 @@ const AvailableTemplates = ({ templates, accounts, selectedTemplates, handleTemp
         <CardTitle>Available Templates</CardTitle>
       </CardHeader>
       <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Select</TableHead>
-              <TableHead>Name</TableHead>
-              <TableHead>Account</TableHead>
-              <TableHead>Debit</TableHead>
-              <TableHead>Credit</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredTemplates.map((template) => (
-              <TableRow key={template.id}>
-                <TableCell>
-                  <input
-                    type="checkbox"
-                    checked={selectedTemplates.includes(template.id)}
-                    onChange={() => handleTemplateSelect(template.id)}
-                  />
-                </TableCell>
-                <TableCell>{template.name}</TableCell>
-                <TableCell>{template.account_number} - {accounts.find(acc => acc.account === template.account_number)?.account_name || 'Unknown Account'}</TableCell>
-                <TableCell>{template.debit}</TableCell>
-                <TableCell>{template.credit}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+        <Accordion type="single" collapsible className="w-full">
+          {filteredGroups.map(([groupName, groupTemplates]) => (
+            <TemplateGroup
+              key={groupName}
+              groupName={groupName}
+              templates={groupTemplates}
+              accounts={accounts}
+              selectedTemplates={selectedTemplates}
+              handleTemplateSelect={handleTemplateSelect}
+            />
+          ))}
+        </Accordion>
       </CardContent>
     </Card>
   )
 }
 
 const TemplatesPage = () => {
+  const [newAccount, setNewAccount] = useState({ account: '', account_name: '' })
+  const [searchTerm, setSearchTerm] = useState('')
   const { session } = useSupabaseAuth()
   const { data: templates, isLoading: templatesLoading, error: templatesError } = useTemplates()
   const { data: accounts, isLoading: accountsLoading, error: accountsError } = useAccounts(session?.user?.id)
@@ -160,7 +193,6 @@ const TemplatesPage = () => {
   const [transactionDate, setTransactionDate] = useState(format(new Date(), 'yyyy-MM-dd'))
   const [currentVer, setCurrentVer] = useState(1)
   const [editedTransactions, setEditedTransactions] = useState({})
-  const [searchTerm, setSearchTerm] = useState('')
 
   const accountBalances = useMemo(() => {
     if (!transactions) return {}
@@ -181,6 +213,7 @@ const TemplatesPage = () => {
     )
   }
 
+  const handleAddSelectedTransactions = (date, editedTransactions) => {
   const handleAddSelectedTransactions = (date, editedTransactions) => {
     if (!date) {
       toast.error('Please select a date for the transactions')
@@ -214,6 +247,7 @@ const TemplatesPage = () => {
         toast.error(`Error adding transactions: ${error.message}`)
       }
     })
+  }
   }
 
   return (
