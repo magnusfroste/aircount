@@ -2,82 +2,17 @@ import React, { useState, useMemo } from 'react'
 import { useTransactions, useAddTransaction, useDeleteTransaction, useDeleteAllTransactions } from '../integrations/supabase/hooks/transactions'
 import { useAccounts } from '../integrations/supabase/hooks/accounts'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { PlusIcon, Trash2, ArrowUpDown } from 'lucide-react'
+import { Trash2, ArrowUpDown } from 'lucide-react'
 import { useSupabaseAuth } from '../integrations/supabase/auth'
-import { format, parseISO } from 'date-fns'
 import { toast } from 'sonner'
-
-const TransactionForm = ({ newTransaction, setNewTransaction, accounts, handleAddTransaction }) => (
-  <div className="mb-4 flex space-x-2">
-    <Input
-      type="text"
-      placeholder="Nr"
-      value={newTransaction.ver}
-      onChange={(e) => setNewTransaction({ ...newTransaction, ver: e.target.value })}
-    />
-    <Input
-      type="date"
-      value={newTransaction.date}
-      onChange={(e) => setNewTransaction({ ...newTransaction, date: e.target.value })}
-    />
-    <Select
-      value={newTransaction.account}
-      onValueChange={(value) => setNewTransaction({ ...newTransaction, account: value })}
-    >
-      <SelectTrigger className="w-[300px]">
-        <SelectValue placeholder="Select account" />
-      </SelectTrigger>
-      <SelectContent>
-        {accounts.map((account) => (
-          <SelectItem key={account.id} value={account.account}>
-            {account.account} - {account.account_name}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
-    <Input
-      type="number"
-      placeholder="Debit"
-      value={newTransaction.debit}
-      onChange={(e) => setNewTransaction({ ...newTransaction, debit: parseFloat(e.target.value) })}
-    />
-    <Input
-      type="number"
-      placeholder="Credit"
-      value={newTransaction.credit}
-      onChange={(e) => setNewTransaction({ ...newTransaction, credit: parseFloat(e.target.value) })}
-    />
-    <Button onClick={handleAddTransaction}>
-      <PlusIcon className="mr-2 h-4 w-4" /> Add
-    </Button>
-  </div>
-)
-
-const TransactionRow = ({ transaction, handleDeleteTransaction, accountName }) => (
-  <TableRow key={transaction.id}>
-    <TableCell>{format(parseISO(transaction.date), 'yyyy-MM-dd')}</TableCell>
-    <TableCell>{accountName}</TableCell>
-    <TableCell>{transaction.debit}</TableCell>
-    <TableCell>{transaction.credit}</TableCell>
-    <TableCell>
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={() => handleDeleteTransaction(transaction.id)}
-      >
-        <Trash2 className="h-4 w-4" />
-      </Button>
-    </TableCell>
-  </TableRow>
-)
+import TransactionForm from './TransactionForm'
+import TransactionRow from './TransactionRow'
 
 const Transactions = () => {
   const [newTransaction, setNewTransaction] = useState({ ver: '', date: '', account: '', debit: 0, credit: 0 })
-  const [sortOrder, setSortOrder] = useState('desc') // 'desc' for descending, 'asc' for ascending
+  const [sortOrder, setSortOrder] = useState('desc')
   const { session } = useSupabaseAuth()
   const { data: transactions, isLoading: transactionsLoading, error: transactionsError } = useTransactions(session.user.id)
   const { data: accounts, isLoading: accountsLoading, error: accountsError } = useAccounts(session.user.id)
@@ -104,7 +39,6 @@ const Transactions = () => {
       return acc
     }, {})
 
-    // Sort the groups by transaction number (ver) based on sortOrder
     return Object.fromEntries(
       Object.entries(grouped).sort((a, b) => {
         if (a[0] === 'Unspecified') return sortOrder === 'desc' ? 1 : -1
