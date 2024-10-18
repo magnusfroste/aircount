@@ -4,10 +4,12 @@ import Header from '../components/Header'
 
 const AccountsPage = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
+    <div className="min-h-screen bg-white">
       <Header />
       <div className="container mx-auto p-4">
-        <Accounts />
+        <div className="bg-gradient-to-b from-blue-50 to-white rounded-lg shadow-md p-6">
+          <Accounts />
+        </div>
       </div>
     </div>
   )

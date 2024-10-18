@@ -6,23 +6,26 @@ import { Button } from "@/components/ui/button"
 import { PlusIcon, Pencil, Trash2 } from 'lucide-react'
 import { useSupabaseAuth } from '../integrations/supabase/auth'
 import { toast } from 'sonner'
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 const AccountForm = ({ newAccount, setNewAccount, handleAddAccount }) => (
-  <div className="mb-4 flex space-x-2">
+  <form onSubmit={(e) => { e.preventDefault(); handleAddAccount(); }} className="space-y-4">
     <Input
       placeholder="Account"
       value={newAccount.account}
       onChange={(e) => setNewAccount({ ...newAccount, account: e.target.value })}
+      required
     />
     <Input
       placeholder="Account Name"
       value={newAccount.account_name}
       onChange={(e) => setNewAccount({ ...newAccount, account_name: e.target.value })}
+      required
     />
-    <Button onClick={handleAddAccount}>
+    <Button type="submit">
       <PlusIcon className="mr-2 h-4 w-4" /> Add Account
     </Button>
-  </div>
+  </form>
 )
 
 const AccountRow = ({ account, handleUpdateAccount, handleDeleteAccount }) => (
@@ -103,42 +106,56 @@ const Accounts = () => {
   if (error) return <div>Error loading accounts: {error.message}</div>
 
   return (
-    <div className="container mx-auto p-4">
+    <div>
       <h1 className="text-2xl font-bold mb-4">Accounts</h1>
-      <AccountForm
-        newAccount={newAccount}
-        setNewAccount={setNewAccount}
-        handleAddAccount={handleAddAccount}
-      />
-      <Input
-        type="text"
-        placeholder="Search accounts..."
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-        className="mb-4"
-      />
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Account</TableHead>
-            <TableHead>Account Name</TableHead>
-            <TableHead>Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {filteredAccounts.map((account) => (
-            <AccountRow
-              key={account.id}
-              account={account}
-              handleUpdateAccount={handleUpdateAccount}
-              handleDeleteAccount={handleDeleteAccount}
-            />
-          ))}
-        </TableBody>
-      </Table>
-      <div className="mt-4">
-        Total Accounts: {filteredAccounts.length}
-      </div>
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle>Add New Account</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <AccountForm
+            newAccount={newAccount}
+            setNewAccount={setNewAccount}
+            handleAddAccount={handleAddAccount}
+          />
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle>Account List</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Input
+            type="text"
+            placeholder="Search accounts..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="mb-4"
+          />
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Account</TableHead>
+                <TableHead>Account Name</TableHead>
+                <TableHead>Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredAccounts.map((account) => (
+                <AccountRow
+                  key={account.id}
+                  account={account}
+                  handleUpdateAccount={handleUpdateAccount}
+                  handleDeleteAccount={handleDeleteAccount}
+                />
+              ))}
+            </TableBody>
+          </Table>
+          <div className="mt-4">
+            Total Accounts: {filteredAccounts.length}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }
