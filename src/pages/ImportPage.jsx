@@ -17,41 +17,54 @@ const ImportPage = () => {
 
   const handleFileChange = (e) => {
     setFile(e.target.files[0])
+    console.log('File selected:', e.target.files[0]?.name)
   }
 
   const handleImport = async (e) => {
     e.preventDefault()
+    console.log('Import button clicked')
     if (!file) {
+      console.log('No file selected')
       toast.error('Please select a file to import')
       return
     }
 
     try {
+      console.log('Starting file import process')
       const fileContent = await file.arrayBuffer()
+      console.log('File content read as ArrayBuffer')
       const decoder = new TextDecoder('utf-8')
       let decodedContent = decoder.decode(new Uint8Array(fileContent))
+      console.log('Initial UTF-8 decoding completed')
 
       // If UTF-8 decoding fails, try IBM-437
       if (decodedContent.includes('�')) {
+        console.log('UTF-8 decoding failed, trying IBM-437')
         decodedContent = ibm437ToUnicode(new Uint8Array(fileContent))
+        console.log('IBM-437 decoding completed')
       }
 
+      console.log('Parsing file content')
       const transactions = parseSEFile(decodedContent)
+      console.log(`Parsed ${transactions.length} transactions`)
 
-      // Import transactions using the mutation
+      console.log('Importing transactions')
       importTransactionsMutation.mutate(
         { transactions, userId: session.user.id, fiscalYear: selectedYear },
         {
           onSuccess: () => {
+            console.log('Import successful')
             toast.success(`Successfully imported ${transactions.length} transactions`)
             setFile(null)
           },
           onError: (error) => {
+            console.error('Import error:', error)
             toast.error(`Error importing transactions: ${error.message}`)
           }
         }
       )
     } catch (error) {
+      console.error('Error in import process:', error)
       toast.error('Error importing file: ' + error.message)
     }
   }
