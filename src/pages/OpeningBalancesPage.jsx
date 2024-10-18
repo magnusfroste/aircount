@@ -1,4 +1,5 @@
 import React from 'react'
+import Header from '../components/Header'
 import { useSupabaseAuth } from '../integrations/supabase/auth'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -23,6 +24,7 @@ const OpeningBalancesPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
+      <Header />
       <div className="container mx-auto p-4">
         <h1 className="text-2xl font-bold mb-4">Opening Balances</h1>
         <Card>
