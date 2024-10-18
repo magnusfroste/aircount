@@ -5,7 +5,6 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { toast } from 'sonner'
 import { supabase } from '../lib/supabase'
-import Header from '../components/Header'
 
 const ProfilePage = () => {
   const { session } = useSupabaseAuth()
@@ -31,7 +30,6 @@ const ProfilePage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
-      <Header />
       <div className="container mx-auto p-4">
         <Card>
           <CardHeader>

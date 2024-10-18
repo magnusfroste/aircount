@@ -1,5 +1,4 @@
 import React, { useState } from 'react'
-import Header from '../components/Header'
 import { useSupabaseAuth } from '../integrations/supabase/auth'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -48,7 +47,6 @@ const ImportPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
-      <Header />
       <div className="container mx-auto p-4">
         <Card>
           <CardHeader>
