@@ -94,7 +94,7 @@ const Transactions = () => {
 
   const groupedTransactions = useMemo(() => {
     if (!transactions) return {}
-    return transactions.reduce((acc, transaction) => {
+    const groups = transactions.reduce((acc, transaction) => {
       const ver = transaction.ver || 'Unspecified'
       if (!acc[ver]) {
         acc[ver] = []
@@ -102,29 +102,23 @@ const Transactions = () => {
       acc[ver].push(transaction)
       return acc
     }, {})
+
+    // Sort transactions within each group by date (latest first)
+    Object.keys(groups).forEach(key => {
+      groups[key].sort((a, b) => new Date(b.date) - new Date(a.date))
+    })
+
+    return groups
   }, [transactions])
 
-  const handleAddTransaction = () => {
-    addTransactionMutation.mutate({ ...newTransaction, user_id: session.user.id })
-    setNewTransaction({ ver: '', date: '', account: '', debit: 0, credit: 0 })
-  }
-
-  const handleDeleteTransaction = (id) => {
-    deleteTransactionMutation.mutate({ id, user_id: session.user.id })
-  }
-
-  const handleDeleteAllTransactions = () => {
-    if (window.confirm('Are you sure you want to delete all transactions? This action cannot be undone.')) {
-      deleteAllTransactionsMutation.mutate(session.user.id, {
-        onSuccess: () => {
-          toast.success('All transactions have been deleted')
-        },
-        onError: (error) => {
-          toast.error(`Error deleting transactions: ${error.message}`)
-        }
-      })
-    }
-  }
+  const sortedGroupKeys = useMemo(() => {
+    return Object.keys(groupedTransactions).sort((a, b) => {
+      // Convert to numbers for numerical sorting, use 'Infinity' for 'Unspecified'
+      const numA = a === 'Unspecified' ? Infinity : Number(a)
+      const numB = b === 'Unspecified' ? Infinity : Number(b)
+      return numA - numB
+    })
+  }, [groupedTransactions])
 
   if (transactionsLoading || accountsLoading) return <div>Loading...</div>
   if (transactionsError) return <div>Error loading transactions: {transactionsError.message}</div>
@@ -143,7 +137,7 @@ const Transactions = () => {
         <Trash2 className="mr-2 h-4 w-4" /> Delete All
       </Button>
       <div className="space-y-6">
-        {Object.entries(groupedTransactions).map(([ver, verTransactions]) => (
+        {sortedGroupKeys.map((ver) => (
           <Card key={ver}>
             <CardHeader>
               <CardTitle>Transaction Number: {ver}</CardTitle>
@@ -160,7 +154,7 @@ const Transactions = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {verTransactions.map((transaction) => (
+                  {groupedTransactions[ver].map((transaction) => (
                     <TransactionRow
                       key={transaction.id}
                       transaction={transaction}
