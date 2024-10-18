@@ -28,9 +28,7 @@ const TransactionsPage = () => {
           <h1 className="text-2xl font-bold">Transactions</h1>
           <Button onClick={handleLogout}>Logout</Button>
         </div>
-        <div className="bg-white rounded-lg shadow p-6">
-          <Transactions />
-        </div>
+        <Transactions />
       </div>
     </div>
   )
