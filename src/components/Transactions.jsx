@@ -7,6 +7,7 @@ import { useSupabaseAuth } from '../integrations/supabase/auth'
 import { toast } from 'sonner'
 import TransactionForm from './TransactionForm'
 import TransactionList from './TransactionList'
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 const Transactions = () => {
   const [newTransaction, setNewTransaction] = useState({ ver: '', date: '', account: '', debit: 0, credit: 0 })
@@ -26,24 +27,16 @@ const Transactions = () => {
     }, {})
   }, [accounts])
 
-  const sortedTransactions = useMemo(() => {
-    if (!transactions) return []
-    return [...transactions].sort((a, b) => {
-      const verA = Number(a.ver)
-      const verB = Number(b.ver)
-      return sortOrder === 'desc' ? verB - verA : verA - verB
-    })
-  }, [transactions, sortOrder])
-
   const groupedTransactions = useMemo(() => {
-    return sortedTransactions.reduce((acc, transaction) => {
+    if (!transactions) return {}
+    return transactions.reduce((acc, transaction) => {
       if (!acc[transaction.ver]) {
         acc[transaction.ver] = []
       }
       acc[transaction.ver].push(transaction)
       return acc
     }, {})
-  }, [sortedTransactions])
+  }, [transactions])
 
   const handleAddTransaction = () => {
     addTransactionMutation.mutate({ ...newTransaction, user_id: session.user.id })
@@ -95,11 +88,20 @@ const Transactions = () => {
           </Button>
         </div>
       </div>
-      <TransactionList
-        groupedTransactions={groupedTransactions}
-        handleDeleteTransaction={handleDeleteTransaction}
-        accountMap={accountMap}
-      />
+      {Object.entries(groupedTransactions).map(([ver, transactions]) => (
+        <Card key={ver} className="mb-6">
+          <CardHeader>
+            <CardTitle>Transaction Number: {ver}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <TransactionList
+              transactions={transactions}
+              handleDeleteTransaction={handleDeleteTransaction}
+              accountMap={accountMap}
+            />
+          </CardContent>
+        </Card>
+      ))}
     </div>
   )
 }
