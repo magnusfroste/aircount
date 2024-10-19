@@ -26,24 +26,23 @@ const Transactions = () => {
     }, {})
   }, [accounts])
 
+  const sortedTransactions = useMemo(() => {
+    if (!transactions) return []
+    return [...transactions].sort((a, b) => {
+      const compareResult = a.ver.localeCompare(b.ver, undefined, { numeric: true, sensitivity: 'base' })
+      return sortOrder === 'desc' ? -compareResult : compareResult
+    })
+  }, [transactions, sortOrder])
+
   const groupedTransactions = useMemo(() => {
-    if (!transactions) return {}
-    const grouped = transactions.reduce((acc, transaction) => {
+    return sortedTransactions.reduce((acc, transaction) => {
       if (!acc[transaction.ver]) {
         acc[transaction.ver] = []
       }
       acc[transaction.ver].push(transaction)
       return acc
     }, {})
-    
-    // Sort the grouped transactions based on the complete ver (transaction number)
-    const sortedEntries = Object.entries(grouped).sort((a, b) => {
-      const compareResult = a[0].localeCompare(b[0], undefined, { numeric: true, sensitivity: 'base' })
-      return sortOrder === 'desc' ? -compareResult : compareResult
-    })
-    
-    return Object.fromEntries(sortedEntries)
-  }, [transactions, sortOrder])
+  }, [sortedTransactions])
 
   const handleAddTransaction = () => {
     addTransactionMutation.mutate({ ...newTransaction, user_id: session.user.id })
