@@ -5,6 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { PlusIcon, Trash2 } from 'lucide-react'
 import { useSupabaseAuth } from '../integrations/supabase/auth'
 import { format } from 'date-fns'
@@ -143,30 +144,34 @@ const Transactions = () => {
         </Button>
       </div>
       {Object.entries(groupedTransactions).map(([ver, transactions]) => (
-        <div key={ver} className="mb-6">
-          <h3 className="text-lg font-medium mb-2">Transaction Number: {ver}</h3>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Date</TableHead>
-                <TableHead>Account</TableHead>
-                <TableHead>Debit</TableHead>
-                <TableHead>Credit</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {transactions.map((transaction) => (
-                <TransactionRow
-                  key={transaction.id}
-                  transaction={transaction}
-                  handleDeleteTransaction={handleDeleteTransaction}
-                  accountName={accountMap[transaction.account] || 'Unknown Account'}
-                />
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+        <Card key={ver} className="mb-6">
+          <CardHeader>
+            <CardTitle>Transaction Number: {ver}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Account</TableHead>
+                  <TableHead>Debit</TableHead>
+                  <TableHead>Credit</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {transactions.map((transaction) => (
+                  <TransactionRow
+                    key={transaction.id}
+                    transaction={transaction}
+                    handleDeleteTransaction={handleDeleteTransaction}
+                    accountName={accountMap[transaction.account] || 'Unknown Account'}
+                  />
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
       ))}
     </div>
   )
