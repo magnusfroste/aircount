@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { PlusIcon, Trash2 } from 'lucide-react'
+import { PlusIcon, Trash2, ArrowUpDown } from 'lucide-react'
 import { useSupabaseAuth } from '../integrations/supabase/auth'
 import { format } from 'date-fns'
 import { toast } from 'sonner'
@@ -81,8 +81,9 @@ const TransactionRow = ({ transaction, handleDeleteTransaction, accountName }) =
 
 const Transactions = () => {
   const [newTransaction, setNewTransaction] = useState({ ver: '', date: '', account: '', debit: 0, credit: 0 })
+  const [sortOrder, setSortOrder] = useState('desc')
   const { session } = useSupabaseAuth()
-  const { data: transactions, isLoading: transactionsLoading, error: transactionsError } = useTransactions(session.user.id)
+  const { data: transactions, isLoading: transactionsLoading, error: transactionsError } = useTransactions(session.user.id, sortOrder)
   const { data: accounts, isLoading: accountsLoading, error: accountsError } = useAccounts(session.user.id)
   const addTransactionMutation = useAddTransaction()
   const deleteTransactionMutation = useDeleteTransaction()
@@ -129,6 +130,10 @@ const Transactions = () => {
     }
   }
 
+  const toggleSortOrder = () => {
+    setSortOrder(prevOrder => prevOrder === 'desc' ? 'asc' : 'desc')
+  }
+
   if (transactionsLoading || accountsLoading) return <div>Loading...</div>
   if (transactionsError) return <div>Error loading transactions: {transactionsError.message}</div>
   if (accountsError) return <div>Error loading accounts: {accountsError.message}</div>
@@ -143,9 +148,15 @@ const Transactions = () => {
       />
       <div className="mb-4 flex justify-between items-center">
         <h2 className="text-xl font-semibold">Transaction List</h2>
-        <Button onClick={handleDeleteAllTransactions} variant="destructive">
-          <Trash2 className="mr-2 h-4 w-4" /> Delete All
-        </Button>
+        <div className="flex space-x-2">
+          <Button onClick={toggleSortOrder} variant="outline">
+            Sort {sortOrder === 'desc' ? 'Ascending' : 'Descending'}
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+          <Button onClick={handleDeleteAllTransactions} variant="destructive">
+            <Trash2 className="mr-2 h-4 w-4" /> Delete All
+          </Button>
+        </div>
       </div>
       {Object.entries(groupedTransactions).map(([ver, transactions]) => (
         <Card key={ver} className="mb-6">
