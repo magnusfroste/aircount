@@ -36,15 +36,10 @@ const Transactions = () => {
       return acc
     }, {})
     
-    // Sort the grouped transactions based on the ver (transaction number)
+    // Sort the grouped transactions based on the complete ver (transaction number)
     const sortedEntries = Object.entries(grouped).sort((a, b) => {
-      const numA = parseInt(a[0], 10);
-      const numB = parseInt(b[0], 10);
-      if (sortOrder === 'desc') {
-        return numB - numA;
-      } else {
-        return numA - numB;
-      }
+      const compareResult = a[0].localeCompare(b[0], undefined, { numeric: true, sensitivity: 'base' })
+      return sortOrder === 'desc' ? -compareResult : compareResult
     })
     
     return Object.fromEntries(sortedEntries)
