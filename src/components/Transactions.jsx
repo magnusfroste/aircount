@@ -29,14 +29,21 @@ const Transactions = () => {
 
   const groupedTransactions = useMemo(() => {
     if (!transactions) return {}
-    return transactions.reduce((acc, transaction) => {
+    const grouped = transactions.reduce((acc, transaction) => {
       if (!acc[transaction.ver]) {
         acc[transaction.ver] = []
       }
       acc[transaction.ver].push(transaction)
       return acc
     }, {})
-  }, [transactions])
+
+    // Sort the grouped transactions based on the ver (transaction number)
+    return Object.fromEntries(
+      Object.entries(grouped).sort(([a], [b]) => 
+        sortOrder === 'desc' ? b.localeCompare(a) : a.localeCompare(b)
+      )
+    )
+  }, [transactions, sortOrder])
 
   const handleAddTransaction = () => {
     addTransactionMutation.mutate({ ...newTransaction, user_id: session.user.id })
