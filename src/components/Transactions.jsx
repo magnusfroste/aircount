@@ -38,9 +38,11 @@ const Transactions = () => {
     }, {})
 
     // Sort the grouped transactions based on the ver (transaction number)
-    return Object.entries(grouped).sort(([a], [b]) => 
-      sortOrder === 'desc' ? b.localeCompare(a) : a.localeCompare(b)
-    )
+    return Object.entries(grouped).sort(([a], [b]) => {
+      const numA = parseInt(a, 10)
+      const numB = parseInt(b, 10)
+      return sortOrder === 'desc' ? numB - numA : numA - numB
+    })
   }, [transactions, sortOrder])
 
   const handleAddTransaction = () => {
