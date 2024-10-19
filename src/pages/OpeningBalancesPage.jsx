@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { toast } from 'sonner'
 import { Trash2 } from 'lucide-react'
+import { formatNumber } from '../utils/formatUtils'
 
 const OpeningBalancesPage = () => {
   const { session } = useSupabaseAuth()
@@ -66,8 +67,8 @@ const OpeningBalancesPage = () => {
             <TableRow key={balance.id}>
               <TableCell>{balance.account}</TableCell>
               <TableCell>{account ? account.account_name : 'Unknown'}</TableCell>
-              <TableCell>{balance.debit.toFixed(2)}</TableCell>
-              <TableCell>{balance.credit.toFixed(2)}</TableCell>
+              <TableCell>{formatNumber(balance.debit)}</TableCell>
+              <TableCell>{formatNumber(balance.credit)}</TableCell>
               <TableCell>
                 <Button
                   variant="ghost"

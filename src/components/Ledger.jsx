@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { format } from 'date-fns'
+import { formatNumber } from '../utils/formatUtils'
 
 const Ledger = () => {
   const { session } = useSupabaseAuth()
@@ -72,7 +73,7 @@ const Ledger = () => {
                 {getOpeningBalance(account) !== 0 && (
                   <TableRow>
                     <TableCell colSpan={4}>Opening Balance</TableCell>
-                    <TableCell className="text-right">{getOpeningBalance(account).toFixed(2)}</TableCell>
+                    <TableCell className="text-right">{formatNumber(getOpeningBalance(account))}</TableCell>
                   </TableRow>
                 )}
                 {transactions.map((transaction, index) => {
@@ -81,16 +82,16 @@ const Ledger = () => {
                     <TableRow key={transaction.id}>
                       <TableCell>{format(new Date(transaction.date), 'yyyy-MM-dd')}</TableCell>
                       <TableCell>{transaction.ver}</TableCell>
-                      <TableCell className="text-right">{transaction.debit.toFixed(2)}</TableCell>
-                      <TableCell className="text-right">{transaction.credit.toFixed(2)}</TableCell>
-                      <TableCell className="text-right">{runningBalance.toFixed(2)}</TableCell>
+                      <TableCell className="text-right">{formatNumber(transaction.debit)}</TableCell>
+                      <TableCell className="text-right">{formatNumber(transaction.credit)}</TableCell>
+                      <TableCell className="text-right">{formatNumber(runningBalance)}</TableCell>
                     </TableRow>
                   )
                 })}
               </TableBody>
             </Table>
             <div className="mt-4 text-right font-bold">
-              Total Balance: {accountBalance(transactions, account).toFixed(2)}
+              Total Balance: {formatNumber(accountBalance(transactions, account))}
             </div>
           </CardContent>
         </Card>

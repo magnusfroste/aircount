@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { DollarSign, ArrowDownRight, TrendingUp, PieChart } from 'lucide-react'
+import { formatNumber } from '../../utils/formatUtils'
 
 const FinancialOverview = ({ transactions, accounts }) => {
   const financialStats = useMemo(() => {
@@ -41,7 +42,7 @@ const FinancialOverview = ({ transactions, accounts }) => {
           <DollarSign className="h-4 w-4 text-green-600" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-green-800">{financialStats.totalIncome.toFixed(2)} SEK</div>
+          <div className="text-2xl font-bold text-green-800">{formatNumber(financialStats.totalIncome)} SEK</div>
         </CardContent>
       </Card>
       <Card className={cardStyles[1]}>
@@ -50,7 +51,7 @@ const FinancialOverview = ({ transactions, accounts }) => {
           <ArrowDownRight className="h-4 w-4 text-red-600" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-red-800">{financialStats.totalExpenses.toFixed(2)} SEK</div>
+          <div className="text-2xl font-bold text-red-800">{formatNumber(financialStats.totalExpenses)} SEK</div>
         </CardContent>
       </Card>
       <Card className={cardStyles[2]}>
@@ -59,7 +60,7 @@ const FinancialOverview = ({ transactions, accounts }) => {
           <TrendingUp className="h-4 w-4 text-blue-600" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-blue-800">{financialStats.netProfit.toFixed(2)} SEK</div>
+          <div className="text-2xl font-bold text-blue-800">{formatNumber(financialStats.netProfit)} SEK</div>
         </CardContent>
       </Card>
       <Card className={cardStyles[3]}>
@@ -68,7 +69,7 @@ const FinancialOverview = ({ transactions, accounts }) => {
           <PieChart className="h-4 w-4 text-purple-600" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-purple-800">{financialStats.profitMargin.toFixed(2)}%</div>
+          <div className="text-2xl font-bold text-purple-800">{formatNumber(financialStats.profitMargin)}%</div>
         </CardContent>
       </Card>
     </>
