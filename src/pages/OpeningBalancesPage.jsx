@@ -28,6 +28,14 @@ const OpeningBalancesPage = () => {
     }))
   }, [openingBalances])
 
+  const totals = useMemo(() => {
+    return groupedBalances.reduce((acc, balance) => {
+      acc.debit += balance.debit
+      acc.credit += balance.credit
+      return acc
+    }, { debit: 0, credit: 0 })
+  }, [groupedBalances])
+
   const handleAddBalance = () => {
     if (!newBalance.account || (newBalance.debit === 0 && newBalance.credit === 0)) {
       toast.error('Please select an account and enter a debit or credit amount')
@@ -81,6 +89,12 @@ const OpeningBalancesPage = () => {
             </TableRow>
           )
         })}
+        <TableRow className="font-bold">
+          <TableCell colSpan={2}>Total</TableCell>
+          <TableCell>{formatNumber(totals.debit)}</TableCell>
+          <TableCell>{formatNumber(totals.credit)}</TableCell>
+          <TableCell></TableCell>
+        </TableRow>
       </TableBody>
     </Table>
   )
