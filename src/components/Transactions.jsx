@@ -57,12 +57,16 @@ const TransactionForm = ({ newTransaction, setNewTransaction, accounts, handleAd
   </div>
 )
 
+const formatNumber = (number) => {
+  return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+}
+
 const TransactionRow = ({ transaction, handleDeleteTransaction, accountName }) => (
   <TableRow key={transaction.id}>
     <TableCell>{format(new Date(transaction.date), 'yyyy-MM-dd')}</TableCell>
     <TableCell>{transaction.account} - {accountName}</TableCell>
-    <TableCell>{transaction.debit}</TableCell>
-    <TableCell>{transaction.credit}</TableCell>
+    <TableCell>{formatNumber(transaction.debit.toFixed(2))}</TableCell>
+    <TableCell>{formatNumber(transaction.credit.toFixed(2))}</TableCell>
     <TableCell>
       <Button
         variant="outline"
