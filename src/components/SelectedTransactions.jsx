@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
-const SelectedTransactions = ({ selectedTemplates, templates, accounts, transactionDate, onAddTransactions, editedTransactions, setEditedTransactions, accountBalances }) => {
+const SelectedTransactions = ({ selectedTemplates, templates, accounts, transactionDate, onAddTransactions, editedTransactions, setEditedTransactions, accountBalances, formatNumber }) => {
   const selectedTransactionTemplates = templates.filter(template => selectedTemplates.includes(template.id))
 
   const handleEdit = (id, field, value) => {
@@ -61,7 +61,7 @@ const SelectedTransactions = ({ selectedTemplates, templates, accounts, transact
                 <TableRow key={template.id}>
                   <TableCell>{template.name}</TableCell>
                   <TableCell>{template.account_number} - {accounts.find(acc => acc.account === template.account_number)?.account_name || 'Unknown Account'}</TableCell>
-                  <TableCell>{accountBalances[template.account_number]?.toFixed(2) || '0.00'}</TableCell>
+                  <TableCell>{formatNumber(accountBalances[template.account_number] || 0)}</TableCell>
                   <TableCell>
                     <Input
                       type="number"
@@ -82,12 +82,12 @@ const SelectedTransactions = ({ selectedTemplates, templates, accounts, transact
               ))}
               <TableRow className="font-bold">
                 <TableCell colSpan={3}>Total</TableCell>
-                <TableCell>{sums.debit.toFixed(2)}</TableCell>
-                <TableCell>{sums.credit.toFixed(2)}</TableCell>
+                <TableCell>{formatNumber(sums.debit)}</TableCell>
+                <TableCell>{formatNumber(sums.credit)}</TableCell>
               </TableRow>
               <TableRow className={difference === 0 ? "text-green-600" : "text-red-600"}>
                 <TableCell colSpan={4}>Difference (Debit - Credit)</TableCell>
-                <TableCell>{difference.toFixed(2)}</TableCell>
+                <TableCell>{formatNumber(difference)}</TableCell>
               </TableRow>
             </TableBody>
           </Table>

@@ -3,7 +3,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 
-const AvailableTemplates = ({ templates, accounts, selectedTemplates, handleTemplateSelect, searchTerm, setSearchTerm }) => {
+const AvailableTemplates = ({ templates, accounts, selectedTemplates, handleTemplateSelect, searchTerm, setSearchTerm, formatNumber }) => {
   const groupedTemplates = templates.reduce((acc, template) => {
     const groupName = template.name.split(' - ')[0];
     if (!acc[groupName]) {
@@ -59,8 +59,8 @@ const AvailableTemplates = ({ templates, accounts, selectedTemplates, handleTemp
                       </TableCell>
                       <TableCell>{template.name}</TableCell>
                       <TableCell>{template.account_number} - {accounts.find(acc => acc.account === template.account_number)?.account_name || 'Unknown Account'}</TableCell>
-                      <TableCell>{template.debit}</TableCell>
-                      <TableCell>{template.credit}</TableCell>
+                      <TableCell>{formatNumber(template.debit)}</TableCell>
+                      <TableCell>{formatNumber(template.credit)}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

@@ -8,6 +8,7 @@ import { toast } from 'sonner'
 import { format } from 'date-fns'
 import AvailableTemplates from '../components/AvailableTemplates'
 import SelectedTransactions from '../components/SelectedTransactions'
+import { formatNumber } from '../utils/formatUtils'
 
 const TemplatesPage = () => {
   const { session } = useSupabaseAuth()
@@ -86,6 +87,7 @@ const TemplatesPage = () => {
         editedTransactions={editedTransactions}
         setEditedTransactions={setEditedTransactions}
         accountBalances={accountBalances}
+        formatNumber={formatNumber}
       />
 
       <AvailableTemplates 
@@ -95,6 +97,7 @@ const TemplatesPage = () => {
         handleTemplateSelect={handleTemplateSelect}
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
+        formatNumber={formatNumber}
       />
     </div>
   )
