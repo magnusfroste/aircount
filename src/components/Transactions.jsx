@@ -29,7 +29,9 @@ const Transactions = () => {
   const sortedTransactions = useMemo(() => {
     if (!transactions) return []
     return [...transactions].sort((a, b) => {
-      const compareResult = a.ver.localeCompare(b.ver, undefined, { numeric: true, sensitivity: 'base' })
+      const verA = String(a.ver)
+      const verB = String(b.ver)
+      const compareResult = verA.localeCompare(verB, undefined, { numeric: true, sensitivity: 'base' })
       return sortOrder === 'desc' ? -compareResult : compareResult
     })
   }, [transactions, sortOrder])
