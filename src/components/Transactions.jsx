@@ -28,7 +28,7 @@ const Transactions = () => {
   }, [accounts])
 
   const groupedTransactions = useMemo(() => {
-    if (!transactions) return {}
+    if (!transactions) return []
     const grouped = transactions.reduce((acc, transaction) => {
       if (!acc[transaction.ver]) {
         acc[transaction.ver] = []
@@ -38,10 +38,8 @@ const Transactions = () => {
     }, {})
 
     // Sort the grouped transactions based on the ver (transaction number)
-    return Object.fromEntries(
-      Object.entries(grouped).sort(([a], [b]) => 
-        sortOrder === 'desc' ? b.localeCompare(a) : a.localeCompare(b)
-      )
+    return Object.entries(grouped).sort(([a], [b]) => 
+      sortOrder === 'desc' ? b.localeCompare(a) : a.localeCompare(b)
     )
   }, [transactions, sortOrder])
 
@@ -95,7 +93,7 @@ const Transactions = () => {
           </Button>
         </div>
       </div>
-      {Object.entries(groupedTransactions).map(([ver, transactions]) => (
+      {groupedTransactions.map(([ver, transactions]) => (
         <Card key={ver} className="mb-6">
           <CardHeader>
             <CardTitle>Transaction Number: {ver}</CardTitle>
