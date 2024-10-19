@@ -38,10 +38,12 @@ const Transactions = () => {
     
     // Sort the grouped transactions based on the ver (transaction number)
     const sortedEntries = Object.entries(grouped).sort((a, b) => {
+      const numA = parseInt(a[0], 10);
+      const numB = parseInt(b[0], 10);
       if (sortOrder === 'desc') {
-        return b[0].localeCompare(a[0], undefined, { numeric: true })
+        return numB - numA;
       } else {
-        return a[0].localeCompare(b[0], undefined, { numeric: true })
+        return numA - numB;
       }
     })
     
