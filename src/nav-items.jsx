@@ -20,3 +20,4 @@ export const navItems = [
     page: <EventsPage />,
   },
 ];
+
