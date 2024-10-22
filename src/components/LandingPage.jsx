@@ -47,7 +47,7 @@ const LandingPage = () => {
           <h2 className="text-3xl font-semibold mb-8">What Our Users Say</h2>
           <div className="grid md:grid-cols-3 gap-8">
             {[
-              { name: "Alex", comment: "AirAccounter simplified my business finances!" },
+              { name: "Alex", comment: "Aircount simplified my business finances!" },
               { name: "Sarah", comment: "I love how easy it is to track my expenses now." },
               { name: "Mike", comment: "The reports are clear and help me make better decisions." }
             ].map((testimonial, index) => (
