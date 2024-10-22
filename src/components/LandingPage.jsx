@@ -8,7 +8,7 @@ const LandingPage = () => {
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
       <main className="container mx-auto px-6 py-12">
         <section className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Welcome to AirAccounter</h2>
+          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Welcome to Aircout</h2>
           <p className="text-xl text-gray-600 mb-8">Your free, donation-powered financial companion</p>
           <Link to="/login">
             <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white">
@@ -73,10 +73,10 @@ const LandingPage = () => {
 
       <footer className="bg-gray-800 text-white py-8 mt-16">
         <div className="container mx-auto px-6 text-center">
-          <p className="mb-2">AirAccounter - Empowering Your Financial Future</p>
+          <p className="mb-2">Aircounter - Empowering Your Financial Future</p>
           <p className="mb-4">Powered by donations from users like you</p>
-          <Button variant="outline" className="text-white border-white hover:bg-white hover:text-gray-800">
-            Support AirAccounter
+          <Button variant="outline" className="text-white border-blue hover:bg-grey hover:text-gray-800">
+            Support Aircounter
           </Button>
         </div>
       </footer>
