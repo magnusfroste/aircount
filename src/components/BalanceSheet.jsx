@@ -69,6 +69,8 @@ const BalanceSheet = () => {
         const accounts = category.map(account => ({
           account,
           name: accountMap[account] || 'Unknown',
+          openingBalance: openingBalancesMap[account] || 0,
+          change: accountSums[account] || 0,
           closingBalance: (openingBalancesMap[account] || 0) + (accountSums[account] || 0)
         }))
         return { sum, accounts }
@@ -90,14 +92,18 @@ const BalanceSheet = () => {
   }, [transactions, accounts, openingBalances])
 
   if (transactionsLoading || accountsLoading || openingBalancesLoading) return <div>Loading balance sheet data...</div>
-  if (transactionsError || accountsError || openingBalancesError) return <div>Error loading data</div>
-  if (!balanceSheetData) return null
+  if (transactionsError) return <div>Error loading transactions: {transactionsError.message}</div>
+  if (accountsError) return <div>Error loading accounts: {accountsError.message}</div>
+  if (openingBalancesError) return <div>Error loading opening balances: {openingBalancesError.message}</div>
+  if (!balanceSheetData) return <div>No data available for balance sheet</div>
 
   const renderCategory = (category, depth = 0) => {
     if (Array.isArray(category.accounts)) {
-      return category.accounts.map(({ account, name, closingBalance }) => (
+      return category.accounts.map(({ account, name, openingBalance, change, closingBalance }) => (
         <TableRow key={account}>
           <TableCell className={`pl-${depth * 4}`}>{account} - {name}</TableCell>
+          <TableCell className="text-right">{formatNumber(openingBalance)}</TableCell>
+          <TableCell className="text-right">{formatNumber(change)}</TableCell>
           <TableCell className="text-right">{formatNumber(closingBalance)}</TableCell>
         </TableRow>
       ))
@@ -105,8 +111,7 @@ const BalanceSheet = () => {
 
     return Object.entries(category).flatMap(([subCategory, value]) => [
       <TableRow key={subCategory}>
-        <TableCell className={`font-medium pl-${depth * 4}`}>{subCategory}</TableCell>
-        <TableCell className="text-right"></TableCell>
+        <TableCell className={`font-medium pl-${depth * 4}`} colSpan={4}>{subCategory}</TableCell>
       </TableRow>,
       ...renderCategory(value, depth + 1)
     ])
@@ -114,45 +119,62 @@ const BalanceSheet = () => {
 
   const calculateTotals = (category) => {
     if (category.sum !== undefined) {
-      return category.sum
+      return {
+        openingBalance: category.accounts.reduce((sum, account) => sum + account.openingBalance, 0),
+        change: category.accounts.reduce((sum, account) => sum + account.change, 0),
+        closingBalance: category.sum
+      }
     }
     
-    return Object.values(category).reduce((total, subCategory) => 
-      total + calculateTotals(subCategory), 0
-    )
+    return Object.values(category).reduce((totals, subCategory) => {
+      const subTotals = calculateTotals(subCategory)
+      return {
+        openingBalance: totals.openingBalance + subTotals.openingBalance,
+        change: totals.change + subTotals.change,
+        closingBalance: totals.closingBalance + subTotals.closingBalance
+      }
+    }, { openingBalance: 0, change: 0, closingBalance: 0 })
   }
 
   const assetsTotals = calculateTotals(balanceSheetData.Assets)
   const equityLiabilitiesTotals = calculateTotals(balanceSheetData['Equity and Liabilities'])
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Balance Sheet</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Category</TableHead>
-              <TableHead className="text-right">Amount (SEK)</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {renderCategory(balanceSheetData.Assets)}
-            <TableRow className="font-bold bg-muted/50">
-              <TableCell>Total Assets</TableCell>
-              <TableCell className="text-right">{formatNumber(assetsTotals)}</TableCell>
-            </TableRow>
-            {renderCategory(balanceSheetData['Equity and Liabilities'])}
-            <TableRow className="font-bold bg-muted/50">
-              <TableCell>Total Equity and Liabilities</TableCell>
-              <TableCell className="text-right">{formatNumber(equityLiabilitiesTotals)}</TableCell>
-            </TableRow>
-          </TableBody>
-        </Table>
-      </CardContent>
-    </Card>
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Balance Sheet</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Category</TableHead>
+                <TableHead className="text-right">Opening Balance</TableHead>
+                <TableHead className="text-right">Change</TableHead>
+                <TableHead className="text-right">Closing Balance</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {renderCategory(balanceSheetData.Assets)}
+              <TableRow className="font-bold">
+                <TableCell>Total Assets</TableCell>
+                <TableCell className="text-right">{formatNumber(assetsTotals.openingBalance)}</TableCell>
+                <TableCell className="text-right">{formatNumber(assetsTotals.change)}</TableCell>
+                <TableCell className="text-right">{formatNumber(assetsTotals.closingBalance)}</TableCell>
+              </TableRow>
+              {renderCategory(balanceSheetData['Equity and Liabilities'])}
+              <TableRow className="font-bold">
+                <TableCell>Total Equity and Liabilities</TableCell>
+                <TableCell className="text-right">{formatNumber(equityLiabilitiesTotals.openingBalance)}</TableCell>
+                <TableCell className="text-right">{formatNumber(equityLiabilitiesTotals.change)}</TableCell>
+                <TableCell className="text-right">{formatNumber(equityLiabilitiesTotals.closingBalance)}</TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+    </div>
   )
 }
 
