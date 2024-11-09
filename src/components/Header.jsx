@@ -5,6 +5,7 @@ import { useSupabaseAuth } from '../integrations/supabase/auth'
 import { supabase } from '../lib/supabase'
 import { toast } from 'sonner'
 import { useNavigate } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
 import { 
   LayoutDashboard, 
   FileText, 
@@ -22,6 +23,22 @@ const Header = () => {
   const { session, logout } = useSupabaseAuth()
   const navigate = useNavigate()
 
+  const { data: companyData } = useQuery({
+    queryKey: ['company', session?.user?.id],
+    queryFn: async () => {
+      if (!session?.user?.id) return null
+      const { data, error } = await supabase
+        .from('companies')
+        .select('company_name')
+        .eq('user_id', session.user.id)
+        .single()
+      
+      if (error) throw error
+      return data
+    },
+    enabled: !!session?.user?.id
+  })
+
   const handleLogout = async () => {
     try {
       await supabase.auth.signOut()
@@ -38,7 +55,7 @@ const Header = () => {
       <aside className="fixed left-0 top-0 h-full w-64 bg-white border-r border-gray-200 shadow-sm">
         <div className="p-6">
           <h1 className="text-2xl font-bold text-blue-600 mb-8">
-            <Link to="/">Aircount</Link>
+            <Link to="/">{companyData?.company_name || 'Loading...'}</Link>
           </h1>
           <nav className="flex flex-col space-y-4">
             <Link to="/dashboard" className="flex items-center text-gray-600 hover:text-blue-600 transition-colors">
