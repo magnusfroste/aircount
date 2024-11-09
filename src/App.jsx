@@ -14,6 +14,7 @@ import LedgerPage from './pages/LedgerPage';
 import BalanceSheetPage from './pages/BalanceSheetPage';
 import OpeningBalancesPage from './pages/OpeningBalancesPage';
 import ImportPage from './pages/ImportPage';
+import ExportPage from './pages/ExportPage';
 import LandingPage from './components/LandingPage';
 import DashboardPage from './pages/DashboardPage';
 import TemplatesPage from './pages/TemplatesPage';
@@ -54,6 +55,7 @@ const AppRoutes = () => {
           <Route path="/balance-sheet" element={<ProtectedRoute><BalanceSheetPage /></ProtectedRoute>} />
           <Route path="/opening-balances" element={<ProtectedRoute><OpeningBalancesPage /></ProtectedRoute>} />
           <Route path="/import" element={<ProtectedRoute><ImportPage /></ProtectedRoute>} />
+          <Route path="/export" element={<ProtectedRoute><ExportPage /></ProtectedRoute>} />
           <Route path="/templates" element={<ProtectedRoute><TemplatesPage /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
         </Routes>

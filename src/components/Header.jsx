@@ -13,7 +13,8 @@ import {
   PieChart, 
   ScrollText, 
   Scale, 
-  FileUp, 
+  FileUp,
+  FileDown,
   UserCircle, 
   LogOut,
   LayoutTemplate
@@ -93,6 +94,10 @@ const Header = () => {
             <Link to="/import" className="flex items-center text-gray-600 hover:text-blue-600 transition-colors">
               <FileUp className="w-5 h-5 mr-3" />
               Import
+            </Link>
+            <Link to="/export" className="flex items-center text-gray-600 hover:text-blue-600 transition-colors">
+              <FileDown className="w-5 h-5 mr-3" />
+              Export
             </Link>
             <Link to="/profile" className="flex items-center text-gray-600 hover:text-blue-600 transition-colors">
               <UserCircle className="w-5 h-5 mr-3" />
