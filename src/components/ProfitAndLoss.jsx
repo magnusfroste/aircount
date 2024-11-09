@@ -21,16 +21,16 @@ const ProfitAndLoss = () => {
 
     const accountSums = transactions.reduce((acc, transaction) => {
       const account = transaction.account
-      const amount = transaction.credit - transaction.debit // Inverted calculation
+      const amount = transaction.credit - transaction.debit
       acc[account] = (acc[account] || 0) + amount
       return acc
     }, {})
 
     const categories = {
-      'Income': ['3', '30', '31', '32', '33', '34', '35', '36', '37', '38', '39'],
-      'Costs': ['4', '5', '6', '7'],
-      'Financial Income': ['8314'],
-      'Taxes': ['8910'],
+      'Operating Income': ['3', '30', '31', '32', '33', '34', '35', '36', '37', '38', '39'],
+      'Operating Expenses': ['4', '5', '6', '7'],
+      'Financial Income and Expenses': ['8314'],
+      'Income Tax': ['8910'],
       'Net Income': []
     }
 
@@ -45,15 +45,15 @@ const ProfitAndLoss = () => {
       return { category, sum, accounts }
     })
 
-    const totalIncome = plData.find(item => item.category === 'Income')?.sum || 0
-    const totalCosts = plData.find(item => item.category === 'Costs')?.sum || 0
-    const financialIncome = plData.find(item => item.category === 'Financial Income')?.sum || 0
-    const taxes = plData.find(item => item.category === 'Taxes')?.sum || 0
+    const totalIncome = plData.find(item => item.category === 'Operating Income')?.sum || 0
+    const totalCosts = plData.find(item => item.category === 'Operating Expenses')?.sum || 0
+    const financialIncome = plData.find(item => item.category === 'Financial Income and Expenses')?.sum || 0
+    const taxes = plData.find(item => item.category === 'Income Tax')?.sum || 0
     const netIncome = totalIncome + totalCosts + financialIncome + taxes
 
     plData.find(item => item.category === 'Net Income').sum = netIncome
 
-    return { plData, totalIncome, totalCosts, financialIncome, taxes, netIncome }
+    return { plData }
   }, [transactions, accounts])
 
   if (transactionsLoading || accountsLoading) return <div>Loading P&L statement...</div>
@@ -62,76 +62,41 @@ const ProfitAndLoss = () => {
   if (!plStatement) return <div>No data available for P&L statement</div>
 
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Profit and Loss Statement</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Category</TableHead>
-                <TableHead>Account</TableHead>
-                <TableHead>Account Name</TableHead>
-                <TableHead className="text-right">Amount (SEK)</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {plStatement.plData.map(({ category, sum, accounts }) => (
-                <React.Fragment key={category}>
-                  <TableRow className="font-medium">
-                    <TableCell>{category}</TableCell>
-                    <TableCell></TableCell>
-                    <TableCell></TableCell>
+    <Card>
+      <CardHeader>
+        <CardTitle>Profit and Loss Statement</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Category</TableHead>
+              <TableHead>Account</TableHead>
+              <TableHead>Account Name</TableHead>
+              <TableHead className="text-right">Amount (SEK)</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {plStatement.plData.map(({ category, sum, accounts }) => (
+              <React.Fragment key={category}>
+                <TableRow className="font-medium bg-muted/50">
+                  <TableCell colSpan={3}>{category}</TableCell>
+                  <TableCell className="text-right">{formatNumber(sum)}</TableCell>
+                </TableRow>
+                {accounts.map(({ account, accountName, sum }) => (
+                  <TableRow key={account}>
+                    <TableCell className="pl-8"></TableCell>
+                    <TableCell>{account}</TableCell>
+                    <TableCell>{accountName}</TableCell>
                     <TableCell className="text-right">{formatNumber(sum)}</TableCell>
                   </TableRow>
-                  {accounts.map(({ account, accountName, sum }) => (
-                    <TableRow key={account}>
-                      <TableCell className="pl-8"></TableCell>
-                      <TableCell>{account}</TableCell>
-                      <TableCell>{accountName}</TableCell>
-                      <TableCell className="text-right">{formatNumber(sum)}</TableCell>
-                    </TableRow>
-                  ))}
-                </React.Fragment>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader>
-          <CardTitle>Summary</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableBody>
-              <TableRow>
-                <TableCell>Total Income</TableCell>
-                <TableCell className="text-right">{formatNumber(plStatement.totalIncome)}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>Total Costs</TableCell>
-                <TableCell className="text-right">{formatNumber(plStatement.totalCosts)}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>Financial Income</TableCell>
-                <TableCell className="text-right">{formatNumber(plStatement.financialIncome)}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>Taxes</TableCell>
-                <TableCell className="text-right">{formatNumber(plStatement.taxes)}</TableCell>
-              </TableRow>
-              <TableRow className="font-bold">
-                <TableCell>Net Income</TableCell>
-                <TableCell className="text-right">{formatNumber(plStatement.netIncome)}</TableCell>
-              </TableRow>
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-    </div>
+                ))}
+              </React.Fragment>
+            ))}
+          </TableBody>
+        </Table>
+      </CardContent>
+    </Card>
   )
 }
 
