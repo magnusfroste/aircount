@@ -22,12 +22,12 @@ const Header = () => {
   }
 
   return (
-    <header className="bg-white shadow-sm">
-      <div className="container mx-auto py-4 px-6 flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-blue-600">
+    <header className="fixed left-0 top-0 h-full w-64 bg-white shadow-lg">
+      <div className="flex flex-col h-full p-6">
+        <h1 className="text-2xl font-bold text-blue-600 mb-8">
           <Link to="/">Aircount</Link>
         </h1>
-        <nav className="hidden md:flex items-center space-x-4">
+        <nav className="flex flex-col space-y-4 flex-grow">
           {session ? (
             <>
               <Link to="/dashboard" className="text-gray-600 hover:text-blue-600 transition-colors">Dashboard</Link>
@@ -40,7 +40,7 @@ const Header = () => {
               <Link to="/accounts" className="text-gray-600 hover:text-blue-600 transition-colors">Accounts</Link>
               <Link to="/import" className="text-gray-600 hover:text-blue-600 transition-colors">Import</Link>
               <Link to="/profile" className="text-gray-600 hover:text-blue-600 transition-colors">Profile</Link>
-              <Button onClick={handleLogout} variant="ghost" className="text-blue-600 hover:text-blue-700">Logout</Button>
+              <Button onClick={handleLogout} variant="ghost" className="text-blue-600 hover:text-blue-700 mt-auto">Logout</Button>
             </>
           ) : (
             <>
