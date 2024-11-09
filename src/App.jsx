@@ -36,10 +36,8 @@ const ProtectedRoute = ({ children }) => {
 };
 
 const AppRoutes = () => {
-  const { session } = useSupabaseAuth();
-  
   return (
-    <div className={session ? "pl-64" : ""}>
+    <>
       <Header />
       <Routes>
         <Route path="/" element={<LandingPage />} />
@@ -56,7 +54,7 @@ const AppRoutes = () => {
         <Route path="/templates" element={<ProtectedRoute><TemplatesPage /></ProtectedRoute>} />
         <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
       </Routes>
-    </div>
+    </>
   );
 };
 
