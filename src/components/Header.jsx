@@ -15,7 +15,7 @@ import {
   FileUp, 
   UserCircle, 
   LogOut,
-  Templates
+  LayoutTemplate
 } from 'lucide-react'
 
 const Header = () => {
@@ -46,7 +46,7 @@ const Header = () => {
               Dashboard
             </Link>
             <Link to="/templates" className="flex items-center text-gray-600 hover:text-blue-600 transition-colors">
-              <Templates className="w-5 h-5 mr-3" />
+              <LayoutTemplate className="w-5 h-5 mr-3" />
               Templates
             </Link>
             <Link to="/transactions" className="flex items-center text-gray-600 hover:text-blue-600 transition-colors">
