@@ -43,7 +43,7 @@ const AppRoutes = () => {
       <Header />
       <div className={session ? "pl-64" : ""}>
         <Routes>
-          <Route path="/" element={<LandingPage />} />
+          <Route path="/" element={session ? <Navigate to="/dashboard" replace /> : <LandingPage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
           <Route path="/events" element={<ProtectedRoute><EventsPage /></ProtectedRoute>} />
