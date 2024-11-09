@@ -17,7 +17,8 @@ import {
   FileDown,
   UserCircle, 
   LogOut,
-  LayoutTemplate
+  LayoutTemplate,
+  Table
 } from 'lucide-react'
 
 const Header = () => {
@@ -94,6 +95,10 @@ const Header = () => {
             <Link to="/import" className="flex items-center text-gray-600 hover:text-blue-600 transition-colors">
               <FileUp className="w-5 h-5 mr-3" />
               Import
+            </Link>
+            <Link to="/import-csv" className="flex items-center text-gray-600 hover:text-blue-600 transition-colors">
+              <Table className="w-5 h-5 mr-3" />
+              Import CSV
             </Link>
             <Link to="/export" className="flex items-center text-gray-600 hover:text-blue-600 transition-colors">
               <FileDown className="w-5 h-5 mr-3" />
