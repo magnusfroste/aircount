@@ -24,8 +24,25 @@ const AutoPage = () => {
   const handleImageUpload = (event) => {
     const file = event.target.files[0];
     if (file) {
+      if (file.size > 20 * 1024 * 1024) { // 20MB limit
+        toast.error('Image size must be less than 20MB');
+        return;
+      }
       setImage(file);
     }
+  };
+
+  const convertToBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        // Extract the base64 data without the data URL prefix
+        const base64Data = reader.result.split(',')[1];
+        resolve(base64Data);
+      };
+      reader.onerror = (error) => reject(error);
+    });
   };
 
   const processImage = async () => {
@@ -45,7 +62,12 @@ const AutoPage = () => {
             role: "user",
             content: [
               { type: "text", text: "This is a bank statement image. Please extract all transactions and return them in JSON format with the following structure: [{date: 'YYYY-MM-DD', description: 'string', amount: number (positive for credits, negative for debits)}]" },
-              { type: "image_url", image_url: { url: base64Image } }
+              { 
+                type: "image_url",
+                image_url: {
+                  url: `data:image/${image.type};base64,${base64Image}`
+                }
+              }
             ],
           },
         ],
@@ -57,19 +79,10 @@ const AutoPage = () => {
       toast.success('Transactions extracted successfully');
     } catch (error) {
       console.error('Error processing image:', error);
-      toast.error('Failed to process image');
+      toast.error('Failed to process image: ' + error.message);
     } finally {
       setLoading(false);
     }
-  };
-
-  const convertToBase64 = (file) => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = (error) => reject(error);
-    });
   };
 
   const handleTransactionSelect = (index) => {
