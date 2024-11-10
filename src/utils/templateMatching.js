@@ -14,9 +14,9 @@ export const generateTransactions = (bankTransaction, matchingTemplate) => {
   if (!bankTransaction) return [];
   
   const absAmount = Math.abs(bankTransaction.amount);
-  const isNegativeAmount = bankTransaction.amount < 0;
   
-  if (matchingTemplate && matchingTemplate.name === 'Bankkostnad') {
+  if (matchingTemplate) {
+    // Always use template accounts when a template is matched
     return [
       {
         account: '1930',
@@ -26,7 +26,7 @@ export const generateTransactions = (bankTransaction, matchingTemplate) => {
         date: bankTransaction.date,
       },
       {
-        account: '6570',
+        account: matchingTemplate.account_number,
         description: bankTransaction.description,
         debit: absAmount,
         credit: 0,
@@ -35,7 +35,8 @@ export const generateTransactions = (bankTransaction, matchingTemplate) => {
     ];
   }
   
-  // For unmatched transactions
+  // For unmatched transactions, use default accounts
+  const isNegativeAmount = bankTransaction.amount < 0;
   return [
     {
       account: '1930',
