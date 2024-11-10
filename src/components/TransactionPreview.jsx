@@ -3,24 +3,26 @@ import { Table, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useTemplates } from '../integrations/supabase/hooks/templates'
-import { findMatchingTemplate, generateTransactions } from '../utils/templateMatching'
+import { generateTransactions } from '../utils/templateMatching'
 import BankTransactionDetails from './BankTransactionDetails'
 import TransactionRows from './TransactionRows'
 
 const TransactionPreview = ({ bankTransaction, onConfirm, onCancel }) => {
   const [ver, setVer] = useState('')
+  const [selectedTemplateId, setSelectedTemplateId] = useState('')
   const [customTransactions, setCustomTransactions] = useState([])
   const { data: templates } = useTemplates()
 
-  const matchingTemplate = useMemo(() => 
-    findMatchingTemplate(templates, bankTransaction), 
-    [templates, bankTransaction]
+  const selectedTemplate = useMemo(() => 
+    templates?.find(t => t.id === selectedTemplateId),
+    [templates, selectedTemplateId]
   )
 
   const doubleEntryTransactions = useMemo(() => 
-    generateTransactions(bankTransaction, matchingTemplate), 
-    [bankTransaction, matchingTemplate]
+    generateTransactions(bankTransaction, selectedTemplate), 
+    [bankTransaction, selectedTemplate]
   )
 
   const allTransactions = [...doubleEntryTransactions, ...customTransactions]
@@ -57,16 +59,24 @@ const TransactionPreview = ({ bankTransaction, onConfirm, onCancel }) => {
     <Card className="mt-4">
       <CardHeader>
         <CardTitle>Double-Entry Preview</CardTitle>
-        {matchingTemplate && (
-          <div className="text-sm text-muted-foreground">
-            Using template: {matchingTemplate.name}
-          </div>
-        )}
       </CardHeader>
       <CardContent>
         <BankTransactionDetails bankTransaction={bankTransaction} />
 
         <div className="mb-4">
+          <Select value={selectedTemplateId} onValueChange={setSelectedTemplateId}>
+            <SelectTrigger className="w-full mb-4">
+              <SelectValue placeholder="Select a template" />
+            </SelectTrigger>
+            <SelectContent>
+              {templates?.map(template => (
+                <SelectItem key={template.id} value={template.id}>
+                  {template.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
           <h3 className="text-lg font-semibold mb-2">Generated Double-Entry Transactions:</h3>
           <Table>
             <TableHeader>
@@ -82,7 +92,7 @@ const TransactionPreview = ({ bankTransaction, onConfirm, onCancel }) => {
               allTransactions={allTransactions}
               doubleEntryTransactions={doubleEntryTransactions}
               handleUpdateCustomRow={handleUpdateCustomRow}
-              matchingTemplate={matchingTemplate}
+              matchingTemplate={selectedTemplate}
               bankTransaction={bankTransaction}
             />
           </Table>
