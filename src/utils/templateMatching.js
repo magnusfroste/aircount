@@ -12,13 +12,16 @@ export const findMatchingTemplate = (templates, bankTransaction) => {
   
   // Ensure we're using the template's description field for matching
   const matchingTemplate = templates.find(template => {
-    const isMatch = template.description && 
-      bankTransaction.description.toLowerCase().includes(template.description.toLowerCase());
+    // Convert both strings to lowercase and trim whitespace for comparison
+    const templateDesc = template.description?.toLowerCase().trim() || '';
+    const transactionDesc = bankTransaction.description.toLowerCase().trim();
     
-    if (template.description?.toLowerCase().includes('skatteverket')) {
-      console.log('Found Skatteverket template:', {
-        templateDescription: template.description,
-        transactionDescription: bankTransaction.description,
+    const isMatch = templateDesc && transactionDesc.includes(templateDesc);
+    
+    if (templateDesc.includes('skatteverket') || templateDesc.includes('banktjänster')) {
+      console.log('Checking template match:', {
+        templateDescription: templateDesc,
+        transactionDescription: transactionDesc,
         isMatch
       });
     }
@@ -35,16 +38,15 @@ export const generateTransactions = (bankTransaction, matchingTemplate) => {
   if (matchingTemplate) {
     const absAmount = Math.abs(bankTransaction.amount);
     
-    // Calculate scale factor based on the template's amounts
-    const templateBaseAmount = matchingTemplate.debit || matchingTemplate.credit;
-    const scaleFactor = absAmount / templateBaseAmount;
-    
-    console.log('Matching template found:', {
+    console.log('Generating transactions with template:', {
       templateName: matchingTemplate.name,
       templateDescription: matchingTemplate.description,
       bankDescription: bankTransaction.description,
       amount: bankTransaction.amount,
-      scaleFactor
+      templateAccounts: {
+        main: matchingTemplate.account_number,
+        contra: matchingTemplate.contra_account
+      }
     });
     
     return [
