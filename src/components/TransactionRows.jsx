@@ -22,7 +22,7 @@ const TransactionRows = ({ allTransactions, doubleEntryTransactions, handleUpdat
             {index >= doubleEntryTransactions.length ? (
               bankTransaction?.description
             ) : (
-              matchingTemplate ? `${matchingTemplate.name} (${bankTransaction?.amount < 0 ? 'Expense' : 'Income'})` : 'No template match'
+              transaction.accountName || transaction.account
             )}
           </TableCell>
           <TableCell>
@@ -51,7 +51,7 @@ const TransactionRows = ({ allTransactions, doubleEntryTransactions, handleUpdat
         </TableRow>
       ))}
     </TableBody>
-  );
-};
+  )
+}
 
-export default TransactionRows;
+export default TransactionRows

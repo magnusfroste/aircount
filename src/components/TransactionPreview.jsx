@@ -72,7 +72,7 @@ const TransactionPreview = ({ bankTransaction, onConfirm, onCancel }) => {
             <TableHeader>
               <TableRow>
                 <TableHead>Account</TableHead>
-                <TableHead>Template</TableHead>
+                <TableHead>Account Name</TableHead>
                 <TableHead>Debit</TableHead>
                 <TableHead>Credit</TableHead>
                 <TableHead>Date</TableHead>

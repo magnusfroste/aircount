@@ -1,32 +1,10 @@
 export const findMatchingTemplate = (templates, bankTransaction) => {
   if (!templates || !bankTransaction) return null;
   
-  console.log('Attempting to match transaction:', {
-    transactionDescription: bankTransaction.description,
-    amount: bankTransaction.amount,
-    availableTemplates: templates.map(t => ({
-      name: t.name,
-      description: t.description
-    }))
-  });
-  
-  // Ensure we're using the template's description field for matching
   const matchingTemplate = templates.find(template => {
-    // Convert both strings to lowercase and trim whitespace for comparison
     const templateDesc = template.description?.toLowerCase().trim() || '';
     const transactionDesc = bankTransaction.description.toLowerCase().trim();
-    
-    const isMatch = templateDesc && transactionDesc.includes(templateDesc);
-    
-    if (templateDesc.includes('skatteverket') || templateDesc.includes('banktjänster')) {
-      console.log('Checking template match:', {
-        templateDescription: templateDesc,
-        transactionDescription: transactionDesc,
-        isMatch
-      });
-    }
-    
-    return isMatch;
+    return templateDesc && transactionDesc.includes(templateDesc);
   });
 
   return matchingTemplate;
@@ -35,31 +13,22 @@ export const findMatchingTemplate = (templates, bankTransaction) => {
 export const generateTransactions = (bankTransaction, matchingTemplate) => {
   if (!bankTransaction) return [];
   
+  const absAmount = Math.abs(bankTransaction.amount);
+  const isNegativeAmount = bankTransaction.amount < 0;
+  
   if (matchingTemplate) {
-    const absAmount = Math.abs(bankTransaction.amount);
-    
-    console.log('Generating transactions with template:', {
-      templateName: matchingTemplate.name,
-      templateDescription: matchingTemplate.description,
-      bankDescription: bankTransaction.description,
-      amount: bankTransaction.amount,
-      templateAccount: matchingTemplate.account_number
-    });
-    
-    // If amount is negative (outgoing payment), credit the bank account and debit template account
-    // If amount is positive (incoming payment), debit the bank account and credit template account
-    const isNegativeAmount = bankTransaction.amount < 0;
-    
     return [
       {
-        account: '1930', // Bank account first
+        account: '1930',
+        accountName: 'Bank Account',
         description: bankTransaction.description,
         debit: isNegativeAmount ? 0 : absAmount,
         credit: isNegativeAmount ? absAmount : 0,
         date: bankTransaction.date,
       },
       {
-        account: matchingTemplate.account_number, // Template account second
+        account: matchingTemplate.account_number,
+        accountName: matchingTemplate.name,
         description: bankTransaction.description,
         debit: isNegativeAmount ? absAmount : 0,
         credit: isNegativeAmount ? 0 : absAmount,
@@ -68,50 +37,23 @@ export const generateTransactions = (bankTransaction, matchingTemplate) => {
     ];
   }
   
-  // If no template matches, use default accounts based on transaction type
-  const isDebit = bankTransaction.amount < 0;
-  const absAmount = Math.abs(bankTransaction.amount);
-  
-  console.log('No matching template found for:', {
-    description: bankTransaction.description,
-    amount: bankTransaction.amount
-  });
-  
-  // For unmatched transactions, use 1930 as the bank account and 
-  // either 4000 for expenses (negative amounts) or 3000 for income (positive amounts)
-  if (isDebit) {
-    return [
-      {
-        account: '1930',
-        description: bankTransaction.description,
-        debit: 0,
-        credit: absAmount,
-        date: bankTransaction.date,
-      },
-      {
-        account: '4000',
-        description: bankTransaction.description,
-        debit: absAmount,
-        credit: 0,
-        date: bankTransaction.date,
-      }
-    ];
-  } else {
-    return [
-      {
-        account: '1930',
-        description: bankTransaction.description,
-        debit: absAmount,
-        credit: 0,
-        date: bankTransaction.date,
-      },
-      {
-        account: '3000',
-        description: bankTransaction.description,
-        debit: 0,
-        credit: absAmount,
-        date: bankTransaction.date,
-      }
-    ];
-  }
+  // For unmatched transactions
+  return [
+    {
+      account: '1930',
+      accountName: 'Bank Account',
+      description: bankTransaction.description,
+      debit: isNegativeAmount ? 0 : absAmount,
+      credit: isNegativeAmount ? absAmount : 0,
+      date: bankTransaction.date,
+    },
+    {
+      account: isNegativeAmount ? '4000' : '3000',
+      accountName: isNegativeAmount ? 'Default Expense' : 'Default Income',
+      description: bankTransaction.description,
+      debit: isNegativeAmount ? absAmount : 0,
+      credit: isNegativeAmount ? 0 : absAmount,
+      date: bankTransaction.date,
+    }
+  ];
 };
