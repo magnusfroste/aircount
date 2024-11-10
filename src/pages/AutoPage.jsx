@@ -24,12 +24,12 @@ const AutoPage = () => {
 
   const handleConfirmTransaction = async (doubleEntryTransactions) => {
     try {
+      // Generate a single ver for all transactions in this group
+      const ver = new Date().getTime().toString()
+      
       const transactionsToAdd = doubleEntryTransactions.map(t => ({
-        date: selectedTransaction.date,
-        ver: new Date().getTime().toString(),
-        account: t.account,
-        debit: t.debit,
-        credit: t.credit,
+        ...t,
+        ver,
         user_id: session.user.id
       }))
 
