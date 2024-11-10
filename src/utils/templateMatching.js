@@ -1,11 +1,32 @@
 export const findMatchingTemplate = (templates, bankTransaction) => {
   if (!templates || !bankTransaction) return null;
   
+  console.log('Attempting to match transaction:', {
+    transactionDescription: bankTransaction.description,
+    amount: bankTransaction.amount,
+    availableTemplates: templates.map(t => ({
+      name: t.name,
+      description: t.description
+    }))
+  });
+  
   // Ensure we're using the template's description field for matching
-  return templates.find(template => 
-    template.description && 
-    bankTransaction.description.toLowerCase().includes(template.description.toLowerCase())
-  );
+  const matchingTemplate = templates.find(template => {
+    const isMatch = template.description && 
+      bankTransaction.description.toLowerCase().includes(template.description.toLowerCase());
+    
+    if (template.description?.toLowerCase().includes('skatteverket')) {
+      console.log('Found Skatteverket template:', {
+        templateDescription: template.description,
+        transactionDescription: bankTransaction.description,
+        isMatch
+      });
+    }
+    
+    return isMatch;
+  });
+
+  return matchingTemplate;
 };
 
 export const generateTransactions = (bankTransaction, matchingTemplate) => {
