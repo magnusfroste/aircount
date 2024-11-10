@@ -12,6 +12,7 @@ const TransactionPreview = ({ bankTransaction, onConfirm, onCancel }) => {
     // If it's a credit (positive amount), money is coming in
     const isDebit = bankTransaction.amount < 0
     const absAmount = Math.abs(bankTransaction.amount)
+    const transactionVer = new Date().getTime().toString() // Generate single ver for both entries
     
     if (isDebit) {
       return [
@@ -21,7 +22,7 @@ const TransactionPreview = ({ bankTransaction, onConfirm, onCancel }) => {
           debit: absAmount,
           credit: 0,
           date: bankTransaction.date,
-          ver: new Date().getTime().toString() // Generate a unique transaction number
+          ver: transactionVer
         },
         {
           account: '1930', // Bank account
@@ -29,7 +30,7 @@ const TransactionPreview = ({ bankTransaction, onConfirm, onCancel }) => {
           debit: 0,
           credit: absAmount,
           date: bankTransaction.date,
-          ver: new Date().getTime().toString() // Use same transaction number for related entries
+          ver: transactionVer
         }
       ]
     } else {
@@ -40,7 +41,7 @@ const TransactionPreview = ({ bankTransaction, onConfirm, onCancel }) => {
           debit: absAmount,
           credit: 0,
           date: bankTransaction.date,
-          ver: new Date().getTime().toString()
+          ver: transactionVer
         },
         {
           account: '3000', // Income account (placeholder)
@@ -48,7 +49,7 @@ const TransactionPreview = ({ bankTransaction, onConfirm, onCancel }) => {
           debit: 0,
           credit: absAmount,
           date: bankTransaction.date,
-          ver: new Date().getTime().toString()
+          ver: transactionVer
         }
       ]
     }
