@@ -37,7 +37,6 @@ const TransactionPreview = ({ bankTransaction, onConfirm, onCancel }) => {
   const doubleEntryTransactions = useMemo(() => {
     if (!bankTransaction || !selectedTemplates.length) return [];
     
-    // Generate transactions for each template in the group
     return selectedTemplates.flatMap(template => 
       generateTransactions(bankTransaction, template)
     );
