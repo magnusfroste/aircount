@@ -2,9 +2,12 @@ export const findMatchingTemplate = (templates, bankTransaction) => {
   if (!templates || !bankTransaction) return null;
   
   const matchingTemplate = templates.find(template => {
-    const templateDesc = template.description?.toLowerCase().trim() || '';
+    const templateName = template.name?.toLowerCase().trim() || '';
     const transactionDesc = bankTransaction.description.toLowerCase().trim();
-    return templateDesc && transactionDesc.includes(templateDesc);
+    return templateName && (
+      transactionDesc.includes(templateName) ||
+      templateName.includes('skatteverket') && transactionDesc.includes('skatteverket')
+    );
   });
 
   return matchingTemplate;
@@ -16,20 +19,20 @@ export const generateTransactions = (bankTransaction, matchingTemplate) => {
   const absAmount = Math.abs(bankTransaction.amount);
   
   if (matchingTemplate) {
-    // Use the template's account numbers and debit/credit structure
+    // Use the template's exact structure
     return [
       {
-        account: matchingTemplate.debit_account || '1930',
+        account: matchingTemplate.account_number,
         description: bankTransaction.description,
-        debit: matchingTemplate.debit ? absAmount : 0,
-        credit: matchingTemplate.debit ? 0 : absAmount,
+        debit: matchingTemplate.debit > 0 ? absAmount : 0,
+        credit: matchingTemplate.credit > 0 ? absAmount : 0,
         date: bankTransaction.date,
       },
       {
-        account: matchingTemplate.credit_account || matchingTemplate.account_number,
+        account: '1930', // Bank account is always the contra account
         description: bankTransaction.description,
-        debit: matchingTemplate.debit ? 0 : absAmount,
-        credit: matchingTemplate.debit ? absAmount : 0,
+        debit: matchingTemplate.credit > 0 ? absAmount : 0,
+        credit: matchingTemplate.debit > 0 ? absAmount : 0,
         date: bankTransaction.date,
       }
     ];
