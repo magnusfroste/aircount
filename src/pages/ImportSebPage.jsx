@@ -28,8 +28,12 @@ const ImportSebPage = () => {
           .filter(row => row.trim()) // Remove empty rows
           .map(row => {
             const [bokford, valutadatum, text, typ, insattningar, uttag, saldo] = row.split(',');
-            // Calculate amount based on whether it's in insättningar (deposits) or uttag (withdrawals)
-            const amount = insattningar ? parseFloat(insattningar) : -parseFloat(uttag);
+            let amount = 0;
+            if (insattningar && insattningar.trim()) {
+              amount = parseFloat(insattningar);
+            } else if (uttag && uttag.trim()) {
+              amount = -parseFloat(uttag);
+            }
             return {
               date: valutadatum,
               description: text,
