@@ -43,14 +43,11 @@ export const generateTransactions = (bankTransaction, matchingTemplate) => {
       templateDescription: matchingTemplate.description,
       bankDescription: bankTransaction.description,
       amount: bankTransaction.amount,
-      templateAccounts: {
-        main: matchingTemplate.account_number,
-        contra: matchingTemplate.contra_account_number
-      }
+      templateAccount: matchingTemplate.account_number
     });
     
-    // If amount is negative (outgoing payment), debit the main account and credit the contra account
-    // If amount is positive (incoming payment), credit the main account and debit the contra account
+    // If amount is negative (outgoing payment), debit the template account and credit bank account
+    // If amount is positive (incoming payment), credit the template account and debit bank account
     const isNegativeAmount = bankTransaction.amount < 0;
     
     return [
@@ -62,7 +59,7 @@ export const generateTransactions = (bankTransaction, matchingTemplate) => {
         date: bankTransaction.date,
       },
       {
-        account: matchingTemplate.contra_account_number,
+        account: '1930', // Bank account
         description: bankTransaction.description,
         debit: isNegativeAmount ? 0 : absAmount,
         credit: isNegativeAmount ? absAmount : 0,
