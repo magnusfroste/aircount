@@ -2,7 +2,7 @@ import React from 'react'
 import { TableBody, TableCell, TableRow } from "@/components/ui/table"
 import { Input } from "@/components/ui/input"
 
-const TransactionRows = ({ allTransactions, doubleEntryTransactions, handleUpdateCustomRow }) => {
+const TransactionRows = ({ allTransactions, doubleEntryTransactions, handleUpdateCustomRow, matchingTemplate, bankTransaction }) => {
   return (
     <TableBody>
       {allTransactions.map((transaction, index) => (
@@ -18,7 +18,13 @@ const TransactionRows = ({ allTransactions, doubleEntryTransactions, handleUpdat
               transaction.account
             )}
           </TableCell>
-          <TableCell>{transaction.description}</TableCell>
+          <TableCell>
+            {index >= doubleEntryTransactions.length ? (
+              bankTransaction?.description
+            ) : (
+              matchingTemplate ? `${matchingTemplate.name} (${bankTransaction?.amount < 0 ? 'Expense' : 'Income'})` : 'No template match'
+            )}
+          </TableCell>
           <TableCell>
             {index >= doubleEntryTransactions.length ? (
               <Input

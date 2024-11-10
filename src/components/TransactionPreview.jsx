@@ -72,7 +72,7 @@ const TransactionPreview = ({ bankTransaction, onConfirm, onCancel }) => {
             <TableHeader>
               <TableRow>
                 <TableHead>Account</TableHead>
-                <TableHead>Description</TableHead>
+                <TableHead>Template</TableHead>
                 <TableHead>Debit</TableHead>
                 <TableHead>Credit</TableHead>
                 <TableHead>Date</TableHead>
@@ -82,6 +82,8 @@ const TransactionPreview = ({ bankTransaction, onConfirm, onCancel }) => {
               allTransactions={allTransactions}
               doubleEntryTransactions={doubleEntryTransactions}
               handleUpdateCustomRow={handleUpdateCustomRow}
+              matchingTemplate={matchingTemplate}
+              bankTransaction={bankTransaction}
             />
           </Table>
           
