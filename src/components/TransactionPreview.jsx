@@ -19,13 +19,17 @@ const TransactionPreview = ({ bankTransaction, onConfirm, onCancel }) => {
           account: '4000', // Expense account (placeholder)
           description: bankTransaction.description,
           debit: absAmount,
-          credit: 0
+          credit: 0,
+          date: bankTransaction.date,
+          ver: new Date().getTime().toString() // Generate a unique transaction number
         },
         {
           account: '1930', // Bank account
           description: bankTransaction.description,
           debit: 0,
-          credit: absAmount
+          credit: absAmount,
+          date: bankTransaction.date,
+          ver: new Date().getTime().toString() // Use same transaction number for related entries
         }
       ]
     } else {
@@ -34,13 +38,17 @@ const TransactionPreview = ({ bankTransaction, onConfirm, onCancel }) => {
           account: '1930', // Bank account
           description: bankTransaction.description,
           debit: absAmount,
-          credit: 0
+          credit: 0,
+          date: bankTransaction.date,
+          ver: new Date().getTime().toString()
         },
         {
           account: '3000', // Income account (placeholder)
           description: bankTransaction.description,
           debit: 0,
-          credit: absAmount
+          credit: absAmount,
+          date: bankTransaction.date,
+          ver: new Date().getTime().toString()
         }
       ]
     }
