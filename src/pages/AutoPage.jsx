@@ -28,11 +28,16 @@ const AutoPage = () => {
       const ver = new Date().getTime().toString()
       
       const transactionsToAdd = doubleEntryTransactions.map(t => ({
-        ...t,
-        ver,
+        date: t.date,
+        account: t.account,
+        debit: t.debit,
+        credit: t.credit,
+        description: t.description,
+        ver: ver,
         user_id: session.user.id
       }))
 
+      console.log('Attempting to save transactions:', transactionsToAdd)
       await addTransactionMutation.mutateAsync(transactionsToAdd)
       toast.success('Transactions added successfully')
       setSelectedTransaction(null)

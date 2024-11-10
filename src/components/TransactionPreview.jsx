@@ -12,7 +12,6 @@ const TransactionPreview = ({ bankTransaction, onConfirm, onCancel }) => {
     // If it's a credit (positive amount), money is coming in
     const isDebit = bankTransaction.amount < 0
     const absAmount = Math.abs(bankTransaction.amount)
-    const transactionVer = new Date().getTime().toString() // Generate single ver for both entries
     
     if (isDebit) {
       return [
@@ -22,7 +21,6 @@ const TransactionPreview = ({ bankTransaction, onConfirm, onCancel }) => {
           debit: absAmount,
           credit: 0,
           date: bankTransaction.date,
-          ver: transactionVer
         },
         {
           account: '1930', // Bank account
@@ -30,7 +28,6 @@ const TransactionPreview = ({ bankTransaction, onConfirm, onCancel }) => {
           debit: 0,
           credit: absAmount,
           date: bankTransaction.date,
-          ver: transactionVer
         }
       ]
     } else {
@@ -41,7 +38,6 @@ const TransactionPreview = ({ bankTransaction, onConfirm, onCancel }) => {
           debit: absAmount,
           credit: 0,
           date: bankTransaction.date,
-          ver: transactionVer
         },
         {
           account: '3000', // Income account (placeholder)
@@ -49,7 +45,6 @@ const TransactionPreview = ({ bankTransaction, onConfirm, onCancel }) => {
           debit: 0,
           credit: absAmount,
           date: bankTransaction.date,
-          ver: transactionVer
         }
       ]
     }
@@ -77,6 +72,7 @@ const TransactionPreview = ({ bankTransaction, onConfirm, onCancel }) => {
                 <TableHead>Description</TableHead>
                 <TableHead>Debit</TableHead>
                 <TableHead>Credit</TableHead>
+                <TableHead>Date</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -86,6 +82,7 @@ const TransactionPreview = ({ bankTransaction, onConfirm, onCancel }) => {
                   <TableCell>{transaction.description}</TableCell>
                   <TableCell>{transaction.debit}</TableCell>
                   <TableCell>{transaction.credit}</TableCell>
+                  <TableCell>{transaction.date}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
