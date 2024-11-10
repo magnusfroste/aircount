@@ -1,6 +1,7 @@
 export const findMatchingTemplate = (templates, bankTransaction) => {
   if (!templates || !bankTransaction) return null;
   
+  // Ensure we're using the template's description field for matching
   return templates.find(template => 
     template.description && 
     bankTransaction.description.toLowerCase().includes(template.description.toLowerCase())
@@ -12,7 +13,18 @@ export const generateTransactions = (bankTransaction, matchingTemplate) => {
   
   if (matchingTemplate) {
     const absAmount = Math.abs(bankTransaction.amount);
-    const scaleFactor = absAmount / (matchingTemplate.debit || matchingTemplate.credit);
+    
+    // Calculate scale factor based on the template's amounts
+    const templateBaseAmount = matchingTemplate.debit || matchingTemplate.credit;
+    const scaleFactor = absAmount / templateBaseAmount;
+    
+    console.log('Matching template found:', {
+      templateName: matchingTemplate.name,
+      templateDescription: matchingTemplate.description,
+      bankDescription: bankTransaction.description,
+      amount: bankTransaction.amount,
+      scaleFactor
+    });
     
     return [
       {
@@ -23,7 +35,7 @@ export const generateTransactions = (bankTransaction, matchingTemplate) => {
         date: bankTransaction.date,
       },
       {
-        account: '1930',
+        account: '1930', // Bank account
         description: bankTransaction.description,
         debit: matchingTemplate.credit * scaleFactor,
         credit: matchingTemplate.debit * scaleFactor,
@@ -35,6 +47,11 @@ export const generateTransactions = (bankTransaction, matchingTemplate) => {
   // Default logic if no template matches
   const isDebit = bankTransaction.amount < 0;
   const absAmount = Math.abs(bankTransaction.amount);
+  
+  console.log('No matching template found for:', {
+    description: bankTransaction.description,
+    amount: bankTransaction.amount
+  });
   
   if (isDebit) {
     return [
