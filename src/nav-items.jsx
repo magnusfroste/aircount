@@ -1,10 +1,7 @@
-import { HomeIcon, CalendarIcon } from "lucide-react";
+import { HomeIcon, CalendarIcon, UploadIcon } from "lucide-react";
 import Index from "./pages/Index.jsx";
 import EventsPage from "./pages/EventsPage.jsx";
-
-/**
- * Central place for defining the navigation items. Used for navigation components and routing.
- */
+import ImportSebPage from "./pages/ImportSebPage.jsx";
 
 export const navItems = [
   {
@@ -19,5 +16,10 @@ export const navItems = [
     icon: <CalendarIcon className="h-4 w-4" />,
     page: <EventsPage />,
   },
+  {
+    title: "Import SEB",
+    to: "/import-seb",
+    icon: <UploadIcon className="h-4 w-4" />,
+    page: <ImportSebPage />,
+  },
 ];
-
