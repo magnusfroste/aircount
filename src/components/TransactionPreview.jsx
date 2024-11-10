@@ -11,21 +11,39 @@ import TransactionRows from './TransactionRows'
 
 const TransactionPreview = ({ bankTransaction, onConfirm, onCancel }) => {
   const [ver, setVer] = useState('')
-  const [selectedTemplateId, setSelectedTemplateId] = useState('')
+  const [selectedGroupName, setSelectedGroupName] = useState('')
   const [customTransactions, setCustomTransactions] = useState([])
   const { data: templates } = useTemplates()
 
-  const selectedTemplate = useMemo(() => 
-    templates?.find(t => t.id === selectedTemplateId),
-    [templates, selectedTemplateId]
-  )
+  // Group templates by their base name (before the " - ")
+  const groupedTemplates = useMemo(() => {
+    if (!templates) return {};
+    return templates.reduce((acc, template) => {
+      const groupName = template.name.split(' - ')[0];
+      if (!acc[groupName]) {
+        acc[groupName] = [];
+      }
+      acc[groupName].push(template);
+      return acc;
+    }, {});
+  }, [templates]);
 
-  const doubleEntryTransactions = useMemo(() => 
-    generateTransactions(bankTransaction, selectedTemplate), 
-    [bankTransaction, selectedTemplate]
-  )
+  // Get all templates for the selected group
+  const selectedTemplates = useMemo(() => 
+    selectedGroupName ? groupedTemplates[selectedGroupName] || [] : [],
+    [groupedTemplates, selectedGroupName]
+  );
 
-  const allTransactions = [...doubleEntryTransactions, ...customTransactions]
+  const doubleEntryTransactions = useMemo(() => {
+    if (!bankTransaction || !selectedTemplates.length) return [];
+    
+    // Generate transactions for each template in the group
+    return selectedTemplates.flatMap(template => 
+      generateTransactions(bankTransaction, template)
+    );
+  }, [bankTransaction, selectedTemplates]);
+
+  const allTransactions = [...doubleEntryTransactions, ...customTransactions];
 
   const handleAddRow = () => {
     setCustomTransactions([...customTransactions, {
@@ -34,26 +52,32 @@ const TransactionPreview = ({ bankTransaction, onConfirm, onCancel }) => {
       debit: 0,
       credit: 0,
       date: bankTransaction?.date || '',
-    }])
-  }
+    }]);
+  };
 
   const handleUpdateCustomRow = (index, field, value) => {
-    const updatedTransactions = [...customTransactions]
+    const updatedTransactions = [...customTransactions];
     updatedTransactions[index] = {
       ...updatedTransactions[index],
       [field]: field === 'account' ? value : parseFloat(value) || 0
-    }
-    setCustomTransactions(updatedTransactions)
-  }
+    };
+    setCustomTransactions(updatedTransactions);
+  };
 
   const handleConfirm = () => {
-    const verNumber = parseInt(ver, 10)
+    const verNumber = parseInt(ver, 10);
     if (!verNumber || isNaN(verNumber)) {
-      alert('Please enter a valid ver number')
-      return
+      alert('Please enter a valid ver number');
+      return;
     }
-    onConfirm(allTransactions, verNumber)
-  }
+    onConfirm(allTransactions, verNumber);
+  };
+
+  // Get unique group names for the dropdown
+  const uniqueGroupNames = useMemo(() => 
+    Object.keys(groupedTemplates).sort(),
+    [groupedTemplates]
+  );
 
   return (
     <Card className="mt-4">
@@ -64,14 +88,14 @@ const TransactionPreview = ({ bankTransaction, onConfirm, onCancel }) => {
         <BankTransactionDetails bankTransaction={bankTransaction} />
 
         <div className="mb-4">
-          <Select value={selectedTemplateId} onValueChange={setSelectedTemplateId}>
+          <Select value={selectedGroupName} onValueChange={setSelectedGroupName}>
             <SelectTrigger className="w-full mb-4">
-              <SelectValue placeholder="Select a template" />
+              <SelectValue placeholder="Select a template group" />
             </SelectTrigger>
             <SelectContent>
-              {templates?.map(template => (
-                <SelectItem key={template.id} value={template.id}>
-                  {template.name}
+              {uniqueGroupNames.map(groupName => (
+                <SelectItem key={groupName} value={groupName}>
+                  {groupName}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -92,7 +116,7 @@ const TransactionPreview = ({ bankTransaction, onConfirm, onCancel }) => {
               allTransactions={allTransactions}
               doubleEntryTransactions={doubleEntryTransactions}
               handleUpdateCustomRow={handleUpdateCustomRow}
-              matchingTemplate={selectedTemplate}
+              matchingTemplate={selectedTemplates[0]}
               bankTransaction={bankTransaction}
             />
           </Table>
@@ -104,7 +128,7 @@ const TransactionPreview = ({ bankTransaction, onConfirm, onCancel }) => {
 
         <div className="flex items-center space-x-4 mb-4">
           <Input
-            type="number"
+            type="text"
             placeholder="Enter ver number"
             value={ver}
             onChange={(e) => setVer(e.target.value)}
@@ -122,7 +146,7 @@ const TransactionPreview = ({ bankTransaction, onConfirm, onCancel }) => {
         </div>
       </CardContent>
     </Card>
-  )
-}
+  );
+};
 
-export default TransactionPreview
+export default TransactionPreview;
