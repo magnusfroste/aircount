@@ -34,7 +34,8 @@ const AutoPage = () => {
         user_id: session.user.id
       }))
 
-      console.log('Attempting to save transactions:', transactionsToAdd)
+      console.log('Attempting to save transactions:', JSON.stringify(transactionsToAdd, null, 2))
+      
       await addTransactionMutation.mutateAsync(transactionsToAdd)
       toast.success('Transactions added successfully')
       setSelectedTransaction(null)
