@@ -61,7 +61,10 @@ const AutoPage = () => {
           {
             role: "user",
             content: [
-              { type: "text", text: "This is a bank statement image. Please extract all transactions and return them in JSON format with the following structure: [{date: 'YYYY-MM-DD', description: 'string', amount: number (positive for credits, negative for debits)}]" },
+              { 
+                type: "text", 
+                text: "Extract all transactions from this bank statement image and return ONLY a JSON array with this exact structure, nothing else: [{date: 'YYYY-MM-DD', description: 'string', amount: number}]. Amounts should be positive for credits and negative for debits. Do not include any explanatory text, only the JSON array." 
+              },
               { 
                 type: "image_url",
                 image_url: {
@@ -74,9 +77,14 @@ const AutoPage = () => {
         max_tokens: 4096,
       });
 
-      const extractedData = JSON.parse(response.choices[0].message.content);
-      setTransactions(extractedData);
-      toast.success('Transactions extracted successfully');
+      try {
+        const extractedData = JSON.parse(response.choices[0].message.content.trim());
+        setTransactions(extractedData);
+        toast.success('Transactions extracted successfully');
+      } catch (parseError) {
+        console.error('JSON Parse Error:', response.choices[0].message.content);
+        toast.error('Failed to parse the extracted data. Please try again.');
+      }
     } catch (error) {
       console.error('Error processing image:', error);
       toast.error('Failed to process image: ' + error.message);
