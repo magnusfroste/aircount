@@ -4,8 +4,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { SupabaseAuthProvider, useSupabaseAuth } from './integrations/supabase/auth';
 import Login from './components/Login';
-import Index from './pages/Index';
-import EventsPage from './pages/EventsPage';
 import Header from './components/Header';
 import TransactionsPage from './pages/TransactionsPage';
 import AccountsPage from './pages/AccountsPage';
@@ -15,6 +13,7 @@ import BalanceSheetPage from './pages/BalanceSheetPage';
 import OpeningBalancesPage from './pages/OpeningBalancesPage';
 import ImportPage from './pages/ImportPage';
 import ImportCSVPage from './pages/ImportCSVPage';
+import ImportSebPage from './pages/ImportSebPage';
 import ExportPage from './pages/ExportPage';
 import AutoPage from './pages/AutoPage';
 import LandingPage from './components/LandingPage';
@@ -49,7 +48,6 @@ const AppRoutes = () => {
           <Route path="/" element={session ? <Navigate to="/dashboard" replace /> : <LandingPage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
-          <Route path="/events" element={<ProtectedRoute><EventsPage /></ProtectedRoute>} />
           <Route path="/transactions" element={<ProtectedRoute><TransactionsPage /></ProtectedRoute>} />
           <Route path="/accounts" element={<ProtectedRoute><AccountsPage /></ProtectedRoute>} />
           <Route path="/profit-and-loss" element={<ProtectedRoute><ProfitAndLossPage /></ProtectedRoute>} />
@@ -58,6 +56,7 @@ const AppRoutes = () => {
           <Route path="/opening-balances" element={<ProtectedRoute><OpeningBalancesPage /></ProtectedRoute>} />
           <Route path="/import" element={<ProtectedRoute><ImportPage /></ProtectedRoute>} />
           <Route path="/import-csv" element={<ProtectedRoute><ImportCSVPage /></ProtectedRoute>} />
+          <Route path="/import-seb" element={<ProtectedRoute><ImportSebPage /></ProtectedRoute>} />
           <Route path="/export" element={<ProtectedRoute><ExportPage /></ProtectedRoute>} />
           <Route path="/auto" element={<ProtectedRoute><AutoPage /></ProtectedRoute>} />
           <Route path="/templates" element={<ProtectedRoute><TemplatesPage /></ProtectedRoute>} />
