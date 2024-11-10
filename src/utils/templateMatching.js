@@ -13,11 +13,10 @@ export const findMatchingTemplate = (templates, bankTransaction) => {
 };
 
 export const generateTransactions = (bankTransaction, matchingTemplate) => {
-  if (!bankTransaction || !matchingTemplate) return [];
+  if (!bankTransaction || !Array.isArray(matchingTemplate)) return [];
   
   const absAmount = Math.abs(bankTransaction.amount);
   
-  // Return only the exact template rows
   return matchingTemplate.map(template => ({
     account: template.account_number,
     description: bankTransaction.description,
