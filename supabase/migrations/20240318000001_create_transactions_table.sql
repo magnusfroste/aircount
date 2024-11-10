@@ -10,6 +10,7 @@ BEGIN
           debit NUMERIC NOT NULL,
           credit NUMERIC NOT NULL,
           ver TEXT,
+          description TEXT,
           user_id UUID NOT NULL,
           created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
         );
@@ -42,10 +43,9 @@ BEGIN
         -- Create an index on the ver column for faster verification-based queries
         CREATE INDEX idx_transactions_ver ON transactions(ver);
     ELSE
-        -- Add the ver column if it doesn't exist
-        IF NOT EXISTS (SELECT FROM information_schema.columns WHERE table_name = 'transactions' AND column_name = 'ver') THEN
-            ALTER TABLE transactions ADD COLUMN ver TEXT;
-            CREATE INDEX idx_transactions_ver ON transactions(ver);
+        -- Add the description column if it doesn't exist
+        IF NOT EXISTS (SELECT FROM information_schema.columns WHERE table_name = 'transactions' AND column_name = 'description') THEN
+            ALTER TABLE transactions ADD COLUMN description TEXT;
         END IF;
     END IF;
 END $$;
