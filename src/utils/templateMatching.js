@@ -46,23 +46,23 @@ export const generateTransactions = (bankTransaction, matchingTemplate) => {
       templateAccount: matchingTemplate.account_number
     });
     
-    // If amount is negative (outgoing payment), debit the template account and credit bank account
-    // If amount is positive (incoming payment), credit the template account and debit bank account
+    // If amount is negative (outgoing payment), credit the bank account and debit template account
+    // If amount is positive (incoming payment), debit the bank account and credit template account
     const isNegativeAmount = bankTransaction.amount < 0;
     
     return [
       {
-        account: matchingTemplate.account_number,
-        description: bankTransaction.description,
-        debit: isNegativeAmount ? absAmount : 0,
-        credit: isNegativeAmount ? 0 : absAmount,
-        date: bankTransaction.date,
-      },
-      {
-        account: '1930', // Bank account
+        account: '1930', // Bank account first
         description: bankTransaction.description,
         debit: isNegativeAmount ? 0 : absAmount,
         credit: isNegativeAmount ? absAmount : 0,
+        date: bankTransaction.date,
+      },
+      {
+        account: matchingTemplate.account_number, // Template account second
+        description: bankTransaction.description,
+        debit: isNegativeAmount ? absAmount : 0,
+        credit: isNegativeAmount ? 0 : absAmount,
         date: bankTransaction.date,
       }
     ];
@@ -82,17 +82,17 @@ export const generateTransactions = (bankTransaction, matchingTemplate) => {
   if (isDebit) {
     return [
       {
-        account: '4000',
-        description: bankTransaction.description,
-        debit: absAmount,
-        credit: 0,
-        date: bankTransaction.date,
-      },
-      {
         account: '1930',
         description: bankTransaction.description,
         debit: 0,
         credit: absAmount,
+        date: bankTransaction.date,
+      },
+      {
+        account: '4000',
+        description: bankTransaction.description,
+        debit: absAmount,
+        credit: 0,
         date: bankTransaction.date,
       }
     ];
