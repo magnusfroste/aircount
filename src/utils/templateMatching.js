@@ -5,8 +5,8 @@ export const findMatchingTemplate = (templates, bankTransaction) => {
     const templateName = template.name?.toLowerCase().trim() || '';
     const transactionDesc = bankTransaction.description.toLowerCase().trim();
     return templateName && (
-      transactionDesc.includes(templateName) ||
-      templateName.includes('skatteverket') && transactionDesc.includes('skatteverket')
+      transactionDesc.includes(templateName.split(' - ')[0]) ||
+      (templateName.includes('skatteverket') && transactionDesc.includes('skatteverket'))
     );
   });
 
