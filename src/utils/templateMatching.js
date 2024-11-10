@@ -16,20 +16,20 @@ export const generateTransactions = (bankTransaction, matchingTemplate) => {
   const absAmount = Math.abs(bankTransaction.amount);
   
   if (matchingTemplate) {
-    // Always use template accounts when a template is matched
+    // Use the template's account numbers and debit/credit structure
     return [
       {
-        account: '1930',
+        account: matchingTemplate.debit_account || '1930',
         description: bankTransaction.description,
-        debit: 0,
-        credit: absAmount,
+        debit: matchingTemplate.debit ? absAmount : 0,
+        credit: matchingTemplate.debit ? 0 : absAmount,
         date: bankTransaction.date,
       },
       {
-        account: matchingTemplate.account_number,
+        account: matchingTemplate.credit_account || matchingTemplate.account_number,
         description: bankTransaction.description,
-        debit: absAmount,
-        credit: 0,
+        debit: matchingTemplate.debit ? 0 : absAmount,
+        credit: matchingTemplate.debit ? absAmount : 0,
         date: bankTransaction.date,
       }
     ];
