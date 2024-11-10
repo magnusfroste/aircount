@@ -6,12 +6,16 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useSupabaseAuth } from '../integrations/supabase/auth';
 import { useAddTransaction } from '../integrations/supabase/hooks/transactions';
 import { toast } from "sonner";
+import TransactionPreview from '../components/TransactionPreview';
+import TransactionForm from '../components/TransactionForm';
+import { useAccounts } from '../integrations/supabase/hooks/accounts';
 
 const ImportSebPage = () => {
   const [csvData, setCsvData] = useState([]);
-  const [selectedRows, setSelectedRows] = useState([]);
+  const [selectedRow, setSelectedRow] = useState(null);
   const { session } = useSupabaseAuth();
   const addTransactionMutation = useAddTransaction();
+  const { data: accounts } = useAccounts(session?.user?.id);
 
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
@@ -24,13 +28,13 @@ const ImportSebPage = () => {
           .filter(row => row.trim()) // Remove empty rows
           .map(row => {
             const [bokford, valutadatum, text, typ, insattningar, uttag, saldo] = row.split(',');
+            const amount = parseFloat(insattningar || '0') - parseFloat(uttag || '0');
             return {
               date: valutadatum,
               description: text,
-              debit: parseFloat(uttag || '0'),
-              credit: parseFloat(insattningar || '0'),
-              user_id: session.user.id,
-              account: '1930', // Bank account number
+              amount,
+              type: typ,
+              balance: parseFloat(saldo || '0'),
             };
           });
         setCsvData(parsedData);
@@ -39,26 +43,23 @@ const ImportSebPage = () => {
     }
   };
 
-  const handleRowSelect = (index) => {
-    setSelectedRows(prev => {
-      if (prev.includes(index)) {
-        return prev.filter(i => i !== index);
-      } else {
-        return [...prev, index];
-      }
-    });
+  const handleRowSelect = (row) => {
+    setSelectedRow(row);
   };
 
-  const handleImportSelected = async () => {
+  const handleConfirmTransaction = async (transactions, verNumber) => {
     try {
-      const selectedTransactions = selectedRows.map(index => csvData[index]);
-      for (const transaction of selectedTransactions) {
-        await addTransactionMutation.mutateAsync(transaction);
-      }
-      toast.success(`Successfully imported ${selectedTransactions.length} transactions`);
-      setSelectedRows([]);
+      const transactionsWithUser = transactions.map(transaction => ({
+        ...transaction,
+        user_id: session.user.id,
+        ver: verNumber.toString(),
+      }));
+
+      await addTransactionMutation.mutateAsync(transactionsWithUser);
+      toast.success('Transactions added successfully');
+      setSelectedRow(null);
     } catch (error) {
-      toast.error('Failed to import transactions: ' + error.message);
+      toast.error('Failed to add transactions: ' + error.message);
     }
   };
 
@@ -76,47 +77,46 @@ const ImportSebPage = () => {
             className="mb-4"
           />
           {csvData.length > 0 && (
-            <>
-              <div className="flex justify-between items-center mb-4">
-                <span>{selectedRows.length} rows selected</span>
-                <Button 
-                  onClick={handleImportSelected}
-                  disabled={selectedRows.length === 0}
-                >
-                  Import Selected
-                </Button>
-              </div>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[50px]">Select</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Description</TableHead>
-                    <TableHead className="text-right">Deposits</TableHead>
-                    <TableHead className="text-right">Withdrawals</TableHead>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[50px]">Select</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Description</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead className="text-right">Amount</TableHead>
+                  <TableHead className="text-right">Balance</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {csvData.map((row, index) => (
+                  <TableRow key={index}>
+                    <TableCell>
+                      <Checkbox
+                        checked={selectedRow === row}
+                        onCheckedChange={() => handleRowSelect(row)}
+                      />
+                    </TableCell>
+                    <TableCell>{row.date}</TableCell>
+                    <TableCell>{row.description}</TableCell>
+                    <TableCell>{row.type}</TableCell>
+                    <TableCell className="text-right">{row.amount.toFixed(2)}</TableCell>
+                    <TableCell className="text-right">{row.balance.toFixed(2)}</TableCell>
                   </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {csvData.map((row, index) => (
-                    <TableRow key={index}>
-                      <TableCell>
-                        <Checkbox
-                          checked={selectedRows.includes(index)}
-                          onCheckedChange={() => handleRowSelect(index)}
-                        />
-                      </TableCell>
-                      <TableCell>{row.date}</TableCell>
-                      <TableCell>{row.description}</TableCell>
-                      <TableCell className="text-right">{row.credit.toFixed(2)}</TableCell>
-                      <TableCell className="text-right">{row.debit.toFixed(2)}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </>
+                ))}
+              </TableBody>
+            </Table>
           )}
         </CardContent>
       </Card>
+
+      {selectedRow && (
+        <TransactionPreview
+          bankTransaction={selectedRow}
+          onConfirm={handleConfirmTransaction}
+          onCancel={() => setSelectedRow(null)}
+        />
+      )}
     </div>
   );
 };
