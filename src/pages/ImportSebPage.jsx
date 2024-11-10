@@ -8,14 +8,12 @@ import { useAddTransaction } from '../integrations/supabase/hooks/transactions';
 import { toast } from "sonner";
 import TransactionPreview from '../components/TransactionPreview';
 import TransactionForm from '../components/TransactionForm';
-import { useAccounts } from '../integrations/supabase/hooks/accounts';
 
 const ImportSebPage = () => {
   const [csvData, setCsvData] = useState([]);
   const [selectedRow, setSelectedRow] = useState(null);
   const { session } = useSupabaseAuth();
   const addTransactionMutation = useAddTransaction();
-  const { data: accounts } = useAccounts(session?.user?.id);
 
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
@@ -32,13 +30,13 @@ const ImportSebPage = () => {
             if (insattningar && insattningar.trim()) {
               amount = parseFloat(insattningar);
             } else if (uttag && uttag.trim()) {
-              amount = -parseFloat(uttag);
+              amount = -Math.abs(parseFloat(uttag)); // Ensure withdrawals are negative
             }
             return {
               date: valutadatum,
               description: text,
-              amount: amount,
               type: typ,
+              amount: amount,
               balance: parseFloat(saldo || '0'),
             };
           });
