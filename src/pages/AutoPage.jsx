@@ -24,8 +24,8 @@ const AutoPage = () => {
 
   const handleConfirmTransaction = async (doubleEntryTransactions) => {
     try {
-      // Generate a single ver for all transactions in this group
-      const ver = new Date().getTime().toString()
+      // Generate a numeric ver using timestamp and convert to integer
+      const ver = parseInt(new Date().getTime().toString().slice(-9), 10)
       
       const transactionsToAdd = doubleEntryTransactions.map(t => ({
         date: t.date,

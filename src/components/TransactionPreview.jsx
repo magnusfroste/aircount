@@ -4,26 +4,23 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 
 const TransactionPreview = ({ bankTransaction, onConfirm, onCancel }) => {
-  // Generate double-entry transactions based on the bank transaction
   const doubleEntryTransactions = React.useMemo(() => {
     if (!bankTransaction) return []
     
-    // If it's a debit (negative amount), money is going out
-    // If it's a credit (positive amount), money is coming in
     const isDebit = bankTransaction.amount < 0
     const absAmount = Math.abs(bankTransaction.amount)
     
     if (isDebit) {
       return [
         {
-          account: '4000', // Expense account (placeholder)
+          account: '4000',
           description: bankTransaction.description,
           debit: absAmount,
           credit: 0,
           date: bankTransaction.date,
         },
         {
-          account: '1930', // Bank account
+          account: '1930',
           description: bankTransaction.description,
           debit: 0,
           credit: absAmount,
@@ -33,14 +30,14 @@ const TransactionPreview = ({ bankTransaction, onConfirm, onCancel }) => {
     } else {
       return [
         {
-          account: '1930', // Bank account
+          account: '1930',
           description: bankTransaction.description,
           debit: absAmount,
           credit: 0,
           date: bankTransaction.date,
         },
         {
-          account: '3000', // Income account (placeholder)
+          account: '3000',
           description: bankTransaction.description,
           debit: 0,
           credit: absAmount,
