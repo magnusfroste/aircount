@@ -22,11 +22,8 @@ const AutoPage = () => {
     setSelectedTransaction(transaction)
   }
 
-  const handleConfirmTransaction = async (doubleEntryTransactions) => {
+  const handleConfirmTransaction = async (doubleEntryTransactions, ver) => {
     try {
-      // Generate a numeric ver using timestamp and convert to integer
-      const ver = parseInt(new Date().getTime().toString().slice(-9), 10)
-      
       const transactionsToAdd = doubleEntryTransactions.map(t => ({
         date: t.date,
         account: t.account,

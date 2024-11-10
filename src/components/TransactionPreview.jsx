@@ -1,9 +1,12 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 
 const TransactionPreview = ({ bankTransaction, onConfirm, onCancel }) => {
+  const [ver, setVer] = useState('')
+
   const doubleEntryTransactions = React.useMemo(() => {
     if (!bankTransaction) return []
     
@@ -47,6 +50,15 @@ const TransactionPreview = ({ bankTransaction, onConfirm, onCancel }) => {
     }
   }, [bankTransaction])
 
+  const handleConfirm = () => {
+    const verNumber = parseInt(ver, 10)
+    if (!verNumber || isNaN(verNumber)) {
+      alert('Please enter a valid ver number')
+      return
+    }
+    onConfirm(doubleEntryTransactions, verNumber)
+  }
+
   return (
     <Card className="mt-4">
       <CardHeader>
@@ -86,8 +98,18 @@ const TransactionPreview = ({ bankTransaction, onConfirm, onCancel }) => {
           </Table>
         </div>
 
+        <div className="flex items-center space-x-4 mb-4">
+          <Input
+            type="number"
+            placeholder="Enter ver number"
+            value={ver}
+            onChange={(e) => setVer(e.target.value)}
+            className="w-48"
+          />
+        </div>
+
         <div className="flex space-x-2">
-          <Button onClick={() => onConfirm(doubleEntryTransactions)}>
+          <Button onClick={handleConfirm}>
             Confirm and Save
           </Button>
           <Button variant="outline" onClick={onCancel}>
