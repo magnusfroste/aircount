@@ -4,10 +4,12 @@ export const findMatchingTemplate = (templates, bankTransaction) => {
   const templateName = templates[0]?.name?.toLowerCase().trim().split(' - ')[0] || '';
   const transactionDesc = bankTransaction.description.toLowerCase().trim();
   
-  return templateName && (
+  const isMatch = templateName && (
     transactionDesc.includes(templateName) ||
     (templateName.includes('skatteverket') && transactionDesc.includes('skatteverket'))
-  ) ? templates : null;
+  );
+
+  return isMatch ? templates : null;
 };
 
 export const generateTransactions = (bankTransaction, matchingTemplate) => {
