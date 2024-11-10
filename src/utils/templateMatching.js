@@ -56,7 +56,7 @@ export const generateTransactions = (bankTransaction, matchingTemplate) => {
         date: bankTransaction.date,
       },
       {
-        account: '1930', // Bank account
+        account: bankTransaction.amount < 0 ? '1930' : matchingTemplate.account_number,
         description: bankTransaction.description,
         debit: matchingTemplate.credit * scaleFactor,
         credit: matchingTemplate.debit * scaleFactor,
