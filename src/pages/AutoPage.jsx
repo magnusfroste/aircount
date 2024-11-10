@@ -30,7 +30,7 @@ const AutoPage = () => {
         debit: t.debit,
         credit: t.credit,
         description: t.description,
-        ver: ver,
+        ver: ver.toString(),
         user_id: session.user.id
       }))
 
