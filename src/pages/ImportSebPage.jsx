@@ -27,10 +27,10 @@ const ImportSebPage = () => {
             return {
               date: valutadatum,
               description: text,
-              type: typ,
-              deposits: parseFloat(insattningar || '0'),
-              withdrawals: parseFloat(uttag || '0'),
-              balance: parseFloat(saldo || '0'),
+              debit: parseFloat(uttag || '0'),
+              credit: parseFloat(insattningar || '0'),
+              user_id: session.user.id,
+              account: '1930', // Bank account number
             };
           });
         setCsvData(parsedData);
@@ -51,23 +51,10 @@ const ImportSebPage = () => {
 
   const handleImportSelected = async () => {
     try {
-      const selectedTransactions = selectedRows.map(index => {
-        const row = csvData[index];
-        return {
-          date: row.date,
-          description: row.description,
-          debit: row.withdrawals || 0,
-          credit: row.deposits || 0,
-          ver: row.type,
-          user_id: session.user.id,
-          account: '1930', // Bank account number
-        };
-      });
-
+      const selectedTransactions = selectedRows.map(index => csvData[index]);
       for (const transaction of selectedTransactions) {
         await addTransactionMutation.mutateAsync(transaction);
       }
-
       toast.success(`Successfully imported ${selectedTransactions.length} transactions`);
       setSelectedRows([]);
     } catch (error) {
@@ -105,10 +92,8 @@ const ImportSebPage = () => {
                     <TableHead className="w-[50px]">Select</TableHead>
                     <TableHead>Date</TableHead>
                     <TableHead>Description</TableHead>
-                    <TableHead>Type</TableHead>
                     <TableHead className="text-right">Deposits</TableHead>
                     <TableHead className="text-right">Withdrawals</TableHead>
-                    <TableHead className="text-right">Balance</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -122,10 +107,8 @@ const ImportSebPage = () => {
                       </TableCell>
                       <TableCell>{row.date}</TableCell>
                       <TableCell>{row.description}</TableCell>
-                      <TableCell>{row.type}</TableCell>
-                      <TableCell className="text-right">{row.deposits.toFixed(2)}</TableCell>
-                      <TableCell className="text-right">{row.withdrawals.toFixed(2)}</TableCell>
-                      <TableCell className="text-right">{row.balance.toFixed(2)}</TableCell>
+                      <TableCell className="text-right">{row.credit.toFixed(2)}</TableCell>
+                      <TableCell className="text-right">{row.debit.toFixed(2)}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
