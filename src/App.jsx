@@ -16,6 +16,7 @@ import OpeningBalancesPage from './pages/OpeningBalancesPage';
 import ImportPage from './pages/ImportPage';
 import ImportCSVPage from './pages/ImportCSVPage';
 import ExportPage from './pages/ExportPage';
+import AutoPage from './pages/AutoPage';
 import LandingPage from './components/LandingPage';
 import DashboardPage from './pages/DashboardPage';
 import TemplatesPage from './pages/TemplatesPage';
@@ -58,6 +59,7 @@ const AppRoutes = () => {
           <Route path="/import" element={<ProtectedRoute><ImportPage /></ProtectedRoute>} />
           <Route path="/import-csv" element={<ProtectedRoute><ImportCSVPage /></ProtectedRoute>} />
           <Route path="/export" element={<ProtectedRoute><ExportPage /></ProtectedRoute>} />
+          <Route path="/auto" element={<ProtectedRoute><AutoPage /></ProtectedRoute>} />
           <Route path="/templates" element={<ProtectedRoute><TemplatesPage /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
         </Routes>
