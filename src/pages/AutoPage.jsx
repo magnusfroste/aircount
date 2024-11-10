@@ -56,7 +56,7 @@ const AutoPage = () => {
       const base64Image = await convertToBase64(image);
       
       const response = await openai.chat.completions.create({
-        model: "gpt-4-turbo",
+        model: "gpt-4-vision-preview",
         messages: [
           {
             role: "user",
@@ -188,6 +188,7 @@ const AutoPage = () => {
       )}
     </div>
   );
+
 };
 
 export default AutoPage;
