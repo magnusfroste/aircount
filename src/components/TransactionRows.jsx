@@ -1,8 +1,18 @@
 import React from 'react'
 import { TableBody, TableCell, TableRow } from "@/components/ui/table"
 import { Input } from "@/components/ui/input"
+import { useAccounts } from '../integrations/supabase/hooks/accounts'
+import { useSupabaseAuth } from '../integrations/supabase/auth'
 
 const TransactionRows = ({ allTransactions, doubleEntryTransactions, handleUpdateCustomRow, matchingTemplate, bankTransaction }) => {
+  const { session } = useSupabaseAuth()
+  const { data: accounts } = useAccounts(session?.user?.id)
+
+  const getAccountName = (accountNumber) => {
+    const account = accounts?.find(acc => acc.account === accountNumber)
+    return account?.account_name || accountNumber
+  }
+
   return (
     <TableBody>
       {allTransactions.map((transaction, index) => (
@@ -22,7 +32,7 @@ const TransactionRows = ({ allTransactions, doubleEntryTransactions, handleUpdat
             {index >= doubleEntryTransactions.length ? (
               bankTransaction?.description
             ) : (
-              transaction.accountName || transaction.account
+              getAccountName(transaction.account)
             )}
           </TableCell>
           <TableCell>

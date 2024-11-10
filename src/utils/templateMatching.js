@@ -16,22 +16,20 @@ export const generateTransactions = (bankTransaction, matchingTemplate) => {
   const absAmount = Math.abs(bankTransaction.amount);
   const isNegativeAmount = bankTransaction.amount < 0;
   
-  if (matchingTemplate) {
+  if (matchingTemplate && matchingTemplate.name === 'Bankkostnad') {
     return [
       {
         account: '1930',
-        accountName: 'Bank Account',
         description: bankTransaction.description,
-        debit: isNegativeAmount ? 0 : absAmount,
-        credit: isNegativeAmount ? absAmount : 0,
+        debit: 0,
+        credit: absAmount,
         date: bankTransaction.date,
       },
       {
-        account: matchingTemplate.account_number,
-        accountName: matchingTemplate.name,
+        account: '6570',
         description: bankTransaction.description,
-        debit: isNegativeAmount ? absAmount : 0,
-        credit: isNegativeAmount ? 0 : absAmount,
+        debit: absAmount,
+        credit: 0,
         date: bankTransaction.date,
       }
     ];
@@ -41,7 +39,6 @@ export const generateTransactions = (bankTransaction, matchingTemplate) => {
   return [
     {
       account: '1930',
-      accountName: 'Bank Account',
       description: bankTransaction.description,
       debit: isNegativeAmount ? 0 : absAmount,
       credit: isNegativeAmount ? absAmount : 0,
@@ -49,7 +46,6 @@ export const generateTransactions = (bankTransaction, matchingTemplate) => {
     },
     {
       account: isNegativeAmount ? '4000' : '3000',
-      accountName: isNegativeAmount ? 'Default Expense' : 'Default Income',
       description: bankTransaction.description,
       debit: isNegativeAmount ? absAmount : 0,
       credit: isNegativeAmount ? 0 : absAmount,
