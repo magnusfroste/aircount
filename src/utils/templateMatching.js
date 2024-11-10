@@ -49,25 +49,29 @@ export const generateTransactions = (bankTransaction, matchingTemplate) => {
       }
     });
     
+    // If amount is negative (outgoing payment), debit the main account and credit the contra account
+    // If amount is positive (incoming payment), credit the main account and debit the contra account
+    const isNegativeAmount = bankTransaction.amount < 0;
+    
     return [
       {
         account: matchingTemplate.account_number,
         description: bankTransaction.description,
-        debit: bankTransaction.amount < 0 ? absAmount : 0,
-        credit: bankTransaction.amount < 0 ? 0 : absAmount,
+        debit: isNegativeAmount ? absAmount : 0,
+        credit: isNegativeAmount ? 0 : absAmount,
         date: bankTransaction.date,
       },
       {
-        account: matchingTemplate.contra_account || '1930',
+        account: matchingTemplate.contra_account,
         description: bankTransaction.description,
-        debit: bankTransaction.amount < 0 ? 0 : absAmount,
-        credit: bankTransaction.amount < 0 ? absAmount : 0,
+        debit: isNegativeAmount ? 0 : absAmount,
+        credit: isNegativeAmount ? absAmount : 0,
         date: bankTransaction.date,
       }
     ];
   }
   
-  // Default logic if no template matches
+  // If no template matches, use default accounts based on transaction type
   const isDebit = bankTransaction.amount < 0;
   const absAmount = Math.abs(bankTransaction.amount);
   
@@ -76,6 +80,8 @@ export const generateTransactions = (bankTransaction, matchingTemplate) => {
     amount: bankTransaction.amount
   });
   
+  // For unmatched transactions, use 1930 as the bank account and 
+  // either 4000 for expenses (negative amounts) or 3000 for income (positive amounts)
   if (isDebit) {
     return [
       {
