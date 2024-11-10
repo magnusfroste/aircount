@@ -41,7 +41,6 @@ const AvailableTemplates = ({ templates, accounts, selectedTemplates, handleTemp
                 <TableHeader>
                   <TableRow>
                     <TableHead>Select</TableHead>
-                    <TableHead>Name</TableHead>
                     <TableHead>Account</TableHead>
                     <TableHead>Debit</TableHead>
                     <TableHead>Credit</TableHead>
@@ -57,7 +56,6 @@ const AvailableTemplates = ({ templates, accounts, selectedTemplates, handleTemp
                           onChange={() => handleTemplateSelect(template.id)}
                         />
                       </TableCell>
-                      <TableCell>{template.name}</TableCell>
                       <TableCell>{template.account_number} - {accounts.find(acc => acc.account === template.account_number)?.account_name || 'Unknown Account'}</TableCell>
                       <TableCell>{formatNumber(template.debit)}</TableCell>
                       <TableCell>{formatNumber(template.credit)}</TableCell>
