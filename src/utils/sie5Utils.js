@@ -3,6 +3,15 @@ import { Builder, Parser } from 'xml2js'
 export const exportToSIE5 = async (transactions, accounts, openingBalances, user) => {
   const builder = new Builder()
   
+  // Group transactions by ver (transaction number)
+  const groupedTransactions = transactions?.reduce((acc, transaction) => {
+    if (!acc[transaction.ver]) {
+      acc[transaction.ver] = [];
+    }
+    acc[transaction.ver].push(transaction);
+    return acc;
+  }, {}) || {};
+  
   const sie5Data = {
     Sie: {
       $: {
@@ -43,18 +52,18 @@ export const exportToSIE5 = async (transactions, accounts, openingBalances, user
           amount: balance.balance.toString()
         }
       })) || [],
-      Journal: transactions?.map((transaction, index) => ({
+      Journal: Object.entries(groupedTransactions).map(([ver, entries]) => ({
         $: {
-          id: transaction.ver || index.toString(),
-          journalDate: transaction.date
+          id: ver,
+          journalDate: entries[0].date // Use the date from the first entry in the group
         },
-        LedgerEntry: [{
+        LedgerEntry: entries.map(entry => ({
           $: {
-            accountId: transaction.account,
-            amount: (transaction.debit - transaction.credit).toString()
+            accountId: entry.account,
+            amount: (entry.debit - entry.credit).toString()
           }
-        }]
-      })) || []
+        }))
+      }))
     }
   }
 
@@ -64,7 +73,7 @@ export const exportToSIE5 = async (transactions, accounts, openingBalances, user
 export const importFromSIE5 = async (xmlData, userId) => {
   const parser = new Parser({ explicitArray: false })
   const result = await parser.parseStringPromise(xmlData)
-
+  
   // Here you would implement the logic to import the data into your database
   // This would involve calling your Supabase mutation hooks to insert the data
   
