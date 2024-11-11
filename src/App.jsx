@@ -1,25 +1,26 @@
-import { Toaster } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { SupabaseAuthProvider, useSupabaseAuth } from './integrations/supabase/auth';
-import Login from './components/Login';
-import Header from './components/Header';
-import TransactionsPage from './pages/TransactionsPage';
-import AccountsPage from './pages/AccountsPage';
-import ProfitAndLossPage from './pages/ProfitAndLossPage';
-import LedgerPage from './pages/LedgerPage';
-import BalanceSheetPage from './pages/BalanceSheetPage';
-import OpeningBalancesPage from './pages/OpeningBalancesPage';
-import ImportPage from './pages/ImportPage';
-import ImportCSVPage from './pages/ImportCSVPage';
-import ImportSebPage from './pages/ImportSebPage';
-import ExportPage from './pages/ExportPage';
-import AutoPage from './pages/AutoPage';
-import LandingPage from './components/LandingPage';
-import DashboardPage from './pages/DashboardPage';
-import TemplatesPage from './pages/TemplatesPage';
-import ProfilePage from './pages/ProfilePage';
+import { Toaster } from "@/components/ui/sonner"
+import { TooltipProvider } from "@/components/ui/tooltip"
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"
+import { SupabaseAuthProvider, useSupabaseAuth } from './integrations/supabase/auth'
+import Login from './components/Login'
+import Header from './components/Header'
+import TransactionsPage from './pages/TransactionsPage'
+import AccountsPage from './pages/AccountsPage'
+import ProfitAndLossPage from './pages/ProfitAndLossPage'
+import LedgerPage from './pages/LedgerPage'
+import BalanceSheetPage from './pages/BalanceSheetPage'
+import OpeningBalancesPage from './pages/OpeningBalancesPage'
+import ImportPage from './pages/ImportPage'
+import ImportCSVPage from './pages/ImportCSVPage'
+import ImportSebPage from './pages/ImportSebPage'
+import ExportPage from './pages/ExportPage'
+import AutoPage from './pages/AutoPage'
+import LandingPage from './components/LandingPage'
+import DashboardPage from './pages/DashboardPage'
+import TemplatesPage from './pages/TemplatesPage'
+import ProfilePage from './pages/ProfilePage'
+import SIE5Page from './pages/SIE5Page'
 
 const queryClient = new QueryClient();
 
@@ -38,7 +39,7 @@ const ProtectedRoute = ({ children }) => {
 };
 
 const AppRoutes = () => {
-  const { session } = useSupabaseAuth();
+  const { session } = useSupabaseAuth()
 
   return (
     <>
@@ -61,11 +62,12 @@ const AppRoutes = () => {
           <Route path="/auto" element={<ProtectedRoute><AutoPage /></ProtectedRoute>} />
           <Route path="/templates" element={<ProtectedRoute><TemplatesPage /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+          <Route path="/sie5" element={<ProtectedRoute><SIE5Page /></ProtectedRoute>} />
         </Routes>
       </div>
     </>
-  );
-};
+  )
+}
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
