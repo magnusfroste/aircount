@@ -20,7 +20,8 @@ import {
   LayoutTemplate,
   Table,
   Camera,
-  Upload
+  Upload,
+  File
 } from 'lucide-react'
 
 const Header = () => {
@@ -113,6 +114,10 @@ const Header = () => {
             <Link to="/export" className="flex items-center text-gray-600 hover:text-blue-600 transition-colors">
               <FileDown className="w-5 h-5 mr-3" />
               Export
+            </Link>
+            <Link to="/sie5" className="flex items-center text-gray-600 hover:text-blue-600 transition-colors">
+              <File className="w-5 h-5 mr-3" />
+              SIE5
             </Link>
             <Link to="/profile" className="flex items-center text-gray-600 hover:text-blue-600 transition-colors">
               <UserCircle className="w-5 h-5 mr-3" />
