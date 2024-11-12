@@ -1,4 +1,4 @@
-import { Builder, Parser } from 'xml2js'
+import { Builder, parseString } from 'xml2js'
 
 export const exportToSIE5 = async (transactions, accounts, openingBalances, user) => {
   const builder = new Builder()
@@ -71,11 +71,13 @@ export const exportToSIE5 = async (transactions, accounts, openingBalances, user
 }
 
 export const importFromSIE5 = async (xmlData, userId) => {
-  const parser = new Parser({ explicitArray: false })
-  const result = await parser.parseStringPromise(xmlData)
-  
-  // Here you would implement the logic to import the data into your database
-  // This would involve calling your Supabase mutation hooks to insert the data
-  
-  return result
+  return new Promise((resolve, reject) => {
+    parseString(xmlData, { explicitArray: false }, (err, result) => {
+      if (err) {
+        reject(err);
+        return;
+      }
+      resolve(result);
+    });
+  });
 }
