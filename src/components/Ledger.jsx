@@ -5,7 +5,6 @@ import { useOpeningBalances } from '../integrations/supabase/hooks/openingBalanc
 import { useSupabaseAuth } from '../integrations/supabase/auth'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { format } from 'date-fns'
 import { formatNumber } from '../utils/formatUtils'
@@ -26,6 +25,15 @@ const Ledger = () => {
     acc[transaction.account].push(transaction)
     return acc
   }, {})
+
+  // Sort transactions by ver for each account
+  Object.values(ledgerData).forEach(transactions => {
+    transactions.sort((a, b) => {
+      const verA = parseInt(a.ver) || 0
+      const verB = parseInt(b.ver) || 0
+      return verA - verB
+    })
+  })
 
   const getOpeningBalance = (account) => {
     const openingBalance = openingBalances.find(balance => balance.account === account)
