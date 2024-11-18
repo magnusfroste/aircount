@@ -2,14 +2,10 @@ import React, { useState } from 'react'
 import { useOpeningBalances, useAddOpeningBalance, useUpdateOpeningBalance, useDeleteOpeningBalance } from '../integrations/supabase/hooks/openingBalances'
 import { useAccounts } from '../integrations/supabase/hooks/accounts'
 import { useSupabaseAuth } from '../integrations/supabase/auth'
-import { Button } from '@/components/ui/button'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { toast } from 'sonner'
-import { Trash2, Plus, Pencil, Check, X } from 'lucide-react'
-import { formatNumber } from '../utils/formatUtils'
+import OpeningBalanceForm from '../components/OpeningBalanceForm'
+import OpeningBalanceTable from '../components/OpeningBalanceTable'
 
 const OpeningBalancesPage = () => {
   const { session } = useSupabaseAuth()
@@ -21,6 +17,7 @@ const OpeningBalancesPage = () => {
   const [newBalance, setNewBalance] = useState({ account: '', debit: 0, credit: 0 })
   const [editingId, setEditingId] = useState(null)
   const [editValues, setEditValues] = useState({ debit: 0, credit: 0 })
+  const [sortOrder, setSortOrder] = useState('debit-asc')
 
   const handleAddBalance = () => {
     if (!newBalance.account) {
@@ -111,135 +108,31 @@ const OpeningBalancesPage = () => {
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">Opening Balances</h1>
-      <div className="mb-4 flex space-x-2">
-        <Select
-          value={newBalance.account}
-          onValueChange={(value) => setNewBalance({ ...newBalance, account: value })}
-        >
-          <SelectTrigger className="w-[300px]">
-            <SelectValue placeholder="Select account" />
-          </SelectTrigger>
-          <SelectContent>
-            {accounts?.map((account) => (
-              <SelectItem key={account.id} value={account.account}>
-                {account.account} - {account.account_name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Input
-          type="number"
-          placeholder="Debit"
-          value={newBalance.debit}
-          onChange={(e) => setNewBalance({ ...newBalance, debit: parseFloat(e.target.value) || 0 })}
-          className="w-32"
-        />
-        <Input
-          type="number"
-          placeholder="Credit"
-          value={newBalance.credit}
-          onChange={(e) => setNewBalance({ ...newBalance, credit: parseFloat(e.target.value) || 0 })}
-          className="w-32"
-        />
-        <Button onClick={handleAddBalance}>
-          <Plus className="h-4 w-4 mr-2" />
-          Add Balance
-        </Button>
-      </div>
+      <OpeningBalanceForm
+        accounts={accounts}
+        newBalance={newBalance}
+        setNewBalance={setNewBalance}
+        handleAddBalance={handleAddBalance}
+      />
       <Card>
         <CardHeader>
           <CardTitle>Opening Balances</CardTitle>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Account</TableHead>
-                <TableHead>Account Name</TableHead>
-                <TableHead className="text-right">Debit</TableHead>
-                <TableHead className="text-right">Credit</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {groupedBalances.map((balance) => {
-                const account = accounts?.find(a => a.account === balance.account)
-                return (
-                  <TableRow key={balance.id}>
-                    <TableCell>{balance.account}</TableCell>
-                    <TableCell>{account ? account.account_name : 'Unknown'}</TableCell>
-                    <TableCell className="text-right">
-                      {editingId === balance.id ? (
-                        <Input
-                          type="number"
-                          value={editValues.debit}
-                          onChange={(e) => setEditValues({ ...editValues, debit: parseFloat(e.target.value) || 0 })}
-                          className="w-24 text-right"
-                        />
-                      ) : (
-                        formatNumber(balance.debit)
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {editingId === balance.id ? (
-                        <Input
-                          type="number"
-                          value={editValues.credit}
-                          onChange={(e) => setEditValues({ ...editValues, credit: parseFloat(e.target.value) || 0 })}
-                          className="w-24 text-right"
-                        />
-                      ) : (
-                        formatNumber(balance.credit)
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {editingId === balance.id ? (
-                        <div className="flex space-x-2">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleSaveEdit(balance.id)}
-                          >
-                            <Check className="h-4 w-4 text-green-500" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={handleCancelEdit}
-                          >
-                            <X className="h-4 w-4 text-red-500" />
-                          </Button>
-                        </div>
-                      ) : (
-                        <div className="flex space-x-2">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleStartEdit(balance)}
-                          >
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleDeleteBalance(balance.id)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                )
-              })}
-              <TableRow className="font-bold">
-                <TableCell colSpan={2}>Total</TableCell>
-                <TableCell className="text-right">{formatNumber(totals.debit)}</TableCell>
-                <TableCell className="text-right">{formatNumber(totals.credit)}</TableCell>
-                <TableCell></TableCell>
-              </TableRow>
-            </TableBody>
-          </Table>
+          <OpeningBalanceTable
+            accounts={accounts}
+            groupedBalances={groupedBalances}
+            editingId={editingId}
+            editValues={editValues}
+            setEditValues={setEditValues}
+            handleStartEdit={handleStartEdit}
+            handleSaveEdit={handleSaveEdit}
+            handleCancelEdit={handleCancelEdit}
+            handleDeleteBalance={handleDeleteBalance}
+            sortOrder={sortOrder}
+            setSortOrder={setSortOrder}
+            totals={totals}
+          />
         </CardContent>
       </Card>
     </div>
