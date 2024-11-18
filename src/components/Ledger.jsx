@@ -36,8 +36,9 @@ const Ledger = () => {
   })
 
   const getOpeningBalance = (account) => {
-    const openingBalance = openingBalances.find(balance => balance.account === account)
-    return openingBalance ? openingBalance.balance : 0
+    const openingBalance = openingBalances?.find(balance => balance.account === account)
+    if (!openingBalance) return 0
+    return openingBalance.debit - openingBalance.credit
   }
 
   const accountBalance = (accountTransactions, account) => {
@@ -47,7 +48,15 @@ const Ledger = () => {
     }, openingBalance)
   }
 
-  const filteredLedgerData = selectedAccount ? { [selectedAccount]: ledgerData[selectedAccount] } : ledgerData
+  // Get all unique accounts from both transactions and opening balances
+  const allAccounts = new Set([
+    ...Object.keys(ledgerData),
+    ...(openingBalances?.map(b => b.account) || [])
+  ])
+
+  const filteredAccounts = selectedAccount 
+    ? [...allAccounts].filter(account => account.includes(selectedAccount))
+    : [...allAccounts]
 
   return (
     <div className="container mx-auto p-4">
@@ -61,49 +70,61 @@ const Ledger = () => {
           className="max-w-xs"
         />
       </div>
-      {Object.entries(filteredLedgerData).map(([account, transactions]) => (
-        <Card key={account} className="mb-6">
-          <CardHeader>
-            <CardTitle>{account} - {accounts.find(a => a.account === account)?.account_name}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Verification</TableHead>
-                  <TableHead className="text-right">Debit</TableHead>
-                  <TableHead className="text-right">Credit</TableHead>
-                  <TableHead className="text-right">Balance</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {getOpeningBalance(account) !== 0 && (
+      {filteredAccounts.map((account) => {
+        const transactions = ledgerData[account] || []
+        const openingBalance = getOpeningBalance(account)
+        const accountName = accounts?.find(a => a.account === account)?.account_name
+
+        return (
+          <Card key={account} className="mb-6">
+            <CardHeader>
+              <CardTitle>{account} - {accountName || 'Unknown'}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
                   <TableRow>
-                    <TableCell colSpan={4}>Opening Balance</TableCell>
-                    <TableCell className="text-right">{formatNumber(getOpeningBalance(account))}</TableCell>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Verification</TableHead>
+                    <TableHead className="text-right">Debit</TableHead>
+                    <TableHead className="text-right">Credit</TableHead>
+                    <TableHead className="text-right">Balance</TableHead>
                   </TableRow>
-                )}
-                {transactions.map((transaction, index) => {
-                  const runningBalance = accountBalance(transactions.slice(0, index + 1), account)
-                  return (
-                    <TableRow key={transaction.id}>
-                      <TableCell>{format(new Date(transaction.date), 'yyyy-MM-dd')}</TableCell>
-                      <TableCell>{transaction.ver}</TableCell>
-                      <TableCell className="text-right">{formatNumber(transaction.debit)}</TableCell>
-                      <TableCell className="text-right">{formatNumber(transaction.credit)}</TableCell>
-                      <TableCell className="text-right">{formatNumber(runningBalance)}</TableCell>
+                </TableHeader>
+                <TableBody>
+                  {openingBalance !== 0 && (
+                    <TableRow>
+                      <TableCell colSpan={2}>Opening Balance</TableCell>
+                      <TableCell className="text-right">
+                        {openingBalance > 0 ? formatNumber(openingBalance) : ''}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {openingBalance < 0 ? formatNumber(-openingBalance) : ''}
+                      </TableCell>
+                      <TableCell className="text-right">{formatNumber(openingBalance)}</TableCell>
                     </TableRow>
-                  )
-                })}
-              </TableBody>
-            </Table>
-            <div className="mt-4 text-right font-bold">
-              Total Balance: {formatNumber(accountBalance(transactions, account))}
-            </div>
-          </CardContent>
-        </Card>
-      ))}
+                  )}
+                  {transactions.map((transaction, index) => {
+                    const runningBalance = accountBalance(transactions.slice(0, index + 1), account)
+                    return (
+                      <TableRow key={transaction.id}>
+                        <TableCell>{format(new Date(transaction.date), 'yyyy-MM-dd')}</TableCell>
+                        <TableCell>{transaction.ver}</TableCell>
+                        <TableCell className="text-right">{formatNumber(transaction.debit)}</TableCell>
+                        <TableCell className="text-right">{formatNumber(transaction.credit)}</TableCell>
+                        <TableCell className="text-right">{formatNumber(runningBalance)}</TableCell>
+                      </TableRow>
+                    )
+                  })}
+                </TableBody>
+              </Table>
+              <div className="mt-4 text-right font-bold">
+                Total Balance: {formatNumber(accountBalance(transactions, account))}
+              </div>
+            </CardContent>
+          </Card>
+        )
+      })}
     </div>
   )
 }
