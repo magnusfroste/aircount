@@ -38,7 +38,7 @@ const ProfitAndLoss = () => {
       },
       'Other External Costs': {
         prefixes: ['50', '51', '52', '53', '54', '55', '56', '57', '58', '59'],
-        description: 'External expenses'
+        description: 'External expenses including bank fees'
       },
       'Personnel Costs': {
         prefixes: ['70', '71', '72', '73', '74', '75', '76'],
@@ -55,7 +55,8 @@ const ProfitAndLoss = () => {
       },
       'Financial Expenses': {
         prefixes: ['84'],
-        description: 'Interest expenses and similar profit/loss items'
+        accounts: ['8400', '8410', '8420', '8430', '8440'],
+        description: 'Interest expenses, bank fees and similar profit/loss items'
       },
       'Income Tax': {
         prefixes: ['88', '89'],
