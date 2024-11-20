@@ -5,6 +5,7 @@ import { useAccounts } from '../integrations/supabase/hooks/accounts'
 import { useSupabaseAuth } from '../integrations/supabase/auth'
 import FinancialOverview from './dashboard/FinancialOverview'
 import MonthlyChart from './dashboard/MonthlyChart'
+import QuickAccountView from './dashboard/QuickAccountView'
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
 
@@ -40,6 +41,12 @@ const Dashboard = () => {
           <FinancialOverview transactions={transactions} accounts={accounts} />
         </div>
       </div>
+      
+      <div className="md:col-span-2">
+        <h2 className="text-2xl font-bold mb-4 text-indigo-700">Quick Account Overview</h2>
+        <QuickAccountView transactions={transactions} accounts={accounts} />
+      </div>
+
       <Card className="md:col-span-2 bg-white shadow-md hover:shadow-lg transition-shadow duration-300">
         <CardHeader>
           <CardTitle className="text-xl font-semibold text-indigo-600">Monthly Overview</CardTitle>
@@ -48,6 +55,7 @@ const Dashboard = () => {
           <MonthlyChart transactions={transactions} accounts={accounts} />
         </CardContent>
       </Card>
+      
       {/* Development only - Company name display */}
       <div className="md:col-span-2 p-4 bg-yellow-100 rounded-lg text-center">
         <p className="text-yellow-800">Development Info - Company Name: {companyData?.company_name || 'Loading...'}</p>
