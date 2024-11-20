@@ -2,6 +2,8 @@ import React from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { format } from 'date-fns'
 import { formatNumber } from '../../utils/formatUtils'
+import { useOpeningBalances } from '../../integrations/supabase/hooks/openingBalances'
+import { useSupabaseAuth } from '../../integrations/supabase/auth'
 
 const IMPORTANT_ACCOUNTS = [
   { number: '1930', name: 'Bank' },
@@ -10,6 +12,9 @@ const IMPORTANT_ACCOUNTS = [
 ]
 
 const QuickAccountView = ({ transactions, accounts }) => {
+  const { session } = useSupabaseAuth()
+  const { data: openingBalances } = useOpeningBalances(session?.user?.id)
+
   const getAccountTransactions = (accountNumber) => {
     return transactions
       .filter(t => t.account === accountNumber)
@@ -18,9 +23,11 @@ const QuickAccountView = ({ transactions, accounts }) => {
   }
 
   const calculateAccountBalance = (accountNumber) => {
-    return transactions
+    const openingBalance = openingBalances?.find(b => b.account === accountNumber)?.balance || 0
+    const transactionsBalance = transactions
       .filter(t => t.account === accountNumber)
       .reduce((sum, t) => sum + (t.debit - t.credit), 0)
+    return openingBalance + transactionsBalance
   }
 
   return (
