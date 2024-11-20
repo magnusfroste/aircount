@@ -10,13 +10,17 @@ const MonthlyChart = ({ transactions, accounts }) => {
     }))
 
     transactions.forEach(t => {
-      const account = accounts.find(a => a.account === t.account)
-      const month = new Date(t.date).getMonth()
+      const account = accounts?.find(a => a.account === t.account)
       if (account) {
-        if (account.account.startsWith('3')) {
-          data[month].income += t.credit
-        } else if (account.account.startsWith('4') || account.account.startsWith('5') || account.account.startsWith('6') || account.account.startsWith('7')) {
-          data[month].expenses += t.debit
+        const month = new Date(t.date).getMonth()
+        
+        // Income accounts (3xxx)
+        if (/^3\d{3}/.test(account.account)) {
+          data[month].income += (t.credit - t.debit)
+        }
+        // Expense accounts (4xxx-7xxx)
+        else if (/^[4567]\d{3}/.test(account.account)) {
+          data[month].expenses += (t.debit - t.credit)
         }
       }
     })

@@ -5,18 +5,24 @@ import { formatNumber } from '../../utils/formatUtils'
 
 const FinancialOverview = ({ transactions, accounts }) => {
   const financialStats = useMemo(() => {
+    // Get all unique accounts from transactions
+    const usedAccounts = [...new Set(transactions.map(t => t.account))]
+
     const totalIncome = transactions.reduce((sum, t) => {
-      const account = accounts.find(a => a.account === t.account)
-      if (account && account.account.startsWith('3')) {
-        return sum + (t.credit > 0 ? t.credit : 0)
+      // Check if the account exists in accounts array
+      const account = accounts?.find(a => a.account === t.account)
+      // Consider income accounts (3xxx)
+      if (account && /^3\d{3}/.test(account.account)) {
+        return sum + (t.credit - t.debit)
       }
       return sum
     }, 0)
 
     const totalExpenses = transactions.reduce((sum, t) => {
-      const account = accounts.find(a => a.account === t.account)
-      if (account && (account.account.startsWith('4') || account.account.startsWith('5') || account.account.startsWith('6') || account.account.startsWith('7'))) {
-        return sum + (t.debit > 0 ? t.debit : 0)
+      const account = accounts?.find(a => a.account === t.account)
+      // Consider expense accounts (4xxx-7xxx)
+      if (account && /^[4567]\d{3}/.test(account.account)) {
+        return sum + (t.debit - t.credit)
       }
       return sum
     }, 0)
