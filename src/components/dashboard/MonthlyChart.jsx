@@ -14,8 +14,8 @@ const MonthlyChart = ({ transactions, accounts }) => {
       if (account) {
         const month = new Date(t.date).getMonth()
         
-        // Income accounts (3xxx)
-        if (/^3\d{3}/.test(account.account)) {
+        // Income accounts (3xxx and 8220)
+        if (/^3\d{3}/.test(account.account) || account.account === '8220') {
           data[month].income += (t.credit - t.debit)
         }
         // Expense accounts (4xxx-7xxx)

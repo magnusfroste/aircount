@@ -11,8 +11,8 @@ const FinancialOverview = ({ transactions, accounts }) => {
     const totalIncome = transactions.reduce((sum, t) => {
       // Check if the account exists in accounts array
       const account = accounts?.find(a => a.account === t.account)
-      // Consider income accounts (3xxx)
-      if (account && /^3\d{3}/.test(account.account)) {
+      // Consider income accounts (3xxx and 8220)
+      if (account && (/^3\d{3}/.test(account.account) || account.account === '8220')) {
         return sum + (t.credit - t.debit)
       }
       return sum
