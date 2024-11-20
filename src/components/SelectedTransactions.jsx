@@ -39,7 +39,7 @@ const SelectedTransactions = ({ selectedTemplates, templates, accounts, transact
             className="w-48"
           />
           <Button 
-            onClick={() => onAddTransactions(transactionDate, editedTransactions)}
+            onClick={() => onAddTransactions(transactionDate)}
             disabled={selectedTemplates.length === 0}
           >
             Add Selected Transactions

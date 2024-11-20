@@ -18,7 +18,6 @@ const TemplatesPage = () => {
   const addTransactionMutation = useAddTransaction()
   const [selectedTemplates, setSelectedTemplates] = useState([])
   const [transactionDate, setTransactionDate] = useState(format(new Date(), 'yyyy-MM-dd'))
-  const [currentVer, setCurrentVer] = useState(1)
   const [editedTransactions, setEditedTransactions] = useState({})
   const [searchTerm, setSearchTerm] = useState('')
 
@@ -29,6 +28,13 @@ const TemplatesPage = () => {
       return acc
     }, {})
   }, [transactions])
+
+  // Find the next available transaction number
+  const getNextTransactionNumber = () => {
+    if (!transactions || transactions.length === 0) return "1"
+    const maxVer = Math.max(...transactions.map(t => parseInt(t.ver) || 0))
+    return (maxVer + 1).toString()
+  }
 
   if (templatesLoading || accountsLoading || transactionsLoading) return <div>Loading data...</div>
   if (templatesError || accountsError || transactionsError) return <div>Error loading data</div>
@@ -41,12 +47,13 @@ const TemplatesPage = () => {
     )
   }
 
-  const handleAddSelectedTransactions = (date, editedTransactions) => {
+  const handleAddSelectedTransactions = (date) => {
     if (!date) {
       toast.error('Please select a date for the transactions')
       return
     }
 
+    const nextVer = getNextTransactionNumber()
     const selectedTransactions = templates
       .filter(template => selectedTemplates.includes(template.id))
       .map(template => ({
@@ -54,7 +61,7 @@ const TemplatesPage = () => {
         account: template.account_number,
         debit: editedTransactions[template.id]?.debit ?? template.debit,
         credit: editedTransactions[template.id]?.credit ?? template.credit,
-        ver: currentVer.toString(),
+        ver: nextVer,
         user_id: session.user.id
       }))
 
@@ -67,7 +74,6 @@ const TemplatesPage = () => {
       onSuccess: () => {
         toast.success(`Added ${selectedTransactions.length} transaction(s)`)
         setSelectedTemplates([])
-        setCurrentVer(prev => prev + 1)
         setEditedTransactions({})
       },
       onError: (error) => {
