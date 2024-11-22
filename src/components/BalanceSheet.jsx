@@ -44,7 +44,7 @@ const BalanceSheet = () => {
       'Equity and Liabilities': {
         'Equity': {
           'Share Capital': ['2081'],
-          'Reserves': ['2086'],
+          'Reserves': ['2086', '2893'],  // Added 2893 to Reserves
           'Retained Earnings': ['2091', '2098'],
           'Profit/Loss for the Year': ['2099']
         },
