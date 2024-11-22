@@ -8,11 +8,14 @@ import { toast } from 'sonner'
 import TransactionForm from './TransactionForm'
 import TransactionList from './TransactionList'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { useQueryClient } from '@tanstack/react-query'
 
 const Transactions = () => {
   const [newTransaction, setNewTransaction] = useState({ ver: '', date: '', account: '', debit: 0, credit: 0 })
   const [sortOrder, setSortOrder] = useState('desc')
   const { session } = useSupabaseAuth()
+  const queryClient = useQueryClient()
+  
   const { data: transactions, isLoading: transactionsLoading, error: transactionsError } = useTransactions(session.user.id, sortOrder)
   const { data: accounts, isLoading: accountsLoading, error: accountsError } = useAccounts(session.user.id)
   const addTransactionMutation = useAddTransaction()
@@ -37,7 +40,6 @@ const Transactions = () => {
       return acc
     }, {})
 
-    // Sort the grouped transactions based on the ver (transaction number)
     return Object.entries(grouped).sort(([a], [b]) => {
       const numA = parseInt(a, 10)
       const numB = parseInt(b, 10)
@@ -46,24 +48,50 @@ const Transactions = () => {
   }, [transactions, sortOrder])
 
   const handleAddTransaction = () => {
-    addTransactionMutation.mutate({ ...newTransaction, user_id: session.user.id })
-    setNewTransaction({ ver: '', date: '', account: '', debit: 0, credit: 0 })
+    addTransactionMutation.mutate(
+      { ...newTransaction, user_id: session.user.id },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries(['transactions', session.user.id])
+          setNewTransaction({ ver: '', date: '', account: '', debit: 0, credit: 0 })
+          toast.success('Transaction added successfully')
+        },
+        onError: (error) => {
+          toast.error(`Error adding transaction: ${error.message}`)
+        }
+      }
+    )
   }
 
   const handleDeleteTransaction = (id) => {
-    deleteTransactionMutation.mutate({ id, user_id: session.user.id })
+    deleteTransactionMutation.mutate(
+      { id, user_id: session.user.id },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries(['transactions', session.user.id])
+          toast.success('Transaction deleted successfully')
+        },
+        onError: (error) => {
+          toast.error(`Error deleting transaction: ${error.message}`)
+        }
+      }
+    )
   }
 
   const handleDeleteAllTransactions = () => {
     if (window.confirm('Are you sure you want to delete all transactions? This action cannot be undone.')) {
-      deleteAllTransactionsMutation.mutate(session.user.id, {
-        onSuccess: () => {
-          toast.success('All transactions have been deleted')
-        },
-        onError: (error) => {
-          toast.error(`Error deleting transactions: ${error.message}`)
+      deleteAllTransactionsMutation.mutate(
+        session.user.id,
+        {
+          onSuccess: () => {
+            queryClient.invalidateQueries(['transactions', session.user.id])
+            toast.success('All transactions have been deleted')
+          },
+          onError: (error) => {
+            toast.error(`Error deleting transactions: ${error.message}`)
+          }
         }
-      })
+      )
     }
   }
 
