@@ -3,10 +3,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { toast } from "sonner"
 import { useSupabaseAuth } from '../integrations/supabase/auth'
 import { useTransactions } from '../integrations/supabase/hooks/transactions'
+import { useAccounts } from '../integrations/supabase/hooks/accounts'
 
 const ExportPage = () => {
   const { session } = useSupabaseAuth()
   const { data: transactions } = useTransactions(session?.user?.id)
+  const { data: accounts } = useAccounts(session?.user?.id)
 
   const handleExportCSV = () => {
     if (!transactions) {
@@ -14,11 +16,17 @@ const ExportPage = () => {
       return
     }
 
+    const getAccountName = (accountNumber) => {
+      const account = accounts?.find(acc => acc.account === accountNumber)
+      return account?.account_name || accountNumber
+    }
+
     const csvContent = [
-      ["Date", "Account", "Debit", "Credit", "Reference"],
+      ["Date", "Account", "Account Name", "Debit", "Credit", "Reference"],
       ...transactions.map(t => [
         t.date,
         t.account,
+        getAccountName(t.account),
         t.debit,
         t.credit,
         t.ver
