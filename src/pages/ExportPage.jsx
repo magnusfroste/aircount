@@ -22,14 +22,14 @@ const ExportPage = () => {
     }
 
     const csvContent = [
-      ["Date", "Account", "Account Name", "Debit", "Credit", "Reference"],
+      ["Verification", "Date", "Account", "Account Name", "Debit", "Credit"],
       ...transactions.map(t => [
+        t.ver,
         t.date,
         t.account,
         getAccountName(t.account),
         t.debit,
-        t.credit,
-        t.ver
+        t.credit
       ])
     ].map(row => row.join(",")).join("\n")
 
