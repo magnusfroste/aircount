@@ -61,9 +61,9 @@ export const useUpdateTransaction = () => {
 export const useDeleteTransaction = () => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: ({ id, user_id }) => fromSupabase(supabase.from('transactions').delete().eq('id', id).eq('user_id', user_id)),
+        mutationFn: ({ id, user_id }) => fromSupabase(supabase.from('air_transactions').delete().eq('id', id).eq('user_id', user_id)),
         onSuccess: (_, variables) => {
-            queryClient.invalidateQueries(['transactions', variables.user_id]);
+            queryClient.invalidateQueries(['air_transactions', variables.user_id]);
         },
     });
 };
@@ -72,14 +72,14 @@ export const useImportTransactions = () => {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async ({ transactions, userId }) => {
-            const { data, error } = await supabase.from('transactions').insert(
+            const { data, error } = await supabase.from('air_transactions').insert(
                 transactions.map(transaction => ({ ...transaction, user_id: userId }))
             );
             if (error) throw new Error(error.message);
             return data;
         },
         onSuccess: (_, variables) => {
-            queryClient.invalidateQueries(['transactions', variables.userId]);
+            queryClient.invalidateQueries(['air_transactions', variables.userId]);
         },
     });
 };
@@ -87,9 +87,9 @@ export const useImportTransactions = () => {
 export const useDeleteAllTransactions = () => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: (userId) => fromSupabase(supabase.from('transactions').delete().eq('user_id', userId)),
+        mutationFn: (userId) => fromSupabase(supabase.from('air_transactions').delete().eq('user_id', userId)),
         onSuccess: (_, userId) => {
-            queryClient.invalidateQueries(['transactions', userId]);
+            queryClient.invalidateQueries(['air_transactions', userId]);
         },
     });
 };
