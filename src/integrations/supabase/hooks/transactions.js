@@ -24,10 +24,10 @@ const fromSupabase = async (query) => {
 */
 
 export const useTransactions = (userId, sortOrder = 'desc') => useQuery({
-    queryKey: ['transactions', userId, sortOrder],
+    queryKey: ['air_transactions', userId, sortOrder],
     queryFn: () => fromSupabase(
         supabase
-            .from('transactions')
+            .from('air_transactions')
             .select('*')
             .eq('user_id', userId)
             .order('ver', { ascending: sortOrder === 'asc' })
@@ -38,12 +38,12 @@ export const useAddTransaction = () => {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (newTransactions) => {
-            const { data, error } = await supabase.from('transactions').insert(newTransactions);
+            const { data, error } = await supabase.from('air_transactions').insert(newTransactions);
             if (error) throw error;
             return data;
         },
         onSuccess: (_, variables) => {
-            queryClient.invalidateQueries(['transactions', variables[0].user_id]);
+            queryClient.invalidateQueries(['air_transactions', variables[0].user_id]);
         },
     });
 };
@@ -51,7 +51,7 @@ export const useAddTransaction = () => {
 export const useUpdateTransaction = () => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: ({ id, user_id, ...updateData }) => fromSupabase(supabase.from('transactions').update(updateData).eq('id', id).eq('user_id', user_id)),
+        mutationFn: ({ id, user_id, ...updateData }) => fromSupabase(supabase.from('air_transactions').update(updateData).eq('id', id).eq('user_id', user_id)),
         onSuccess: (_, variables) => {
             queryClient.invalidateQueries(['air_transactions', variables.user_id]);
         },
