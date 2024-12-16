@@ -53,7 +53,7 @@ export const useUpdateTransaction = () => {
     return useMutation({
         mutationFn: ({ id, user_id, ...updateData }) => fromSupabase(supabase.from('transactions').update(updateData).eq('id', id).eq('user_id', user_id)),
         onSuccess: (_, variables) => {
-            queryClient.invalidateQueries(['transactions', variables.user_id]);
+            queryClient.invalidateQueries(['air_transactions', variables.user_id]);
         },
     });
 };
