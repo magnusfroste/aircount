@@ -15,7 +15,7 @@ const fetchAllAccounts = async (userId) => {
 
     while (hasMore) {
         const { data, error } = await supabase
-            .from('accounts')
+            .from('air_accounts')
             .select('*')
             .eq('user_id', userId)
             .order('account', { ascending: true })
@@ -32,16 +32,16 @@ const fetchAllAccounts = async (userId) => {
 };
 
 export const useAccounts = (userId) => useQuery({
-    queryKey: ['accounts', userId],
+    queryKey: ['air_accounts', userId],
     queryFn: () => fetchAllAccounts(userId),
 });
 
 export const useAddAccount = () => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: (newAccount) => fromSupabase(supabase.from('accounts').insert([newAccount])),
+        mutationFn: (newAccount) => fromSupabase(supabase.from('air_accounts').insert([newAccount])),
         onSuccess: (_, variables) => {
-            queryClient.invalidateQueries(['accounts', variables.user_id]);
+            queryClient.invalidateQueries(['air_accounts', variables.user_id]);
         },
     });
 };
@@ -49,9 +49,9 @@ export const useAddAccount = () => {
 export const useUpdateAccount = () => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: ({ id, user_id, ...updateData }) => fromSupabase(supabase.from('accounts').update(updateData).eq('id', id).eq('user_id', user_id)),
+        mutationFn: ({ id, user_id, ...updateData }) => fromSupabase(supabase.from('air_accounts').update(updateData).eq('id', id).eq('user_id', user_id)),
         onSuccess: (_, variables) => {
-            queryClient.invalidateQueries(['accounts', variables.user_id]);
+            queryClient.invalidateQueries(['air_accounts', variables.user_id]);
         },
     });
 };
@@ -59,9 +59,9 @@ export const useUpdateAccount = () => {
 export const useDeleteAccount = () => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: ({ id, user_id }) => fromSupabase(supabase.from('accounts').delete().eq('id', id).eq('user_id', user_id)),
+        mutationFn: ({ id, user_id }) => fromSupabase(supabase.from('air_accounts').delete().eq('id', id).eq('user_id', user_id)),
         onSuccess: (_, variables) => {
-            queryClient.invalidateQueries(['accounts', variables.user_id]);
+            queryClient.invalidateQueries(['air_accounts', variables.user_id]);
         },
     });
 };
@@ -75,12 +75,12 @@ export const useImportAccounts = () => {
                 account_name: account.name,
                 user_id: userId
             }));
-            const { data, error } = await supabase.from('accounts').insert(formattedAccounts);
+            const { data, error } = await supabase.from('air_accounts').insert(formattedAccounts);
             if (error) throw new Error(error.message);
             return data;
         },
         onSuccess: (_, variables) => {
-            queryClient.invalidateQueries(['accounts', variables.userId]);
+            queryClient.invalidateQueries(['air_accounts', variables.userId]);
         },
     });
 };
