@@ -32,7 +32,7 @@ const Login = () => {
 
       // Insert company data
       const { error: companyError } = await supabase
-        .from('companies')
+        .from('air_companies')
         .insert([
           {
             id: data.user.id,

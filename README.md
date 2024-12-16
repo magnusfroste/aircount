@@ -1,1 +1,1 @@
-Aircount
+Aircount for simple accounting

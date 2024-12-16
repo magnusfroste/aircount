@@ -19,7 +19,7 @@ const Dashboard = () => {
     queryFn: async () => {
       if (!session?.user?.id) return null
       const { data, error } = await supabase
-        .from('companies')
+        .from('air_companies')
         .select('company_name')
         .eq('user_id', session.user.id)
         .single()
