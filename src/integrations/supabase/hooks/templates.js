@@ -22,8 +22,8 @@ const fromSupabase = async (query) => {
 */
 
 export const useTemplates = () => useQuery({
-    queryKey: ['templates'],
-    queryFn: () => fromSupabase(supabase.from('templates').select('*')),
+    queryKey: ['air_templates'],
+    queryFn: () => fromSupabase(supabase.from('air_templates').select('*')),
 });
 
 // Re-export the useAddTransaction hook from the transactions.js file

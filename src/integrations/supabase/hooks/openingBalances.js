@@ -9,13 +9,13 @@ const fromSupabase = async (query) => {
 
 export const useOpeningBalances = (userId) => useQuery({
     queryKey: ['openingBalances', userId],
-    queryFn: () => fromSupabase(supabase.from('opening_balances').select('*').eq('user_id', userId)),
+    queryFn: () => fromSupabase(supabase.from('air_opening_balances').select('*').eq('user_id', userId)),
 });
 
 export const useAddOpeningBalance = () => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: (newBalance) => fromSupabase(supabase.from('opening_balances').insert([newBalance])),
+        mutationFn: (newBalance) => fromSupabase(supabase.from('air_opening_balances').insert([newBalance])),
         onSuccess: (_, variables) => {
             queryClient.invalidateQueries(['openingBalances', variables.user_id]);
         },
@@ -26,7 +26,7 @@ export const useUpdateOpeningBalance = () => {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: ({ id, balance, user_id }) => 
-            fromSupabase(supabase.from('opening_balances')
+            fromSupabase(supabase.from('air_opening_balances')
                 .update({ balance })
                 .eq('id', id)
                 .eq('user_id', user_id)),
@@ -39,7 +39,7 @@ export const useUpdateOpeningBalance = () => {
 export const useDeleteOpeningBalance = () => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: ({ id, user_id }) => fromSupabase(supabase.from('opening_balances').delete().eq('id', id).eq('user_id', user_id)),
+        mutationFn: ({ id, user_id }) => fromSupabase(supabase.from('air_opening_balances').delete().eq('id', id).eq('user_id', user_id)),
         onSuccess: (_, variables) => {
             queryClient.invalidateQueries(['openingBalances', variables.user_id]);
         },
@@ -54,7 +54,7 @@ export const useImportOpeningBalances = () => {
                 ...balance,
                 user_id: userId
             }));
-            const { data, error } = await supabase.from('opening_balances').insert(formattedBalances);
+            const { data, error } = await supabase.from('air_opening_balances').insert(formattedBalances);
             if (error) throw new Error(error.message);
             return data;
         },

@@ -26,7 +26,7 @@ const fromSupabase = async (query) => {
 export const useBalanceSheet = (userId, date) => useQuery({
     queryKey: ['balanceSheet', userId, date],
     queryFn: () => fromSupabase(
-      supabase.from('balance_sheet')
+      supabase.from('air_balance_sheet')
         .select('*')
         .eq('user_id', userId)
         .eq('date', date)
@@ -36,7 +36,7 @@ export const useBalanceSheet = (userId, date) => useQuery({
 export const useAddBalanceSheetEntry = () => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: (newEntry) => fromSupabase(supabase.from('balance_sheet').insert([newEntry])),
+        mutationFn: (newEntry) => fromSupabase(supabase.from('air_balance_sheet').insert([newEntry])),
         onSuccess: (_, variables) => {
             queryClient.invalidateQueries(['balanceSheet', variables.user_id, variables.date]);
         },
@@ -46,7 +46,7 @@ export const useAddBalanceSheetEntry = () => {
 export const useUpdateBalanceSheetEntry = () => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: ({ id, user_id, date, ...updateData }) => fromSupabase(supabase.from('balance_sheet').update(updateData).eq('id', id).eq('user_id', user_id)),
+        mutationFn: ({ id, user_id, date, ...updateData }) => fromSupabase(supabase.from('air_balance_sheet').update(updateData).eq('id', id).eq('user_id', user_id)),
         onSuccess: (_, variables) => {
             queryClient.invalidateQueries(['balanceSheet', variables.user_id, variables.date]);
         },
@@ -56,7 +56,7 @@ export const useUpdateBalanceSheetEntry = () => {
 export const useDeleteBalanceSheetEntry = () => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: ({ id, user_id, date }) => fromSupabase(supabase.from('balance_sheet').delete().eq('id', id).eq('user_id', user_id)),
+        mutationFn: ({ id, user_id, date }) => fromSupabase(supabase.from('air_balance_sheet').delete().eq('id', id).eq('user_id', user_id)),
         onSuccess: (_, variables) => {
             queryClient.invalidateQueries(['balanceSheet', variables.user_id, variables.date]);
         },
