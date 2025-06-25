@@ -16,6 +16,7 @@ const ImageUploader = ({ onTransactionsExtracted }) => {
         toast.error('Image size must be less than 20MB')
         return
       }
+      console.log('Image selected:', file.name, 'Size:', file.size)
       setImage(file)
     }
   }
@@ -40,7 +41,9 @@ const ImageUploader = ({ onTransactionsExtracted }) => {
 
     setLoading(true)
     try {
+      console.log('Converting image to base64...')
       const base64Image = await convertToBase64(image)
+      console.log('Base64 conversion complete, calling edge function...')
       
       const { data, error } = await supabase.functions.invoke('process-bank-statement', {
         body: {
@@ -48,16 +51,25 @@ const ImageUploader = ({ onTransactionsExtracted }) => {
         }
       })
 
+      console.log('Edge function response:', { data, error })
+
       if (error) {
+        console.error('Supabase function error:', error)
         throw new Error(error.message)
       }
 
-      if (data.error) {
+      if (data && data.error) {
+        console.error('Function returned error:', data.error)
         throw new Error(data.error)
       }
 
-      onTransactionsExtracted(data.transactions)
-      toast.success('Transactions extracted successfully')
+      if (data && data.transactions) {
+        console.log('Transactions extracted:', data.transactions)
+        onTransactionsExtracted(data.transactions)
+        toast.success('Transactions extracted successfully')
+      } else {
+        throw new Error('No transactions found in response')
+      }
     } catch (error) {
       console.error('Error processing image:', error)
       toast.error('Failed to process image: ' + error.message)

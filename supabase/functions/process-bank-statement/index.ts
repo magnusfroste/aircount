@@ -1,6 +1,5 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -17,9 +16,12 @@ serve(async (req) => {
     
     const openaiApiKey = Deno.env.get('OPENAI_API_KEY')
     if (!openaiApiKey) {
-      throw new Error('OpenAI API key not found in secrets')
+      console.error('OpenAI API key not found in environment variables')
+      throw new Error('OpenAI API key not configured')
     }
 
+    console.log('Processing image with OpenAI...')
+    
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -27,7 +29,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: "gpt-4-turbo",
+        model: "gpt-4o-mini",
         messages: [
           {
             role: "user",
@@ -50,11 +52,20 @@ serve(async (req) => {
     })
 
     if (!response.ok) {
-      throw new Error(`OpenAI API error: ${response.statusText}`)
+      const errorText = await response.text()
+      console.error('OpenAI API error:', response.status, errorText)
+      throw new Error(`OpenAI API error: ${response.status} ${response.statusText}`)
     }
 
     const data = await response.json()
+    console.log('OpenAI response received')
+    
+    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+      throw new Error('Invalid response from OpenAI API')
+    }
+
     const extractedData = JSON.parse(data.choices[0].message.content.trim())
+    console.log('Extracted transactions:', extractedData.length)
 
     return new Response(
       JSON.stringify({ transactions: extractedData }),
