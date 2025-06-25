@@ -1,4 +1,5 @@
 
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 
 const corsHeaders = {
@@ -68,16 +69,37 @@ serve(async (req) => {
     let responseContent = data.choices[0].message.content.trim()
     console.log('Raw OpenAI response:', responseContent)
     
-    // Remove markdown code blocks if present
-    if (responseContent.startsWith('```json')) {
-      responseContent = responseContent.replace(/^```json\s*/, '').replace(/\s*```$/, '')
-    } else if (responseContent.startsWith('```')) {
-      responseContent = responseContent.replace(/^```\s*/, '').replace(/\s*```$/, '')
-    }
+    // More robust cleaning of markdown code blocks
+    responseContent = responseContent
+      .replace(/^```json\s*/i, '')  // Remove opening ```json
+      .replace(/^```\s*/, '')       // Remove opening ```
+      .replace(/\s*```$/, '')       // Remove closing ```
+      .replace(/^[\s\n]*/, '')      // Remove leading whitespace/newlines
+      .replace(/[\s\n]*$/, '')      // Remove trailing whitespace/newlines
     
     console.log('Cleaned response content:', responseContent)
     
-    const extractedData = JSON.parse(responseContent)
+    // Validate that we have JSON-like content
+    if (!responseContent.startsWith('[') && !responseContent.startsWith('{')) {
+      console.error('Response does not appear to be JSON:', responseContent)
+      throw new Error('OpenAI response is not valid JSON format')
+    }
+    
+    let extractedData
+    try {
+      extractedData = JSON.parse(responseContent)
+    } catch (parseError) {
+      console.error('JSON parsing failed:', parseError.message)
+      console.error('Content that failed to parse:', responseContent)
+      throw new Error('Failed to parse OpenAI response as JSON')
+    }
+    
+    // Ensure we have an array
+    if (!Array.isArray(extractedData)) {
+      console.error('Parsed data is not an array:', extractedData)
+      throw new Error('Expected an array of transactions')
+    }
+    
     console.log('Extracted transactions:', extractedData.length)
 
     return new Response(
@@ -98,3 +120,4 @@ serve(async (req) => {
     )
   }
 })
+
