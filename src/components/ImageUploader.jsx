@@ -3,7 +3,7 @@ import React, { useState } from 'react'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { toast } from 'sonner'
-import { supabase } from '../integrations/supabase'
+import { supabase } from '../integrations/supabase/client'
 
 const ImageUploader = ({ onTransactionsExtracted }) => {
   const [image, setImage] = useState(null)
