@@ -64,7 +64,20 @@ serve(async (req) => {
       throw new Error('Invalid response from OpenAI API')
     }
 
-    const extractedData = JSON.parse(data.choices[0].message.content.trim())
+    // Clean the response content to handle markdown-wrapped JSON
+    let responseContent = data.choices[0].message.content.trim()
+    console.log('Raw OpenAI response:', responseContent)
+    
+    // Remove markdown code blocks if present
+    if (responseContent.startsWith('```json')) {
+      responseContent = responseContent.replace(/^```json\s*/, '').replace(/\s*```$/, '')
+    } else if (responseContent.startsWith('```')) {
+      responseContent = responseContent.replace(/^```\s*/, '').replace(/\s*```$/, '')
+    }
+    
+    console.log('Cleaned response content:', responseContent)
+    
+    const extractedData = JSON.parse(responseContent)
     console.log('Extracted transactions:', extractedData.length)
 
     return new Response(
