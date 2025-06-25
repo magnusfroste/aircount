@@ -1,17 +1,13 @@
+
 import React, { useState } from 'react'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { toast } from 'sonner'
-import OpenAI from 'openai'
+import { supabase } from '../integrations/supabase'
 
 const ImageUploader = ({ onTransactionsExtracted }) => {
   const [image, setImage] = useState(null)
   const [loading, setLoading] = useState(false)
-
-  const openai = new OpenAI({
-    apiKey: import.meta.env.VITE_OPENAI_API_KEY,
-    dangerouslyAllowBrowser: true
-  })
 
   const handleImageUpload = (event) => {
     const file = event.target.files[0]
@@ -46,36 +42,22 @@ const ImageUploader = ({ onTransactionsExtracted }) => {
     try {
       const base64Image = await convertToBase64(image)
       
-      const response = await openai.chat.completions.create({
-        model: "gpt-4-turbo",
-        messages: [
-          {
-            role: "user",
-            content: [
-              { 
-                type: "text", 
-                text: "Extract all transactions from this bank statement image and return ONLY a JSON array with this exact structure, nothing else: [{date: 'YYYY-MM-DD', description: 'string', amount: number}]. Amounts should be positive for credits and negative for debits. Do not include any explanatory text, only the JSON array." 
-              },
-              { 
-                type: "image_url",
-                image_url: {
-                  url: `data:image/${image.type};base64,${base64Image}`
-                }
-              }
-            ],
-          },
-        ],
-        max_tokens: 4096,
+      const { data, error } = await supabase.functions.invoke('process-bank-statement', {
+        body: {
+          image: base64Image
+        }
       })
 
-      try {
-        const extractedData = JSON.parse(response.choices[0].message.content.trim())
-        onTransactionsExtracted(extractedData)
-        toast.success('Transactions extracted successfully')
-      } catch (parseError) {
-        console.error('JSON Parse Error:', response.choices[0].message.content)
-        toast.error('Failed to parse the extracted data. Please try again.')
+      if (error) {
+        throw new Error(error.message)
       }
+
+      if (data.error) {
+        throw new Error(data.error)
+      }
+
+      onTransactionsExtracted(data.transactions)
+      toast.success('Transactions extracted successfully')
     } catch (error) {
       console.error('Error processing image:', error)
       toast.error('Failed to process image: ' + error.message)
